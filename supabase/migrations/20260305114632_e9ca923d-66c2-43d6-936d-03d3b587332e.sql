@@ -1,0 +1,1 @@
+ALTER TABLE public.results ADD COLUMN class_name text NOT NULL DEFAULT '';
