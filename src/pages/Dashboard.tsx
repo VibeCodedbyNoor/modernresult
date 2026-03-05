@@ -8,8 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Plus, Upload, Link as LinkIcon, LogOut, Eye, Trash2, School, Settings, FileSpreadsheet } from 'lucide-react';
 import * as XLSX from 'xlsx';
@@ -60,6 +61,14 @@ export default function Dashboard() {
 
   // Upload dialog
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+
+  // Column mapping state
+  const [columnMappingOpen, setColumnMappingOpen] = useState(false);
+  const [parsedSheets, setParsedSheets] = useState<{ sheetName: string; data: Record<string, any>[] }[]>([]);
+  const [allHeaders, setAllHeaders] = useState<string[]>([]);
+  const [selectedRollKey, setSelectedRollKey] = useState('');
+  const [selectedNameKey, setSelectedNameKey] = useState('');
+  const [selectedSubjects, setSelectedSubjects] = useState<Record<string, boolean>>({});
 
   // Class filter
   const [classFilter, setClassFilter] = useState<string>('all');
@@ -131,44 +140,72 @@ export default function Dashboard() {
     const file = e.target.files?.[0];
     if (!file || !selectedExam) return;
 
-    setUploading(true);
     try {
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data);
-      const allRows: any[] = [];
+      const sheets: { sheetName: string; data: Record<string, any>[] }[] = [];
 
       for (const sheetName of workbook.SheetNames) {
         const sheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: '' });
+        if (jsonData.length > 0) {
+          sheets.push({ sheetName, data: jsonData });
+        }
+      }
 
-        if (jsonData.length === 0) continue;
+      if (sheets.length === 0) {
+        toast.error('No data found in the file');
+        return;
+      }
 
-        const headers = Object.keys(jsonData[0]);
-        const rollKey = headers.find(h => h.toLowerCase().includes('roll')) || '';
-        const nameKey = headers.find(h => h.toLowerCase().includes('name')) || '';
-        
-        // Non-subject keywords to exclude
-        const excludePatterns = [
-          'total', 'position', 'percentage', 'percent', '%age', 'rank', 'grade', 'result',
-          'status', 'remarks', 'remark', 'division', 'gpa', 'cgpa', 'average',
-          'avg', 'pass', 'fail', 'obtained', 'max', 'minimum', 'maximum',
-          'sr', 'serial', 'class', 'section', 'father', 'mother', 'parent',
-          'address', 'phone', 'mobile', 'email', 'dob', 'date', 'gender', 'age',
-          'no.', 'no', 's.no', 's.r', 'reg'
-        ];
-        const subjectKeys = headers.filter(h => {
-          if (h === rollKey || h === nameKey) return false;
-          const lower = h.toLowerCase().trim();
-          // Exact match or contains pattern
-          if (excludePatterns.includes(lower)) return false;
-          if (excludePatterns.some(p => lower.includes(p))) return false;
-          // Skip empty headers
-          if (!lower) return false;
-          // Skip if the column has mostly non-numeric values (not marks)
-          return true;
-        });
+      // Get all unique headers from first sheet
+      const headers = Object.keys(sheets[0].data[0]);
+      const rollKey = headers.find(h => h.toLowerCase().includes('roll')) || headers[0];
+      const nameKey = headers.find(h => h.toLowerCase().includes('name')) || headers[1] || '';
 
-        for (const row of jsonData) {
+      const excludePatterns = [
+        'total', 'position', 'percentage', 'percent', '%age', 'rank', 'grade', 'result',
+        'status', 'remarks', 'remark', 'division', 'gpa', 'cgpa', 'average',
+        'avg', 'pass', 'fail', 'obtained', 'max', 'minimum', 'maximum',
+        'sr', 'serial', 'class', 'section', 'father', 'mother', 'parent',
+        'address', 'phone', 'mobile', 'email', 'dob', 'date', 'gender', 'age',
+        'no.', 'no', 's.no', 's.r', 'reg'
+      ];
+
+      const subjectDefaults: Record<string, boolean> = {};
+      for (const h of headers) {
+        if (h === rollKey || h === nameKey) continue;
+        const lower = h.toLowerCase().trim();
+        if (!lower) continue;
+        const isExcluded = excludePatterns.includes(lower) || excludePatterns.some(p => lower.includes(p));
+        subjectDefaults[h] = !isExcluded;
+      }
+
+      setParsedSheets(sheets);
+      setAllHeaders(headers);
+      setSelectedRollKey(rollKey);
+      setSelectedNameKey(nameKey);
+      setSelectedSubjects(subjectDefaults);
+      setUploadDialogOpen(false);
+      setColumnMappingOpen(true);
+    } catch (err: any) {
+      toast.error('Failed to parse file: ' + err.message);
+    }
+  }
+
+  async function handleConfirmUpload() {
+    if (!selectedExam) return;
+    const subjectKeys = Object.entries(selectedSubjects).filter(([, v]) => v).map(([k]) => k);
+    if (subjectKeys.length === 0) {
+      toast.error('Please select at least one subject column');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const allRows: any[] = [];
+      for (const { sheetName, data } of parsedSheets) {
+        for (const row of data) {
           const subjects: Record<string, number> = {};
           let total = 0;
           for (const subj of subjectKeys) {
@@ -181,8 +218,8 @@ export default function Dashboard() {
 
           allRows.push({
             exam_id: selectedExam,
-            roll_number: String(row[rollKey] || ''),
-            student_name: String(row[nameKey] || ''),
+            roll_number: String(row[selectedRollKey] || ''),
+            student_name: String(row[selectedNameKey] || ''),
             subjects,
             total_marks: total,
             grade,
@@ -191,22 +228,16 @@ export default function Dashboard() {
         }
       }
 
-      if (allRows.length === 0) {
-        toast.error('No data found in the file');
-        setUploading(false);
-        return;
-      }
-
       const { error } = await supabase.from('results').insert(allRows);
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success(`${allRows.length} results uploaded from ${workbook.SheetNames.length} class(es)!`);
-        setUploadDialogOpen(false);
+        toast.success(`${allRows.length} results uploaded from ${parsedSheets.length} class(es)!`);
+        setColumnMappingOpen(false);
         fetchResults(selectedExam);
       }
     } catch (err: any) {
-      toast.error('Failed to parse file: ' + err.message);
+      toast.error('Upload failed: ' + err.message);
     }
     setUploading(false);
   }
@@ -500,6 +531,104 @@ export default function Dashboard() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Column Mapping Dialog */}
+      <Dialog open={columnMappingOpen} onOpenChange={setColumnMappingOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display">Map Your Columns</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5">
+            {/* Roll Number & Name selectors */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Roll Number Column</Label>
+                <Select value={selectedRollKey} onValueChange={setSelectedRollKey}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {allHeaders.map(h => (
+                      <SelectItem key={h} value={h}>{h}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Student Name Column</Label>
+                <Select value={selectedNameKey} onValueChange={setSelectedNameKey}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {allHeaders.map(h => (
+                      <SelectItem key={h} value={h}>{h}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Subject checkboxes */}
+            <div className="space-y-2">
+              <Label>Select Subject Columns</Label>
+              <p className="text-xs text-muted-foreground">Check columns that contain subject marks. Uncheck metadata columns like Total, Position, etc.</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
+                {allHeaders
+                  .filter(h => h !== selectedRollKey && h !== selectedNameKey && h.trim())
+                  .map(h => (
+                    <label key={h} className="flex items-center gap-2 text-sm rounded-md border border-border px-3 py-2 cursor-pointer hover:bg-accent/50 transition-colors">
+                      <Checkbox
+                        checked={selectedSubjects[h] ?? false}
+                        onCheckedChange={(checked) =>
+                          setSelectedSubjects(prev => ({ ...prev, [h]: !!checked }))
+                        }
+                      />
+                      <span className="truncate">{h}</span>
+                    </label>
+                  ))}
+              </div>
+            </div>
+
+            {/* Preview table */}
+            {parsedSheets.length > 0 && (
+              <div className="space-y-2">
+                <Label>Preview ({parsedSheets[0].sheetName})</Label>
+                <div className="border rounded-md overflow-auto max-h-48">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{selectedRollKey}</TableHead>
+                        <TableHead>{selectedNameKey}</TableHead>
+                        {Object.entries(selectedSubjects)
+                          .filter(([, v]) => v)
+                          .map(([k]) => (
+                            <TableHead key={k}>{k}</TableHead>
+                          ))}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {parsedSheets[0].data.slice(0, 3).map((row, i) => (
+                        <TableRow key={i}>
+                          <TableCell className="font-mono">{String(row[selectedRollKey] ?? '')}</TableCell>
+                          <TableCell>{String(row[selectedNameKey] ?? '')}</TableCell>
+                          {Object.entries(selectedSubjects)
+                            .filter(([, v]) => v)
+                            .map(([k]) => (
+                              <TableCell key={k}>{String(row[k] ?? '')}</TableCell>
+                            ))}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setColumnMappingOpen(false)}>Cancel</Button>
+            <Button onClick={handleConfirmUpload} disabled={uploading}>
+              {uploading ? 'Uploading...' : 'Upload Results'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
