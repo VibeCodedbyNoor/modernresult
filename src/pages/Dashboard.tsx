@@ -612,7 +612,7 @@ export default function Dashboard() {
               <p className="text-xs text-muted-foreground">Only subject columns are selectable. Metadata like Total, Position, Percentage, Rank, etc. is auto-separated.</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
                 {allHeaders
-                  .filter(h => h !== selectedRollKey && h !== selectedNameKey && h.trim())
+                  .filter(h => h !== selectedRollKey && h !== selectedNameKey && h.trim() && !isNonSubjectColumn(h))
                   .map(h => (
                     <label key={h} className="flex items-center gap-2 text-sm rounded-md border border-border px-3 py-2 cursor-pointer hover:bg-accent/50 transition-colors">
                       <Checkbox
