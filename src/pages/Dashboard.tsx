@@ -149,16 +149,23 @@ export default function Dashboard() {
         
         // Non-subject keywords to exclude
         const excludePatterns = [
-          'total', 'position', 'percentage', 'percent', 'rank', 'grade', 'result',
+          'total', 'position', 'percentage', 'percent', '%age', 'rank', 'grade', 'result',
           'status', 'remarks', 'remark', 'division', 'gpa', 'cgpa', 'average',
           'avg', 'pass', 'fail', 'obtained', 'max', 'minimum', 'maximum',
           'sr', 'serial', 'class', 'section', 'father', 'mother', 'parent',
-          'address', 'phone', 'mobile', 'email', 'dob', 'date', 'gender', 'age'
+          'address', 'phone', 'mobile', 'email', 'dob', 'date', 'gender', 'age',
+          'no.', 'no', 's.no', 's.r', 'reg'
         ];
         const subjectKeys = headers.filter(h => {
           if (h === rollKey || h === nameKey) return false;
-          const lower = h.toLowerCase();
-          return !excludePatterns.some(p => lower.includes(p));
+          const lower = h.toLowerCase().trim();
+          // Exact match or contains pattern
+          if (excludePatterns.includes(lower)) return false;
+          if (excludePatterns.some(p => lower.includes(p))) return false;
+          // Skip empty headers
+          if (!lower) return false;
+          // Skip if the column has mostly non-numeric values (not marks)
+          return true;
         });
 
         for (const row of jsonData) {
