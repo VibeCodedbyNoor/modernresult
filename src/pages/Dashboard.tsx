@@ -32,7 +32,7 @@ interface Result {
   id: string;
   student_name: string;
   roll_number: string;
-  subjects: Record<string, number>;
+  subjects: any;
   total_marks: number;
   grade: string;
 }
