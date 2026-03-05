@@ -609,7 +609,7 @@ export default function Dashboard() {
             {/* Subject checkboxes */}
             <div className="space-y-2">
               <Label>Select Subject Columns</Label>
-              <p className="text-xs text-muted-foreground">Check columns that contain subject marks. Uncheck metadata columns like Total, Position, etc.</p>
+              <p className="text-xs text-muted-foreground">Only subject columns are selectable. Metadata like Total, Position, Percentage, Rank, etc. is auto-separated.</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
                 {allHeaders
                   .filter(h => h !== selectedRollKey && h !== selectedNameKey && h.trim())
