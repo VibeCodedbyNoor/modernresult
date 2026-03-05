@@ -639,6 +639,7 @@ export default function Dashboard() {
                         <TableHead>{selectedNameKey}</TableHead>
                         {Object.entries(selectedSubjects)
                           .filter(([, v]) => v)
+                          .filter(([k]) => !isNonSubjectColumn(k))
                           .map(([k]) => (
                             <TableHead key={k}>{k}</TableHead>
                           ))}
