@@ -541,7 +541,7 @@ export default function Dashboard() {
             )}
           </TabsContent>
 
-          <TabsContent value="settings" className="mt-6">
+          <TabsContent value="settings" className="mt-6 space-y-6">
             <Card className="max-w-lg">
               <CardHeader>
                 <CardTitle className="font-display flex items-center gap-2">
@@ -568,6 +568,78 @@ export default function Dashboard() {
                     <div className="h-8 w-8 rounded" style={{ backgroundColor: school.accent_color }} />
                     <span className="text-sm text-muted-foreground">{school.accent_color}</span>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Result Design Template Picker */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-display flex items-center gap-2">
+                  <Palette className="h-5 w-5" /> Result Portal Design
+                </CardTitle>
+                <CardDescription>Choose how your student result portal looks</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {resultTemplates.map((template) => {
+                    const isSelected = (school.result_template || 'luxury-gold') === template.id;
+                    return (
+                      <button
+                        key={template.id}
+                        onClick={async () => {
+                          const { error } = await supabase
+                            .from('schools')
+                            .update({ result_template: template.id })
+                            .eq('id', school.id);
+                          if (error) {
+                            toast.error(error.message);
+                          } else {
+                            setSchool({ ...school, result_template: template.id });
+                            toast.success(`Design changed to ${template.name}`);
+                          }
+                        }}
+                        className={`relative rounded-lg border-2 overflow-hidden transition-all hover:scale-[1.03] ${
+                          isSelected ? 'border-primary ring-2 ring-primary/30' : 'border-border hover:border-muted-foreground/40'
+                        }`}
+                      >
+                        {/* Preview thumbnail */}
+                        <div
+                          className="aspect-[4/3] p-3 flex flex-col items-center justify-center gap-2"
+                          style={{ background: template.previewBg }}
+                        >
+                          <div
+                            className="w-full h-3 rounded-full opacity-60"
+                            style={{ background: template.previewAccent }}
+                          />
+                          <div
+                            className="w-full flex-1 rounded-md border"
+                            style={{
+                              background: template.previewCard,
+                              borderColor: template.previewAccent + '40',
+                            }}
+                          >
+                            <div className="p-2 space-y-1.5">
+                              <div className="h-1.5 w-3/4 rounded-full" style={{ background: template.previewAccent, opacity: 0.7 }} />
+                              <div className="h-1 w-full rounded-full" style={{ background: template.previewAccent, opacity: 0.2 }} />
+                              <div className="h-1 w-2/3 rounded-full" style={{ background: template.previewAccent, opacity: 0.2 }} />
+                            </div>
+                          </div>
+                        </div>
+                        {/* Label */}
+                        <div className="px-2 py-2 bg-card text-left">
+                          <p className="text-sm font-medium truncate">{template.name}</p>
+                          <p className="text-[11px] text-muted-foreground truncate">{template.description}</p>
+                        </div>
+                        {/* Selected check */}
+                        {isSelected && (
+                          <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                            <Check className="h-3 w-3 text-primary-foreground" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>

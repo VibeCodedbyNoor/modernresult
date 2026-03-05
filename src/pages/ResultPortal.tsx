@@ -298,7 +298,7 @@ export default function ResultPortal() {
 
       <main className="flex-1 container mx-auto px-4 pb-10 max-w-2xl">
         {!result && !notFound ? (
-          <Card className="animate-enter border-border/70 bg-card/80 backdrop-blur-sm">
+          <Card className="animate-enter backdrop-blur-sm" style={{ background: tpl.cardBg, borderColor: tpl.cardBorder, borderRadius: tpl.borderRadius }}>
             <CardContent className="p-6 md:p-8 space-y-5">
               <h2 className="font-display text-xl text-center flex items-center justify-center gap-2" style={{ color: accent }}>
                 <Search className="h-5 w-5" /> Student Result Inquiry
@@ -307,9 +307,9 @@ export default function ResultPortal() {
               <form onSubmit={handleSearch} className="space-y-4">
                 {exams.length > 1 && (
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-muted-foreground">Exam</label>
+                    <label className="text-sm font-medium" style={{ color: tpl.textSecondary }}>Exam</label>
                     <Select value={selectedExam} onValueChange={setSelectedExam}>
-                      <SelectTrigger className="bg-background/70">
+                      <SelectTrigger style={{ background: tpl.inputBg, borderColor: tpl.cardBorder, color: tpl.textPrimary }}>
                         <SelectValue placeholder="Select exam" />
                       </SelectTrigger>
                       <SelectContent>
@@ -324,9 +324,9 @@ export default function ResultPortal() {
                 )}
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-muted-foreground">Class</label>
+                  <label className="text-sm font-medium" style={{ color: tpl.textSecondary }}>Class</label>
                   <Select value={selectedClass} onValueChange={setSelectedClass}>
-                    <SelectTrigger className="bg-background/70">
+                    <SelectTrigger style={{ background: tpl.inputBg, borderColor: tpl.cardBorder, color: tpl.textPrimary }}>
                       <SelectValue placeholder="Select class" />
                     </SelectTrigger>
                     <SelectContent>
@@ -340,13 +340,13 @@ export default function ResultPortal() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-muted-foreground">Roll Number or Student Name</label>
+                  <label className="text-sm font-medium" style={{ color: tpl.textSecondary }}>Roll Number or Student Name</label>
                   <Input
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder="Enter roll number or student name"
                     required
-                    className="bg-background/70"
+                    style={{ background: tpl.inputBg, borderColor: tpl.cardBorder, color: tpl.textPrimary }}
                   />
                 </div>
 
@@ -354,10 +354,7 @@ export default function ResultPortal() {
                   type="submit"
                   className="w-full hover-scale font-semibold"
                   disabled={searching || !selectedClass}
-                  style={{
-                    background: `linear-gradient(90deg, ${accent}, ${accent}cc)`,
-                    color: 'hsl(var(--primary-foreground))',
-                  }}
+                  style={{ background: tpl.buttonGradient, color: tpl.id === 'glassmorphism' ? '#fff' : tpl.id === 'minimalist' || tpl.id === 'kawaii' ? '#fff' : '#111' }}
                 >
                   {searching ? 'Searching...' : '✦ View Result'}
                 </Button>
@@ -365,44 +362,44 @@ export default function ResultPortal() {
             </CardContent>
           </Card>
         ) : notFound ? (
-          <Card className="animate-enter border-border/70 bg-card/80 backdrop-blur-sm">
+          <Card className="animate-enter backdrop-blur-sm" style={{ background: tpl.cardBg, borderColor: tpl.cardBorder, borderRadius: tpl.borderRadius }}>
             <CardContent className="p-8 text-center space-y-4">
-              <div className="h-14 w-14 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
-                <Search className="h-6 w-6 text-destructive" />
+              <div className="h-14 w-14 rounded-full flex items-center justify-center mx-auto" style={{ background: `${accent}18` }}>
+                <Search className="h-6 w-6" style={{ color: accent }} />
               </div>
               <div>
-                <h3 className="font-display text-lg font-semibold">No Result Found</h3>
-                <p className="text-sm text-muted-foreground mt-1">
+                <h3 className="font-display text-lg font-semibold" style={{ color: tpl.textPrimary }}>No Result Found</h3>
+                <p className="text-sm mt-1" style={{ color: tpl.textSecondary }}>
                   We couldn't find a result for <strong>{query}</strong> in {selectedClass}.
                 </p>
               </div>
-              <Button variant="outline" onClick={handleCheckAnother} className="gap-2 hover-scale">
+              <Button variant="outline" onClick={handleCheckAnother} className="gap-2 hover-scale" style={{ borderColor: tpl.cardBorder, color: tpl.textPrimary }}>
                 <RotateCcw className="h-4 w-4" /> Try Again
               </Button>
             </CardContent>
           </Card>
         ) : result ? (
           <div className="space-y-4 animate-enter">
-            <Card ref={resultCardRef} className="overflow-hidden border-border/70 bg-card/80 backdrop-blur-sm">
+            <Card ref={resultCardRef} className="overflow-hidden backdrop-blur-sm" style={{ background: tpl.cardBg, borderColor: tpl.cardBorder, borderRadius: tpl.borderRadius }}>
               <CardContent className="p-0">
-                <div className="px-6 py-4 text-center border-b border-border" style={{ background: `linear-gradient(135deg, ${accent}18, transparent)` }}>
-                  <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">{school.name}</p>
+                <div className="px-6 py-4 text-center" style={{ borderBottom: `1px solid ${tpl.cardBorder}`, background: tpl.tableHeaderBg }}>
+                  <p className="text-xs uppercase tracking-[0.25em]" style={{ color: tpl.textSecondary }}>{school.name}</p>
                   <p className="text-xs mt-1" style={{ color: accent }}>{exams.find((exam) => exam.id === selectedExam)?.name}</p>
                 </div>
 
-                <div className="px-6 py-5 grid grid-cols-2 gap-4 border-b border-border">
+                <div className="px-6 py-5 grid grid-cols-2 gap-4" style={{ borderBottom: `1px solid ${tpl.cardBorder}` }}>
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Student</p>
-                    <p className="font-display text-2xl font-bold text-foreground">{result.student_name}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Roll: {result.roll_number}</p>
+                    <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Student</p>
+                    <p className="font-display text-2xl font-bold" style={{ color: tpl.textPrimary }}>{result.student_name}</p>
+                    <p className="text-xs mt-1" style={{ color: tpl.textSecondary }}>Roll: {result.roll_number}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Class</p>
-                    <p className="font-display text-2xl font-bold text-foreground">{result.class_name}</p>
+                    <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Class</p>
+                    <p className="font-display text-2xl font-bold" style={{ color: tpl.textPrimary }}>{result.class_name}</p>
                   </div>
                 </div>
 
-                <div className="px-6 py-4 grid grid-cols-3 gap-3 border-b border-border">
+                <div className="px-6 py-4 grid grid-cols-3 gap-3" style={{ borderBottom: `1px solid ${tpl.cardBorder}` }}>
                   {[
                     { icon: Trophy, label: 'Position', value: processedResult.position },
                     { icon: TrendingUp, label: 'Percentage', value: `${processedResult.percentage.toFixed(2)}%` },
@@ -410,34 +407,34 @@ export default function ResultPortal() {
                   ].map(({ icon: Icon, label, value }) => (
                     <div
                       key={label}
-                      className="rounded-lg border border-border bg-background/60 p-3 text-center hover-scale"
-                      style={{ boxShadow: `0 0 0 1px ${accent}22 inset` }}
+                      className="rounded-lg p-3 text-center hover-scale"
+                      style={{ border: `1px solid ${tpl.cardBorder}`, background: tpl.inputBg }}
                     >
                       <Icon className="h-4 w-4 mx-auto mb-1" style={{ color: accent }} />
-                      <p className="font-display text-lg font-bold leading-tight">{value}</p>
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+                      <p className="font-display text-lg font-bold leading-tight" style={{ color: tpl.textPrimary }}>{value}</p>
+                      <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: tpl.textSecondary }}>{label}</p>
                     </div>
                   ))}
                 </div>
 
                 <div className="px-6 py-4">
-                  <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Subject-wise marks</p>
-                  <div className="rounded-lg border border-border overflow-hidden">
+                  <p className="text-[11px] uppercase tracking-[0.2em] mb-2" style={{ color: tpl.textSecondary }}>Subject-wise marks</p>
+                  <div className="rounded-lg overflow-hidden" style={{ border: `1px solid ${tpl.cardBorder}` }}>
                     <table className="w-full text-sm">
-                      <thead className="bg-muted/50">
+                      <thead style={{ background: tpl.tableHeaderBg }}>
                         <tr>
-                          <th className="py-2 px-3 text-left text-xs uppercase text-muted-foreground">Subject</th>
-                          <th className="py-2 px-3 text-center text-xs uppercase text-muted-foreground">Obt</th>
-                          <th className="py-2 px-3 text-center text-xs uppercase text-muted-foreground">Total</th>
-                          <th className="py-2 px-3 text-right text-xs uppercase text-muted-foreground">%</th>
+                          <th className="py-2 px-3 text-left text-xs uppercase" style={{ color: tpl.textSecondary }}>Subject</th>
+                          <th className="py-2 px-3 text-center text-xs uppercase" style={{ color: tpl.textSecondary }}>Obt</th>
+                          <th className="py-2 px-3 text-center text-xs uppercase" style={{ color: tpl.textSecondary }}>Total</th>
+                          <th className="py-2 px-3 text-right text-xs uppercase" style={{ color: tpl.textSecondary }}>%</th>
                         </tr>
                       </thead>
                       <tbody>
                         {processedResult.subjects.map((subject) => (
-                          <tr key={subject.name} className="border-t border-border/60">
-                            <td className="py-2.5 px-3 font-medium">{subject.name}</td>
-                            <td className="py-2.5 px-3 text-center font-mono">{subject.obtained}</td>
-                            <td className="py-2.5 px-3 text-center font-mono">{subject.total}</td>
+                          <tr key={subject.name} style={{ borderTop: `1px solid ${tpl.cardBorder}` }}>
+                            <td className="py-2.5 px-3 font-medium" style={{ color: tpl.textPrimary }}>{subject.name}</td>
+                            <td className="py-2.5 px-3 text-center font-mono" style={{ color: tpl.textPrimary }}>{subject.obtained}</td>
+                            <td className="py-2.5 px-3 text-center font-mono" style={{ color: tpl.textPrimary }}>{subject.total}</td>
                             <td className="py-2.5 px-3 text-right font-mono font-semibold" style={{ color: accent }}>
                               {subject.percentage.toFixed(0)}%
                             </td>
@@ -445,10 +442,10 @@ export default function ResultPortal() {
                         ))}
                       </tbody>
                       <tfoot>
-                        <tr className="border-t-2 border-border bg-muted/30">
-                          <td className="py-2.5 px-3 font-semibold">Total</td>
-                          <td className="py-2.5 px-3 text-center font-mono font-semibold">{processedResult.totalObtained}</td>
-                          <td className="py-2.5 px-3 text-center font-mono font-semibold">{processedResult.totalMax}</td>
+                        <tr style={{ borderTop: `2px solid ${tpl.cardBorder}`, background: tpl.tableHeaderBg }}>
+                          <td className="py-2.5 px-3 font-semibold" style={{ color: tpl.textPrimary }}>Total</td>
+                          <td className="py-2.5 px-3 text-center font-mono font-semibold" style={{ color: tpl.textPrimary }}>{processedResult.totalObtained}</td>
+                          <td className="py-2.5 px-3 text-center font-mono font-semibold" style={{ color: tpl.textPrimary }}>{processedResult.totalMax}</td>
                           <td className="py-2.5 px-3 text-right font-mono font-semibold" style={{ color: accent }}>
                             {processedResult.percentage.toFixed(2)}%
                           </td>
@@ -463,15 +460,12 @@ export default function ResultPortal() {
             <Button
               onClick={handleDownload}
               className="w-full hover-scale font-semibold"
-              style={{
-                background: `linear-gradient(90deg, ${accent}, hsl(var(--accent)))`,
-                color: 'hsl(var(--primary-foreground))',
-              }}
+              style={{ background: tpl.buttonGradient, color: tpl.id === 'glassmorphism' ? '#fff' : tpl.id === 'minimalist' || tpl.id === 'kawaii' ? '#fff' : '#111' }}
             >
               <Download className="h-4 w-4 mr-2" /> Download Result Card
             </Button>
 
-            <Button variant="outline" onClick={handleCheckAnother} className="w-full hover-scale">
+            <Button variant="outline" onClick={handleCheckAnother} className="w-full hover-scale" style={{ borderColor: tpl.cardBorder, color: tpl.textPrimary }}>
               <RotateCcw className="h-4 w-4 mr-2" /> Check Another Result
             </Button>
           </div>
