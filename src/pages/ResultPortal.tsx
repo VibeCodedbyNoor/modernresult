@@ -257,13 +257,15 @@ export default function ResultPortal() {
     );
   }
 
-  const accent = school.accent_color || '#d4a017';
+  const tpl = getTemplate(school.result_template || 'luxury-gold');
+  const accent = tpl.accentColor;
 
   return (
     <div
-      className="min-h-screen flex flex-col bg-background"
+      className="min-h-screen flex flex-col"
       style={{
-        backgroundImage: `radial-gradient(60% 45% at 50% 0%, ${accent}22 0%, transparent 70%)`,
+        background: tpl.background,
+        color: tpl.textPrimary,
       }}
     >
       <header className="pt-8 pb-4 text-center animate-fade-in">
