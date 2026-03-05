@@ -48,6 +48,7 @@ export type Database = {
       }
       results: {
         Row: {
+          class_name: string
           created_at: string
           exam_id: string
           grade: string
@@ -58,6 +59,7 @@ export type Database = {
           total_marks: number
         }
         Insert: {
+          class_name?: string
           created_at?: string
           exam_id: string
           grade?: string
@@ -68,6 +70,7 @@ export type Database = {
           total_marks?: number
         }
         Update: {
+          class_name?: string
           created_at?: string
           exam_id?: string
           grade?: string

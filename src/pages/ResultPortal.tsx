@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, GraduationCap, Printer } from 'lucide-react';
+import { Search, GraduationCap, Download, RotateCcw } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 interface SchoolData {
   id: string;
@@ -28,6 +28,7 @@ interface Result {
   subjects: any;
   total_marks: number;
   grade: string;
+  class_name: string;
 }
 
 export default function ResultPortal() {
@@ -35,12 +36,15 @@ export default function ResultPortal() {
   const [school, setSchool] = useState<SchoolData | null>(null);
   const [exams, setExams] = useState<Exam[]>([]);
   const [selectedExam, setSelectedExam] = useState<string>('');
+  const [classes, setClasses] = useState<string[]>([]);
+  const [selectedClass, setSelectedClass] = useState<string>('');
   const [query, setQuery] = useState('');
   const [result, setResult] = useState<Result | null>(null);
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const resultCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function load() {
@@ -56,19 +60,36 @@ export default function ResultPortal() {
     load();
   }, [slug]);
 
+  // Fetch distinct classes when exam changes
+  useEffect(() => {
+    if (!selectedExam) return;
+    async function loadClasses() {
+      const { data } = await supabase
+        .from('results')
+        .select('class_name')
+        .eq('exam_id', selectedExam);
+      if (data) {
+        const unique = [...new Set(data.map(r => r.class_name).filter(Boolean))];
+        setClasses(unique);
+        setSelectedClass('');
+      }
+    }
+    loadClasses();
+  }, [selectedExam]);
+
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    if (!query.trim() || !selectedExam) return;
+    if (!query.trim() || !selectedExam || !selectedClass) return;
     setSearching(true);
     setSearched(true);
     setResult(null);
     setNotFound(false);
 
-    // Search by roll number first, then by name
     let { data } = await supabase
       .from('results')
       .select('*')
       .eq('exam_id', selectedExam)
+      .eq('class_name', selectedClass)
       .ilike('roll_number', query.trim())
       .limit(1);
 
@@ -77,6 +98,7 @@ export default function ResultPortal() {
         .from('results')
         .select('*')
         .eq('exam_id', selectedExam)
+        .eq('class_name', selectedClass)
         .ilike('student_name', `%${query.trim()}%`)
         .limit(1);
       data = res.data;
@@ -88,6 +110,25 @@ export default function ResultPortal() {
       setNotFound(true);
     }
     setSearching(false);
+  }
+
+  async function handleDownload() {
+    if (!resultCardRef.current) return;
+    const canvas = await html2canvas(resultCardRef.current, {
+      backgroundColor: '#ffffff',
+      scale: 2,
+    });
+    const link = document.createElement('a');
+    link.download = `${result?.student_name || 'result'}-result.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+  }
+
+  function handleCheckAnother() {
+    setResult(null);
+    setSearched(false);
+    setNotFound(false);
+    setQuery('');
   }
 
   if (loading) {
@@ -112,121 +153,183 @@ export default function ResultPortal() {
     );
   }
 
-  const accentStyle = { '--school-accent': school.accent_color } as React.CSSProperties;
+  const subjects = result ? Object.entries(result.subjects as Record<string, number>) : [];
 
   return (
-    <div className="min-h-screen bg-background" style={accentStyle}>
+    <div className="min-h-screen flex flex-col" style={{ background: `linear-gradient(135deg, ${school.accent_color}15, ${school.accent_color}05)` }}>
       {/* Header */}
-      <header className="border-b border-border" style={{ backgroundColor: school.accent_color }}>
-        <div className="container mx-auto px-4 py-6 text-center">
+      <header className="py-8 text-center">
+        <div className="container mx-auto px-4">
           {school.logo_url && (
-            <img src={school.logo_url} alt={school.name} className="h-16 w-16 mx-auto mb-3 rounded-full object-cover bg-white/20" />
+            <img src={school.logo_url} alt={school.name} className="h-16 w-16 mx-auto mb-3 rounded-full object-cover shadow-md border-2 border-white" />
           )}
-          <h1 className="font-display text-2xl md:text-3xl font-bold text-white">{school.name}</h1>
-          <p className="text-white/80 text-sm mt-1">Online Result Portal</p>
+          <h1 className="font-display text-2xl md:text-3xl font-bold" style={{ color: school.accent_color }}>
+            {school.name}
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">Student Result Portal</p>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8 max-w-xl">
-        {/* Search form */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="font-display text-lg flex items-center gap-2">
-              <Search className="h-5 w-5" /> Check Your Result
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSearch} className="space-y-4">
-              {exams.length > 1 && (
-                <Select value={selectedExam} onValueChange={setSelectedExam}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select exam" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {exams.map(ex => (
-                      <SelectItem key={ex.id} value={ex.id}>{ex.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              <Input
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                placeholder="Enter roll number or name"
-                required
-              />
-              <Button type="submit" className="w-full" disabled={searching} style={{ backgroundColor: school.accent_color }}>
-                {searching ? 'Searching...' : 'Search Result'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+      <div className="flex-1 container mx-auto px-4 pb-8 max-w-md">
+        {!result && !notFound ? (
+          /* Search Form */
+          <Card className="shadow-lg border-0">
+            <CardContent className="p-6 space-y-5">
+              <h2 className="font-display text-lg font-semibold text-center text-foreground">
+                Check Your Result
+              </h2>
 
-        {/* Result display */}
-        {result && (
-          <Card className="animate-fade-in">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="font-display text-lg">Result</CardTitle>
-              <Button variant="outline" size="sm" onClick={() => window.print()} className="gap-1.5 print:hidden">
-                <Printer className="h-3.5 w-3.5" /> Print
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Name</span>
-                  <p className="font-medium text-foreground">{result.student_name}</p>
+              <form onSubmit={handleSearch} className="space-y-4">
+                {exams.length > 1 && (
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-muted-foreground">Select Exam</label>
+                    <Select value={selectedExam} onValueChange={setSelectedExam}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select exam" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {exams.map(ex => (
+                          <SelectItem key={ex.id} value={ex.id}>{ex.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-muted-foreground">Select Class</label>
+                  <Select value={selectedClass} onValueChange={setSelectedClass}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose your class..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classes.map(c => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div>
-                  <span className="text-muted-foreground">Roll Number</span>
-                  <p className="font-mono font-medium text-foreground">{result.roll_number}</p>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-muted-foreground">Roll Number or Name</label>
+                  <Input
+                    value={query}
+                    onChange={e => setQuery(e.target.value)}
+                    placeholder="Enter roll number or student name"
+                    required
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full text-white font-semibold"
+                  disabled={searching || !selectedClass}
+                  style={{ backgroundColor: school.accent_color }}
+                >
+                  {searching ? 'Searching...' : 'View Result'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        ) : notFound ? (
+          /* Not Found */
+          <Card className="shadow-lg border-0 animate-fade-in">
+            <CardContent className="p-8 text-center space-y-4">
+              <div className="h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
+                <Search className="h-7 w-7 text-destructive" />
+              </div>
+              <div>
+                <h3 className="font-display font-semibold text-foreground text-lg">No Result Found</h3>
+                <p className="text-muted-foreground text-sm mt-1">
+                  We couldn't find a result for "<strong>{query}</strong>" in {selectedClass}. Please check your details.
+                </p>
+              </div>
+              <Button onClick={handleCheckAnother} variant="outline" className="gap-1.5">
+                <RotateCcw className="h-4 w-4" /> Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        ) : result ? (
+          /* Result Card */
+          <div className="space-y-4 animate-fade-in">
+            <div ref={resultCardRef} className="bg-white rounded-xl shadow-lg overflow-hidden">
+              {/* Card Header */}
+              <div className="px-6 py-4 text-center text-white" style={{ backgroundColor: school.accent_color }}>
+                <h2 className="font-display font-bold text-lg">{school.name}</h2>
+                <p className="text-white/80 text-xs mt-0.5">
+                  {exams.find(e => e.id === selectedExam)?.name} — {result.class_name}
+                </p>
+              </div>
+
+              {/* Student Info */}
+              <div className="px-6 py-4 border-b border-border">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-muted-foreground text-xs">Student Name</span>
+                    <p className="font-semibold text-foreground">{result.student_name}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground text-xs">Roll Number</span>
+                    <p className="font-mono font-semibold text-foreground">{result.roll_number}</p>
+                  </div>
                 </div>
               </div>
 
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Subject</TableHead>
-                    <TableHead className="text-right">Marks</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {Object.entries(result.subjects).map(([subj, marks]) => (
-                    <TableRow key={subj}>
-                      <TableCell>{subj}</TableCell>
-                      <TableCell className="text-right font-mono">{String(marks)}</TableCell>
-                    </TableRow>
-                  ))}
-                  <TableRow className="font-semibold border-t-2">
-                    <TableCell>Total</TableCell>
-                    <TableCell className="text-right font-mono">{result.total_marks}</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
+              {/* Marks Table */}
+              <div className="px-6 py-3">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-2 text-muted-foreground font-medium text-xs uppercase">Subject</th>
+                      <th className="text-right py-2 text-muted-foreground font-medium text-xs uppercase">Marks</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {subjects.map(([subj, marks]) => (
+                      <tr key={subj} className="border-b border-border/50">
+                        <td className="py-2 text-foreground">{subj}</td>
+                        <td className="py-2 text-right font-mono font-medium text-foreground">{String(marks)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 border-border">
+                      <td className="py-2 font-semibold text-foreground">Total</td>
+                      <td className="py-2 text-right font-mono font-bold text-foreground">{result.total_marks}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
 
-              <div className="text-center py-3">
-                <span className="text-sm text-muted-foreground">Grade: </span>
+              {/* Grade Badge */}
+              <div className="px-6 py-4 text-center">
                 <span
-                  className="inline-flex px-4 py-1.5 rounded-full text-sm font-bold text-white"
+                  className="inline-flex px-5 py-1.5 rounded-full text-sm font-bold text-white"
                   style={{ backgroundColor: result.grade === 'F' ? 'hsl(0, 84%, 60%)' : school.accent_color }}
                 >
-                  {result.grade}
+                  Grade: {result.grade}
                 </span>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
 
-        {notFound && searched && (
-          <Card className="animate-fade-in">
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">No result found for "<strong>{query}</strong>". Please check your roll number or name.</p>
-            </CardContent>
-          </Card>
-        )}
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <Button
+                onClick={handleDownload}
+                className="flex-1 gap-1.5 text-white"
+                style={{ backgroundColor: school.accent_color }}
+              >
+                <Download className="h-4 w-4" /> Download
+              </Button>
+              <Button onClick={handleCheckAnother} variant="outline" className="flex-1 gap-1.5">
+                <RotateCcw className="h-4 w-4" /> Check Another
+              </Button>
+            </div>
+          </div>
+        ) : null}
 
         {exams.length === 0 && (
-          <Card>
+          <Card className="shadow-lg border-0">
             <CardContent className="p-8 text-center">
               <p className="text-muted-foreground">No published results available yet. Please check back later.</p>
             </CardContent>
@@ -234,10 +337,10 @@ export default function ResultPortal() {
         )}
       </div>
 
-      <footer className="border-t border-border py-6 mt-12 print:hidden">
-        <div className="container mx-auto px-4 text-center text-xs text-muted-foreground">
-          Powered by <a href="/" className="text-primary hover:underline">ResultCheck</a>
-        </div>
+      <footer className="py-4 text-center print:hidden">
+        <p className="text-xs text-muted-foreground">
+          Powered by <a href="/" className="text-primary hover:underline font-medium">ResultCheck</a>
+        </p>
       </footer>
     </div>
   );
