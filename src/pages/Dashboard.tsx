@@ -187,27 +187,19 @@ export default function Dashboard() {
         return;
       }
 
-      // Get all unique headers from first sheet
-      const headers = Object.keys(sheets[0].data[0]);
-      const rollKey = headers.find(h => h.toLowerCase().includes('roll')) || headers[0];
-      const nameKey = headers.find(h => h.toLowerCase().includes('name')) || headers[1] || '';
-
-      const excludePatterns = [
-        'total', 'position', 'percentage', 'percent', '%age', 'rank', 'grade', 'result',
-        'status', 'remarks', 'remark', 'division', 'gpa', 'cgpa', 'average',
-        'avg', 'pass', 'fail', 'obtained', 'max', 'minimum', 'maximum',
-        'sr', 'serial', 'class', 'section', 'father', 'mother', 'parent',
-        'address', 'phone', 'mobile', 'email', 'dob', 'date', 'gender', 'age',
-        'no.', 'no', 's.no', 's.r', 'reg'
-      ];
+      // Collect headers across all sheets so mapping is stable for merged uploads
+      const headers = Array.from(
+        new Set(
+          sheets.flatMap(({ data }) => Object.keys(data[0] || {})).filter((header) => header.trim())
+        )
+      );
+      const rollKey = headers.find((h) => normalizeColumn(h).includes('roll')) || headers[0] || '';
+      const nameKey = headers.find((h) => normalizeColumn(h).includes('name')) || headers[1] || '';
 
       const subjectDefaults: Record<string, boolean> = {};
       for (const h of headers) {
         if (h === rollKey || h === nameKey) continue;
-        const lower = h.toLowerCase().trim();
-        if (!lower) continue;
-        const isExcluded = excludePatterns.includes(lower) || excludePatterns.some(p => lower.includes(p));
-        subjectDefaults[h] = !isExcluded;
+        subjectDefaults[h] = !isNonSubjectColumn(h);
       }
 
       setParsedSheets(sheets);
