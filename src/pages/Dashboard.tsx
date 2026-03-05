@@ -629,7 +629,7 @@ export default function Dashboard() {
 
             {/* Preview table */}
             {parsedSheets.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-2 animate-fade-in">
                 <Label>Preview ({parsedSheets[0].sheetName})</Label>
                 <div className="border rounded-md overflow-auto max-h-48">
                   <Table>
