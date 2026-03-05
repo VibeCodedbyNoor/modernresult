@@ -614,7 +614,7 @@ export default function Dashboard() {
                 {allHeaders
                   .filter(h => h !== selectedRollKey && h !== selectedNameKey && h.trim() && !isNonSubjectColumn(h))
                   .map(h => (
-                    <label key={h} className="flex items-center gap-2 text-sm rounded-md border border-border px-3 py-2 cursor-pointer hover:bg-accent/50 transition-colors">
+                    <label key={h} className="flex items-center gap-2 text-sm rounded-md border border-border px-3 py-2 cursor-pointer hover:bg-accent/50 transition-colors hover-scale">
                       <Checkbox
                         checked={selectedSubjects[h] ?? false}
                         onCheckedChange={(checked) =>
