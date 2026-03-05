@@ -85,24 +85,12 @@ export default function ResultPortal() {
     setResult(null);
     setNotFound(false);
 
-    let { data } = await supabase
-      .from('results')
-      .select('*')
-      .eq('exam_id', selectedExam)
-      .eq('class_name', selectedClass)
-      .ilike('roll_number', query.trim())
-      .limit(1);
-
-    if (!data || data.length === 0) {
-      const res = await supabase
-        .from('results')
-        .select('*')
-        .eq('exam_id', selectedExam)
-        .eq('class_name', selectedClass)
-        .ilike('student_name', `%${query.trim()}%`)
-        .limit(1);
-      data = res.data;
-    }
+    // Use fuzzy search function for spelling tolerance
+    const { data } = await supabase.rpc('fuzzy_search_results', {
+      p_exam_id: selectedExam,
+      p_class_name: selectedClass,
+      p_query: query.trim(),
+    });
 
     if (data && data.length > 0) {
       setResult(data[0]);

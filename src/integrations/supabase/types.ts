@@ -128,7 +128,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      fuzzy_search_results: {
+        Args: { p_class_name: string; p_exam_id: string; p_query: string }
+        Returns: {
+          class_name: string
+          created_at: string
+          exam_id: string
+          grade: string
+          id: string
+          roll_number: string
+          student_name: string
+          subjects: Json
+          total_marks: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "results"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
     }
     Enums: {
       [_ in never]: never

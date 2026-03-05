@@ -146,7 +146,20 @@ export default function Dashboard() {
         const headers = Object.keys(jsonData[0]);
         const rollKey = headers.find(h => h.toLowerCase().includes('roll')) || '';
         const nameKey = headers.find(h => h.toLowerCase().includes('name')) || '';
-        const subjectKeys = headers.filter(h => h !== rollKey && h !== nameKey);
+        
+        // Non-subject keywords to exclude
+        const excludePatterns = [
+          'total', 'position', 'percentage', 'percent', 'rank', 'grade', 'result',
+          'status', 'remarks', 'remark', 'division', 'gpa', 'cgpa', 'average',
+          'avg', 'pass', 'fail', 'obtained', 'max', 'minimum', 'maximum',
+          'sr', 'serial', 'class', 'section', 'father', 'mother', 'parent',
+          'address', 'phone', 'mobile', 'email', 'dob', 'date', 'gender', 'age'
+        ];
+        const subjectKeys = headers.filter(h => {
+          if (h === rollKey || h === nameKey) return false;
+          const lower = h.toLowerCase();
+          return !excludePatterns.some(p => lower.includes(p));
+        });
 
         for (const row of jsonData) {
           const subjects: Record<string, number> = {};
