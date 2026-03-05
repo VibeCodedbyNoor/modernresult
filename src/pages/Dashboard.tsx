@@ -11,7 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Plus, Upload, Link as LinkIcon, LogOut, Eye, Trash2, School, Settings } from 'lucide-react';
+import { Plus, Upload, Link as LinkIcon, LogOut, Eye, Trash2, School, Settings, FileSpreadsheet } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 interface SchoolData {
   id: string;
@@ -35,6 +36,7 @@ interface Result {
   subjects: any;
   total_marks: number;
   grade: string;
+  class_name: string;
 }
 
 export default function Dashboard() {
@@ -45,6 +47,7 @@ export default function Dashboard() {
   const [selectedExam, setSelectedExam] = useState<string | null>(null);
   const [results, setResults] = useState<Result[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
 
   // Setup form state
   const [schoolName, setSchoolName] = useState('');
@@ -55,9 +58,11 @@ export default function Dashboard() {
   const [newExamName, setNewExamName] = useState('');
   const [examDialogOpen, setExamDialogOpen] = useState(false);
 
-  // CSV upload
-  const [csvDialogOpen, setCsvDialogOpen] = useState(false);
-  const [sheetsLink, setSheetsLink] = useState('');
+  // Upload dialog
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+
+  // Class filter
+  const [classFilter, setClassFilter] = useState<string>('all');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -83,6 +88,7 @@ export default function Dashboard() {
 
   async function fetchResults(examId: string) {
     setSelectedExam(examId);
+    setClassFilter('all');
     const { data } = await supabase.from('results').select('*').eq('exam_id', examId).order('roll_number');
     setResults(data || []);
   }
@@ -121,53 +127,68 @@ export default function Dashboard() {
     }
   }
 
-  async function handleCsvUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !selectedExam) return;
 
-    const text = await file.text();
-    const lines = text.split('\n').filter(l => l.trim());
-    if (lines.length < 2) {
-      toast.error('CSV must have a header row and at least one data row');
-      return;
+    setUploading(true);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const allRows: any[] = [];
+
+      for (const sheetName of workbook.SheetNames) {
+        const sheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: '' });
+
+        if (jsonData.length === 0) continue;
+
+        const headers = Object.keys(jsonData[0]);
+        const rollKey = headers.find(h => h.toLowerCase().includes('roll')) || '';
+        const nameKey = headers.find(h => h.toLowerCase().includes('name')) || '';
+        const subjectKeys = headers.filter(h => h !== rollKey && h !== nameKey);
+
+        for (const row of jsonData) {
+          const subjects: Record<string, number> = {};
+          let total = 0;
+          for (const subj of subjectKeys) {
+            const marks = parseInt(String(row[subj])) || 0;
+            subjects[subj] = marks;
+            total += marks;
+          }
+          const avg = subjectKeys.length > 0 ? total / subjectKeys.length : 0;
+          const grade = avg >= 90 ? 'A+' : avg >= 80 ? 'A' : avg >= 70 ? 'B' : avg >= 60 ? 'C' : avg >= 50 ? 'D' : 'F';
+
+          allRows.push({
+            exam_id: selectedExam,
+            roll_number: String(row[rollKey] || ''),
+            student_name: String(row[nameKey] || ''),
+            subjects,
+            total_marks: total,
+            grade,
+            class_name: sheetName,
+          });
+        }
+      }
+
+      if (allRows.length === 0) {
+        toast.error('No data found in the file');
+        setUploading(false);
+        return;
+      }
+
+      const { error } = await supabase.from('results').insert(allRows);
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success(`${allRows.length} results uploaded from ${workbook.SheetNames.length} class(es)!`);
+        setUploadDialogOpen(false);
+        fetchResults(selectedExam);
+      }
+    } catch (err: any) {
+      toast.error('Failed to parse file: ' + err.message);
     }
-
-    const headers = lines[0].split(',').map(h => h.trim());
-    const rollIdx = headers.findIndex(h => h.toLowerCase().includes('roll'));
-    const nameIdx = headers.findIndex(h => h.toLowerCase().includes('name'));
-    const subjectHeaders = headers.filter((_, i) => i !== rollIdx && i !== nameIdx);
-
-    const rows = lines.slice(1).map(line => {
-      const cols = line.split(',').map(c => c.trim());
-      const subjects: Record<string, number> = {};
-      let total = 0;
-      subjectHeaders.forEach(subj => {
-        const idx = headers.indexOf(subj);
-        const marks = parseInt(cols[idx]) || 0;
-        subjects[subj] = marks;
-        total += marks;
-      });
-      const avg = total / subjectHeaders.length;
-      const grade = avg >= 90 ? 'A+' : avg >= 80 ? 'A' : avg >= 70 ? 'B' : avg >= 60 ? 'C' : avg >= 50 ? 'D' : 'F';
-
-      return {
-        exam_id: selectedExam,
-        roll_number: cols[rollIdx] || '',
-        student_name: cols[nameIdx] || '',
-        subjects,
-        total_marks: total,
-        grade,
-      };
-    });
-
-    const { error } = await supabase.from('results').insert(rows);
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success(`${rows.length} results uploaded!`);
-      setCsvDialogOpen(false);
-      fetchResults(selectedExam);
-    }
+    setUploading(false);
   }
 
   async function handleDeleteResult(id: string) {
@@ -189,6 +210,9 @@ export default function Dashboard() {
       toast.success(!currentStatus ? 'Exam published!' : 'Exam unpublished');
     }
   }
+
+  const classNames = [...new Set(results.map(r => r.class_name).filter(Boolean))];
+  const filteredResults = classFilter === 'all' ? results : results.filter(r => r.class_name === classFilter);
 
   if (authLoading || loading) {
     return (
@@ -311,22 +335,31 @@ export default function Dashboard() {
             {selectedExam && (
               <>
                 {/* Actions bar */}
-                <div className="flex gap-2 flex-wrap">
-                  <Dialog open={csvDialogOpen} onOpenChange={setCsvDialogOpen}>
+                <div className="flex gap-2 flex-wrap items-center">
+                  <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" className="gap-1.5">
-                        <Upload className="h-3.5 w-3.5" /> Upload CSV
+                        <FileSpreadsheet className="h-3.5 w-3.5" /> Upload Excel / CSV
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle className="font-display">Upload Results CSV</DialogTitle>
+                        <DialogTitle className="font-display">Upload Results</DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4">
                         <p className="text-sm text-muted-foreground">
-                          CSV must have columns: <strong>Roll Number</strong>, <strong>Name</strong>, and subject columns with marks.
+                          Upload an <strong>Excel (.xlsx)</strong> or <strong>CSV</strong> file. Each sheet in Excel will be treated as a separate <strong>class</strong>.
                         </p>
-                        <Input type="file" accept=".csv" onChange={handleCsvUpload} />
+                        <p className="text-sm text-muted-foreground">
+                          Each sheet must have columns: <strong>Roll Number</strong>, <strong>Name</strong>, and subject columns with marks.
+                        </p>
+                        <Input
+                          type="file"
+                          accept=".xlsx,.xls,.csv"
+                          onChange={handleFileUpload}
+                          disabled={uploading}
+                        />
+                        {uploading && <p className="text-sm text-muted-foreground">Uploading...</p>}
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -339,10 +372,24 @@ export default function Dashboard() {
                     <Eye className="h-3.5 w-3.5" />
                     {exams.find(e => e.id === selectedExam)?.is_published ? 'Unpublish' : 'Publish'}
                   </Button>
+
+                  {classNames.length > 0 && (
+                    <Select value={classFilter} onValueChange={setClassFilter}>
+                      <SelectTrigger className="w-40 ml-auto">
+                        <SelectValue placeholder="Filter by class" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Classes</SelectItem>
+                        {classNames.map(cn => (
+                          <SelectItem key={cn} value={cn}>{cn}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
                 {/* Results table */}
-                {results.length > 0 ? (
+                {filteredResults.length > 0 ? (
                   <Card>
                     <CardContent className="p-0">
                       <Table>
@@ -350,19 +397,21 @@ export default function Dashboard() {
                           <TableRow>
                             <TableHead>Roll No.</TableHead>
                             <TableHead>Name</TableHead>
+                            <TableHead>Class</TableHead>
                             <TableHead>Total</TableHead>
                             <TableHead>Grade</TableHead>
                             <TableHead className="w-12"></TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {results.map(r => (
+                          {filteredResults.map(r => (
                             <TableRow key={r.id}>
                               <TableCell className="font-mono">{r.roll_number}</TableCell>
                               <TableCell>{r.student_name}</TableCell>
+                              <TableCell>{r.class_name}</TableCell>
                               <TableCell>{r.total_marks}</TableCell>
                               <TableCell>
-                                <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${r.grade === 'F' ? 'bg-destructive/10 text-destructive' : 'bg-accent/10 text-accent'}`}>
+                                <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${r.grade === 'F' ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'}`}>
                                   {r.grade}
                                 </span>
                               </TableCell>
@@ -380,8 +429,8 @@ export default function Dashboard() {
                 ) : (
                   <Card className="border-dashed">
                     <CardContent className="p-12 text-center">
-                      <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                      <p className="text-muted-foreground">No results yet. Upload a CSV to get started.</p>
+                      <FileSpreadsheet className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                      <p className="text-muted-foreground">No results yet. Upload an Excel or CSV file to get started.</p>
                     </CardContent>
                   </Card>
                 )}
