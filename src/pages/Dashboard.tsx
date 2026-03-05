@@ -531,6 +531,104 @@ export default function Dashboard() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Column Mapping Dialog */}
+      <Dialog open={columnMappingOpen} onOpenChange={setColumnMappingOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display">Map Your Columns</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5">
+            {/* Roll Number & Name selectors */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Roll Number Column</Label>
+                <Select value={selectedRollKey} onValueChange={setSelectedRollKey}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {allHeaders.map(h => (
+                      <SelectItem key={h} value={h}>{h}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Student Name Column</Label>
+                <Select value={selectedNameKey} onValueChange={setSelectedNameKey}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {allHeaders.map(h => (
+                      <SelectItem key={h} value={h}>{h}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Subject checkboxes */}
+            <div className="space-y-2">
+              <Label>Select Subject Columns</Label>
+              <p className="text-xs text-muted-foreground">Check columns that contain subject marks. Uncheck metadata columns like Total, Position, etc.</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
+                {allHeaders
+                  .filter(h => h !== selectedRollKey && h !== selectedNameKey && h.trim())
+                  .map(h => (
+                    <label key={h} className="flex items-center gap-2 text-sm rounded-md border border-border px-3 py-2 cursor-pointer hover:bg-accent/50 transition-colors">
+                      <Checkbox
+                        checked={selectedSubjects[h] ?? false}
+                        onCheckedChange={(checked) =>
+                          setSelectedSubjects(prev => ({ ...prev, [h]: !!checked }))
+                        }
+                      />
+                      <span className="truncate">{h}</span>
+                    </label>
+                  ))}
+              </div>
+            </div>
+
+            {/* Preview table */}
+            {parsedSheets.length > 0 && (
+              <div className="space-y-2">
+                <Label>Preview ({parsedSheets[0].sheetName})</Label>
+                <div className="border rounded-md overflow-auto max-h-48">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{selectedRollKey}</TableHead>
+                        <TableHead>{selectedNameKey}</TableHead>
+                        {Object.entries(selectedSubjects)
+                          .filter(([, v]) => v)
+                          .map(([k]) => (
+                            <TableHead key={k}>{k}</TableHead>
+                          ))}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {parsedSheets[0].data.slice(0, 3).map((row, i) => (
+                        <TableRow key={i}>
+                          <TableCell className="font-mono">{String(row[selectedRollKey] ?? '')}</TableCell>
+                          <TableCell>{String(row[selectedNameKey] ?? '')}</TableCell>
+                          {Object.entries(selectedSubjects)
+                            .filter(([, v]) => v)
+                            .map(([k]) => (
+                              <TableCell key={k}>{String(row[k] ?? '')}</TableCell>
+                            ))}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setColumnMappingOpen(false)}>Cancel</Button>
+            <Button onClick={handleConfirmUpload} disabled={uploading}>
+              {uploading ? 'Uploading...' : 'Upload Results'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
