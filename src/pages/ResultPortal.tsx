@@ -194,7 +194,7 @@ export default function ResultPortal() {
                   {Object.entries(result.subjects).map(([subj, marks]) => (
                     <TableRow key={subj}>
                       <TableCell>{subj}</TableCell>
-                      <TableCell className="text-right font-mono">{marks}</TableCell>
+                      <TableCell className="text-right font-mono">{String(marks)}</TableCell>
                     </TableRow>
                   ))}
                   <TableRow className="font-semibold border-t-2">
