@@ -40,6 +40,35 @@ interface Result {
   class_name: string;
 }
 
+const NON_SUBJECT_PATTERNS = [
+  'total', 'position', 'percentage', 'percent', '%age', 'rank', 'grade', 'result',
+  'status', 'remarks', 'remark', 'division', 'gpa', 'cgpa', 'average',
+  'avg', 'pass', 'fail', 'obtained', 'max', 'minimum', 'maximum',
+  'sr', 'serial', 'class', 'section', 'father', 'mother', 'parent',
+  'address', 'phone', 'mobile', 'email', 'dob', 'date', 'gender', 'age',
+  'no.', 'no', 's.no', 's.r', 'reg'
+];
+
+const normalizeColumn = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9%]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const isNonSubjectColumn = (value: string) => {
+  const normalized = normalizeColumn(value);
+  if (!normalized) return true;
+  return NON_SUBJECT_PATTERNS.some((pattern) => normalized.includes(pattern));
+};
+
+const parseMarksValue = (value: unknown) => {
+  const raw = String(value ?? '').trim();
+  if (!raw) return 0;
+  const match = raw.match(/\d+/);
+  return match ? Number(match[0]) : 0;
+};
+
 export default function Dashboard() {
   const { user, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -158,27 +187,19 @@ export default function Dashboard() {
         return;
       }
 
-      // Get all unique headers from first sheet
-      const headers = Object.keys(sheets[0].data[0]);
-      const rollKey = headers.find(h => h.toLowerCase().includes('roll')) || headers[0];
-      const nameKey = headers.find(h => h.toLowerCase().includes('name')) || headers[1] || '';
-
-      const excludePatterns = [
-        'total', 'position', 'percentage', 'percent', '%age', 'rank', 'grade', 'result',
-        'status', 'remarks', 'remark', 'division', 'gpa', 'cgpa', 'average',
-        'avg', 'pass', 'fail', 'obtained', 'max', 'minimum', 'maximum',
-        'sr', 'serial', 'class', 'section', 'father', 'mother', 'parent',
-        'address', 'phone', 'mobile', 'email', 'dob', 'date', 'gender', 'age',
-        'no.', 'no', 's.no', 's.r', 'reg'
-      ];
+      // Collect headers across all sheets so mapping is stable for merged uploads
+      const headers = Array.from(
+        new Set(
+          sheets.flatMap(({ data }) => Object.keys(data[0] || {})).filter((header) => header.trim())
+        )
+      );
+      const rollKey = headers.find((h) => normalizeColumn(h).includes('roll')) || headers[0] || '';
+      const nameKey = headers.find((h) => normalizeColumn(h).includes('name')) || headers[1] || '';
 
       const subjectDefaults: Record<string, boolean> = {};
       for (const h of headers) {
         if (h === rollKey || h === nameKey) continue;
-        const lower = h.toLowerCase().trim();
-        if (!lower) continue;
-        const isExcluded = excludePatterns.includes(lower) || excludePatterns.some(p => lower.includes(p));
-        subjectDefaults[h] = !isExcluded;
+        subjectDefaults[h] = !isNonSubjectColumn(h);
       }
 
       setParsedSheets(sheets);
@@ -195,9 +216,18 @@ export default function Dashboard() {
 
   async function handleConfirmUpload() {
     if (!selectedExam) return;
-    const subjectKeys = Object.entries(selectedSubjects).filter(([, v]) => v).map(([k]) => k);
+    if (!selectedRollKey || !selectedNameKey || selectedRollKey === selectedNameKey) {
+      toast.error('Please choose different Roll Number and Student Name columns');
+      return;
+    }
+
+    const subjectKeys = Object.entries(selectedSubjects)
+      .filter(([, isSelected]) => isSelected)
+      .map(([key]) => key)
+      .filter((key) => !isNonSubjectColumn(key));
+
     if (subjectKeys.length === 0) {
-      toast.error('Please select at least one subject column');
+      toast.error('Please select at least one valid subject column');
       return;
     }
 
@@ -208,18 +238,20 @@ export default function Dashboard() {
         for (const row of data) {
           const subjects: Record<string, number> = {};
           let total = 0;
+
           for (const subj of subjectKeys) {
-            const marks = parseInt(String(row[subj])) || 0;
+            const marks = parseMarksValue(row[subj]);
             subjects[subj] = marks;
             total += marks;
           }
+
           const avg = subjectKeys.length > 0 ? total / subjectKeys.length : 0;
           const grade = avg >= 90 ? 'A+' : avg >= 80 ? 'A' : avg >= 70 ? 'B' : avg >= 60 ? 'C' : avg >= 50 ? 'D' : 'F';
 
           allRows.push({
             exam_id: selectedExam,
-            roll_number: String(row[selectedRollKey] || ''),
-            student_name: String(row[selectedNameKey] || ''),
+            roll_number: String(row[selectedRollKey] || '').trim(),
+            student_name: String(row[selectedNameKey] || '').trim(),
             subjects,
             total_marks: total,
             grade,
@@ -228,18 +260,27 @@ export default function Dashboard() {
         }
       }
 
-      const { error } = await supabase.from('results').insert(allRows);
+      const validRows = allRows.filter((row) => row.roll_number && row.student_name);
+
+      if (validRows.length === 0) {
+        toast.error('No valid student rows found after mapping');
+        return;
+      }
+
+      const { error } = await supabase.from('results').insert(validRows);
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success(`${allRows.length} results uploaded from ${parsedSheets.length} class(es)!`);
+        toast.success(`${validRows.length} results uploaded from ${parsedSheets.length} class(es)!`);
         setColumnMappingOpen(false);
+        setParsedSheets([]);
         fetchResults(selectedExam);
       }
     } catch (err: any) {
       toast.error('Upload failed: ' + err.message);
+    } finally {
+      setUploading(false);
     }
-    setUploading(false);
   }
 
   async function handleDeleteResult(id: string) {
@@ -568,12 +609,12 @@ export default function Dashboard() {
             {/* Subject checkboxes */}
             <div className="space-y-2">
               <Label>Select Subject Columns</Label>
-              <p className="text-xs text-muted-foreground">Check columns that contain subject marks. Uncheck metadata columns like Total, Position, etc.</p>
+              <p className="text-xs text-muted-foreground">Only subject columns are selectable. Metadata like Total, Position, Percentage, Rank, etc. is auto-separated.</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
                 {allHeaders
-                  .filter(h => h !== selectedRollKey && h !== selectedNameKey && h.trim())
+                  .filter(h => h !== selectedRollKey && h !== selectedNameKey && h.trim() && !isNonSubjectColumn(h))
                   .map(h => (
-                    <label key={h} className="flex items-center gap-2 text-sm rounded-md border border-border px-3 py-2 cursor-pointer hover:bg-accent/50 transition-colors">
+                    <label key={h} className="flex items-center gap-2 text-sm rounded-md border border-border px-3 py-2 cursor-pointer hover:bg-accent/50 transition-colors hover-scale">
                       <Checkbox
                         checked={selectedSubjects[h] ?? false}
                         onCheckedChange={(checked) =>
@@ -588,7 +629,7 @@ export default function Dashboard() {
 
             {/* Preview table */}
             {parsedSheets.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-2 animate-fade-in">
                 <Label>Preview ({parsedSheets[0].sheetName})</Label>
                 <div className="border rounded-md overflow-auto max-h-48">
                   <Table>
@@ -598,6 +639,7 @@ export default function Dashboard() {
                         <TableHead>{selectedNameKey}</TableHead>
                         {Object.entries(selectedSubjects)
                           .filter(([, v]) => v)
+                          .filter(([k]) => !isNonSubjectColumn(k))
                           .map(([k]) => (
                             <TableHead key={k}>{k}</TableHead>
                           ))}
@@ -610,6 +652,7 @@ export default function Dashboard() {
                           <TableCell>{String(row[selectedNameKey] ?? '')}</TableCell>
                           {Object.entries(selectedSubjects)
                             .filter(([, v]) => v)
+                            .filter(([k]) => !isNonSubjectColumn(k))
                             .map(([k]) => (
                               <TableCell key={k}>{String(row[k] ?? '')}</TableCell>
                             ))}
