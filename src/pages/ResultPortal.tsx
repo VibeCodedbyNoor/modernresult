@@ -485,25 +485,25 @@ export default function ResultPortal() {
         <div className="fixed left-0 top-0 -translate-x-[200vw] pointer-events-none">
           <div
             ref={downloadCardRef}
-            className="w-[980px] p-8 rounded-2xl border border-border bg-card text-card-foreground"
-            style={{ boxShadow: `0 0 0 1px ${accent}22 inset` }}
+            className="w-[980px] p-8 rounded-2xl"
+            style={{ background: tpl.cardBg, border: `1px solid ${tpl.cardBorder}`, color: tpl.textPrimary }}
           >
-            <div className="text-center pb-4 border-b border-border">
+            <div className="text-center pb-4" style={{ borderBottom: `1px solid ${tpl.cardBorder}` }}>
               <h2 className="font-display text-3xl font-bold" style={{ color: accent }}>{school.name}</h2>
-              <p className="text-sm text-muted-foreground mt-1">{exams.find((exam) => exam.id === selectedExam)?.name} — {result.class_name}</p>
+              <p className="text-sm mt-1" style={{ color: tpl.textSecondary }}>{exams.find((exam) => exam.id === selectedExam)?.name} — {result.class_name}</p>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 py-4 border-b border-border text-sm">
+            <div className="grid grid-cols-3 gap-4 py-4 text-sm" style={{ borderBottom: `1px solid ${tpl.cardBorder}` }}>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Student</p>
+                <p className="text-xs uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Student</p>
                 <p className="font-display text-2xl font-bold">{result.student_name}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Roll</p>
+                <p className="text-xs uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Roll</p>
                 <p className="font-mono text-xl font-semibold">{result.roll_number}</p>
               </div>
               <div className="text-right">
-                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Position / Percentage</p>
+                <p className="text-xs uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Position / Percentage</p>
                 <p className="font-display text-xl font-bold">
                   {processedResult.position} • {processedResult.percentage.toFixed(2)}%
                 </p>
@@ -512,18 +512,18 @@ export default function ResultPortal() {
 
             <div className="grid grid-cols-2 gap-6 pt-4">
               {[leftSubjects, rightSubjects].map((list, index) => (
-                <table key={index} className="w-full text-sm border border-border rounded-lg overflow-hidden">
-                  <thead className="bg-muted/50">
+                <table key={index} className="w-full text-sm rounded-lg overflow-hidden" style={{ border: `1px solid ${tpl.cardBorder}` }}>
+                  <thead style={{ background: tpl.tableHeaderBg }}>
                     <tr>
-                      <th className="py-2 px-3 text-left text-xs uppercase text-muted-foreground">Subject</th>
-                      <th className="py-2 px-3 text-center text-xs uppercase text-muted-foreground">Obt</th>
-                      <th className="py-2 px-3 text-center text-xs uppercase text-muted-foreground">Total</th>
-                      <th className="py-2 px-3 text-right text-xs uppercase text-muted-foreground">%</th>
+                      <th className="py-2 px-3 text-left text-xs uppercase" style={{ color: tpl.textSecondary }}>Subject</th>
+                      <th className="py-2 px-3 text-center text-xs uppercase" style={{ color: tpl.textSecondary }}>Obt</th>
+                      <th className="py-2 px-3 text-center text-xs uppercase" style={{ color: tpl.textSecondary }}>Total</th>
+                      <th className="py-2 px-3 text-right text-xs uppercase" style={{ color: tpl.textSecondary }}>%</th>
                     </tr>
                   </thead>
                   <tbody>
                     {list.map((subject) => (
-                      <tr key={subject.name} className="border-t border-border/60">
+                      <tr key={subject.name} style={{ borderTop: `1px solid ${tpl.cardBorder}` }}>
                         <td className="py-2 px-3">{subject.name}</td>
                         <td className="py-2 px-3 text-center font-mono">{subject.obtained}</td>
                         <td className="py-2 px-3 text-center font-mono">{subject.total}</td>
@@ -532,7 +532,7 @@ export default function ResultPortal() {
                     ))}
                     {list.length === 0 && (
                       <tr>
-                        <td colSpan={4} className="py-4 text-center text-muted-foreground text-xs">No subjects</td>
+                        <td colSpan={4} className="py-4 text-center text-xs" style={{ color: tpl.textSecondary }}>No subjects</td>
                       </tr>
                     )}
                   </tbody>
@@ -540,7 +540,7 @@ export default function ResultPortal() {
               ))}
             </div>
 
-            <div className="mt-4 pt-4 border-t border-border flex items-center justify-end gap-6 text-lg font-semibold">
+            <div className="mt-4 pt-4 flex items-center justify-end gap-6 text-lg font-semibold" style={{ borderTop: `1px solid ${tpl.cardBorder}` }}>
               <span>Total: {processedResult.totalObtained}/{processedResult.totalMax}</span>
               <span style={{ color: accent }}>Grade: {result.grade}</span>
             </div>
@@ -549,7 +549,7 @@ export default function ResultPortal() {
       )}
 
       <footer className="py-4 text-center print:hidden">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs" style={{ color: tpl.textSecondary }}>
           Powered by <a href="/" className="story-link font-medium" style={{ color: accent }}>ResultCheck</a>
         </p>
       </footer>
