@@ -216,9 +216,18 @@ export default function Dashboard() {
 
   async function handleConfirmUpload() {
     if (!selectedExam) return;
-    const subjectKeys = Object.entries(selectedSubjects).filter(([, v]) => v).map(([k]) => k);
+    if (!selectedRollKey || !selectedNameKey || selectedRollKey === selectedNameKey) {
+      toast.error('Please choose different Roll Number and Student Name columns');
+      return;
+    }
+
+    const subjectKeys = Object.entries(selectedSubjects)
+      .filter(([, isSelected]) => isSelected)
+      .map(([key]) => key)
+      .filter((key) => !isNonSubjectColumn(key));
+
     if (subjectKeys.length === 0) {
-      toast.error('Please select at least one subject column');
+      toast.error('Please select at least one valid subject column');
       return;
     }
 
@@ -229,18 +238,20 @@ export default function Dashboard() {
         for (const row of data) {
           const subjects: Record<string, number> = {};
           let total = 0;
+
           for (const subj of subjectKeys) {
-            const marks = parseInt(String(row[subj])) || 0;
+            const marks = parseMarksValue(row[subj]);
             subjects[subj] = marks;
             total += marks;
           }
+
           const avg = subjectKeys.length > 0 ? total / subjectKeys.length : 0;
           const grade = avg >= 90 ? 'A+' : avg >= 80 ? 'A' : avg >= 70 ? 'B' : avg >= 60 ? 'C' : avg >= 50 ? 'D' : 'F';
 
           allRows.push({
             exam_id: selectedExam,
-            roll_number: String(row[selectedRollKey] || ''),
-            student_name: String(row[selectedNameKey] || ''),
+            roll_number: String(row[selectedRollKey] || '').trim(),
+            student_name: String(row[selectedNameKey] || '').trim(),
             subjects,
             total_marks: total,
             grade,
@@ -249,18 +260,27 @@ export default function Dashboard() {
         }
       }
 
-      const { error } = await supabase.from('results').insert(allRows);
+      const validRows = allRows.filter((row) => row.roll_number && row.student_name);
+
+      if (validRows.length === 0) {
+        toast.error('No valid student rows found after mapping');
+        return;
+      }
+
+      const { error } = await supabase.from('results').insert(validRows);
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success(`${allRows.length} results uploaded from ${parsedSheets.length} class(es)!`);
+        toast.success(`${validRows.length} results uploaded from ${parsedSheets.length} class(es)!`);
         setColumnMappingOpen(false);
+        setParsedSheets([]);
         fetchResults(selectedExam);
       }
     } catch (err: any) {
       toast.error('Upload failed: ' + err.message);
+    } finally {
+      setUploading(false);
     }
-    setUploading(false);
   }
 
   async function handleDeleteResult(id: string) {
