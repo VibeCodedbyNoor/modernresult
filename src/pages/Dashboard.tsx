@@ -62,6 +62,14 @@ export default function Dashboard() {
   // Upload dialog
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
 
+  // Column mapping state
+  const [columnMappingOpen, setColumnMappingOpen] = useState(false);
+  const [parsedSheets, setParsedSheets] = useState<{ sheetName: string; data: Record<string, any>[] }[]>([]);
+  const [allHeaders, setAllHeaders] = useState<string[]>([]);
+  const [selectedRollKey, setSelectedRollKey] = useState('');
+  const [selectedNameKey, setSelectedNameKey] = useState('');
+  const [selectedSubjects, setSelectedSubjects] = useState<Record<string, boolean>>({});
+
   // Class filter
   const [classFilter, setClassFilter] = useState<string>('all');
 
