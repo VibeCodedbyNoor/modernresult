@@ -652,6 +652,7 @@ export default function Dashboard() {
                           <TableCell>{String(row[selectedNameKey] ?? '')}</TableCell>
                           {Object.entries(selectedSubjects)
                             .filter(([, v]) => v)
+                            .filter(([k]) => !isNonSubjectColumn(k))
                             .map(([k]) => (
                               <TableCell key={k}>{String(row[k] ?? '')}</TableCell>
                             ))}
