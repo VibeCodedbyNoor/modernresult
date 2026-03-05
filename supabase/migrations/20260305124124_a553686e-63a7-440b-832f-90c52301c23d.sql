@@ -1,0 +1,1 @@
+ALTER TABLE public.schools ADD COLUMN result_template text NOT NULL DEFAULT 'luxury-gold';

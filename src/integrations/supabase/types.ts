@@ -98,6 +98,7 @@ export type Database = {
           logo_url: string | null
           name: string
           owner_id: string
+          result_template: string
           slug: string
           updated_at: string
         }
@@ -108,6 +109,7 @@ export type Database = {
           logo_url?: string | null
           name: string
           owner_id: string
+          result_template?: string
           slug: string
           updated_at?: string
         }
@@ -118,6 +120,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           owner_id?: string
+          result_template?: string
           slug?: string
           updated_at?: string
         }
