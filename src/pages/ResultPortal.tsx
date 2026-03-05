@@ -25,7 +25,7 @@ interface Result {
   id: string;
   student_name: string;
   roll_number: string;
-  subjects: Record<string, unknown>;
+  subjects: any;
   total_marks: number;
   grade: string;
   class_name: string;
