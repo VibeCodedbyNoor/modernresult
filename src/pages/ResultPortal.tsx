@@ -274,14 +274,14 @@ export default function ResultPortal() {
             <img
               src={school.logo_url}
               alt={school.name}
-              className="h-20 w-20 mx-auto mb-4 rounded-full object-cover border border-border"
-              style={{ boxShadow: `0 0 40px ${accent}44` }}
+              className="h-20 w-20 mx-auto mb-4 rounded-full object-cover"
+              style={{ boxShadow: `0 0 40px ${accent}44`, border: `2px solid ${tpl.cardBorder}` }}
             />
           )}
           <h1 className="font-display text-3xl md:text-5xl font-bold tracking-tight" style={{ color: accent }}>
             {school.name}
           </h1>
-          <p className="text-muted-foreground tracking-[0.4em] text-xs md:text-sm mt-2 uppercase">
+          <p className="tracking-[0.4em] text-xs md:text-sm mt-2 uppercase" style={{ color: tpl.textSecondary }}>
             Student Result Portal
           </p>
           {exams.length > 0 && (
