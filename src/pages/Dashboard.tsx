@@ -40,6 +40,35 @@ interface Result {
   class_name: string;
 }
 
+const NON_SUBJECT_PATTERNS = [
+  'total', 'position', 'percentage', 'percent', '%age', 'rank', 'grade', 'result',
+  'status', 'remarks', 'remark', 'division', 'gpa', 'cgpa', 'average',
+  'avg', 'pass', 'fail', 'obtained', 'max', 'minimum', 'maximum',
+  'sr', 'serial', 'class', 'section', 'father', 'mother', 'parent',
+  'address', 'phone', 'mobile', 'email', 'dob', 'date', 'gender', 'age',
+  'no.', 'no', 's.no', 's.r', 'reg'
+];
+
+const normalizeColumn = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9%]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const isNonSubjectColumn = (value: string) => {
+  const normalized = normalizeColumn(value);
+  if (!normalized) return true;
+  return NON_SUBJECT_PATTERNS.some((pattern) => normalized.includes(pattern));
+};
+
+const parseMarksValue = (value: unknown) => {
+  const raw = String(value ?? '').trim();
+  if (!raw) return 0;
+  const match = raw.match(/\d+/);
+  return match ? Number(match[0]) : 0;
+};
+
 export default function Dashboard() {
   const { user, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
