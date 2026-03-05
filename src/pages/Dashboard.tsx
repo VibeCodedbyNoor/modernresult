@@ -140,44 +140,72 @@ export default function Dashboard() {
     const file = e.target.files?.[0];
     if (!file || !selectedExam) return;
 
-    setUploading(true);
     try {
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data);
-      const allRows: any[] = [];
+      const sheets: { sheetName: string; data: Record<string, any>[] }[] = [];
 
       for (const sheetName of workbook.SheetNames) {
         const sheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: '' });
+        if (jsonData.length > 0) {
+          sheets.push({ sheetName, data: jsonData });
+        }
+      }
 
-        if (jsonData.length === 0) continue;
+      if (sheets.length === 0) {
+        toast.error('No data found in the file');
+        return;
+      }
 
-        const headers = Object.keys(jsonData[0]);
-        const rollKey = headers.find(h => h.toLowerCase().includes('roll')) || '';
-        const nameKey = headers.find(h => h.toLowerCase().includes('name')) || '';
-        
-        // Non-subject keywords to exclude
-        const excludePatterns = [
-          'total', 'position', 'percentage', 'percent', '%age', 'rank', 'grade', 'result',
-          'status', 'remarks', 'remark', 'division', 'gpa', 'cgpa', 'average',
-          'avg', 'pass', 'fail', 'obtained', 'max', 'minimum', 'maximum',
-          'sr', 'serial', 'class', 'section', 'father', 'mother', 'parent',
-          'address', 'phone', 'mobile', 'email', 'dob', 'date', 'gender', 'age',
-          'no.', 'no', 's.no', 's.r', 'reg'
-        ];
-        const subjectKeys = headers.filter(h => {
-          if (h === rollKey || h === nameKey) return false;
-          const lower = h.toLowerCase().trim();
-          // Exact match or contains pattern
-          if (excludePatterns.includes(lower)) return false;
-          if (excludePatterns.some(p => lower.includes(p))) return false;
-          // Skip empty headers
-          if (!lower) return false;
-          // Skip if the column has mostly non-numeric values (not marks)
-          return true;
-        });
+      // Get all unique headers from first sheet
+      const headers = Object.keys(sheets[0].data[0]);
+      const rollKey = headers.find(h => h.toLowerCase().includes('roll')) || headers[0];
+      const nameKey = headers.find(h => h.toLowerCase().includes('name')) || headers[1] || '';
 
-        for (const row of jsonData) {
+      const excludePatterns = [
+        'total', 'position', 'percentage', 'percent', '%age', 'rank', 'grade', 'result',
+        'status', 'remarks', 'remark', 'division', 'gpa', 'cgpa', 'average',
+        'avg', 'pass', 'fail', 'obtained', 'max', 'minimum', 'maximum',
+        'sr', 'serial', 'class', 'section', 'father', 'mother', 'parent',
+        'address', 'phone', 'mobile', 'email', 'dob', 'date', 'gender', 'age',
+        'no.', 'no', 's.no', 's.r', 'reg'
+      ];
+
+      const subjectDefaults: Record<string, boolean> = {};
+      for (const h of headers) {
+        if (h === rollKey || h === nameKey) continue;
+        const lower = h.toLowerCase().trim();
+        if (!lower) continue;
+        const isExcluded = excludePatterns.includes(lower) || excludePatterns.some(p => lower.includes(p));
+        subjectDefaults[h] = !isExcluded;
+      }
+
+      setParsedSheets(sheets);
+      setAllHeaders(headers);
+      setSelectedRollKey(rollKey);
+      setSelectedNameKey(nameKey);
+      setSelectedSubjects(subjectDefaults);
+      setUploadDialogOpen(false);
+      setColumnMappingOpen(true);
+    } catch (err: any) {
+      toast.error('Failed to parse file: ' + err.message);
+    }
+  }
+
+  async function handleConfirmUpload() {
+    if (!selectedExam) return;
+    const subjectKeys = Object.entries(selectedSubjects).filter(([, v]) => v).map(([k]) => k);
+    if (subjectKeys.length === 0) {
+      toast.error('Please select at least one subject column');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const allRows: any[] = [];
+      for (const { sheetName, data } of parsedSheets) {
+        for (const row of data) {
           const subjects: Record<string, number> = {};
           let total = 0;
           for (const subj of subjectKeys) {
@@ -190,8 +218,8 @@ export default function Dashboard() {
 
           allRows.push({
             exam_id: selectedExam,
-            roll_number: String(row[rollKey] || ''),
-            student_name: String(row[nameKey] || ''),
+            roll_number: String(row[selectedRollKey] || ''),
+            student_name: String(row[selectedNameKey] || ''),
             subjects,
             total_marks: total,
             grade,
@@ -200,22 +228,16 @@ export default function Dashboard() {
         }
       }
 
-      if (allRows.length === 0) {
-        toast.error('No data found in the file');
-        setUploading(false);
-        return;
-      }
-
       const { error } = await supabase.from('results').insert(allRows);
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success(`${allRows.length} results uploaded from ${workbook.SheetNames.length} class(es)!`);
-        setUploadDialogOpen(false);
+        toast.success(`${allRows.length} results uploaded from ${parsedSheets.length} class(es)!`);
+        setColumnMappingOpen(false);
         fetchResults(selectedExam);
       }
     } catch (err: any) {
-      toast.error('Failed to parse file: ' + err.message);
+      toast.error('Upload failed: ' + err.message);
     }
     setUploading(false);
   }
