@@ -22,6 +22,7 @@ interface SchoolData {
   slug: string;
   logo_url: string | null;
   accent_color: string;
+  result_template: string;
 }
 
 interface Exam {
