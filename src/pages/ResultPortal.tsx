@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Download, RotateCcw, Award, TrendingUp, Trophy } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import { getTemplate, type ResultTemplate } from '@/lib/resultTemplates';
 
 interface SchoolData {
   id: string;
