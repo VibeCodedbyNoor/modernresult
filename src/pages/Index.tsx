@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, UserPlus, Building, FileSpreadsheet, CheckCircle, Share2 } from 'lucide-react';
 import { resultTemplates } from '@/lib/resultTemplates';
 
 export default function Index() {
