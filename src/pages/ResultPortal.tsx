@@ -93,6 +93,7 @@ export default function ResultPortal() {
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const [noCredits, setNoCredits] = useState(false);
 
   const resultCardRef = useRef<HTMLDivElement>(null);
   const downloadCardRef = useRef<HTMLDivElement>(null);
