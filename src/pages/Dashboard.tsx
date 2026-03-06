@@ -573,76 +573,130 @@ export default function Dashboard() {
             </Card>
 
             {/* Result Design Template Picker */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="font-display flex items-center gap-2">
-                  <Palette className="h-5 w-5" /> Result Portal Design
-                </CardTitle>
-                <CardDescription>Choose how your student result portal looks</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {resultTemplates.map((template) => {
-                    const isSelected = (school.result_template || 'luxury-gold') === template.id;
-                    return (
-                      <button
-                        key={template.id}
-                        onClick={async () => {
-                          const { error } = await supabase
-                            .from('schools')
-                            .update({ result_template: template.id })
-                            .eq('id', school.id);
-                          if (error) {
-                            toast.error(error.message);
-                          } else {
-                            setSchool({ ...school, result_template: template.id });
-                            toast.success(`Design changed to ${template.name}`);
-                          }
-                        }}
-                        className={`relative rounded-lg border-2 overflow-hidden transition-all hover:scale-[1.03] ${
-                          isSelected ? 'border-primary ring-2 ring-primary/30' : 'border-border hover:border-muted-foreground/40'
-                        }`}
+            <div className="space-y-4">
+              <div>
+                <h2 className="font-display text-xl font-bold flex items-center gap-2">
+                  <Palette className="h-5 w-5 text-primary" /> Choose Your Result Portal Design
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Pick a style below — this is exactly how students will see your result portal. Just click to apply!
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {resultTemplates.map((template) => {
+                  const isSelected = (school.result_template || 'luxury-gold') === template.id;
+                  return (
+                    <button
+                      key={template.id}
+                      onClick={async () => {
+                        const { error } = await supabase
+                          .from('schools')
+                          .update({ result_template: template.id })
+                          .eq('id', school.id);
+                        if (error) {
+                          toast.error(error.message);
+                        } else {
+                          setSchool({ ...school, result_template: template.id });
+                          toast.success(`Design changed to "${template.name}"`);
+                        }
+                      }}
+                      className={`group relative rounded-xl border-2 overflow-hidden transition-all duration-200 hover:scale-[1.02] hover:shadow-lg text-left ${
+                        isSelected
+                          ? 'border-primary ring-2 ring-primary/30 shadow-md'
+                          : 'border-border hover:border-muted-foreground/40'
+                      }`}
+                    >
+                      {/* Mini portal preview */}
+                      <div
+                        className="aspect-[4/3] p-3 flex flex-col"
+                        style={{ background: template.background }}
                       >
-                        {/* Preview thumbnail */}
-                        <div
-                          className="aspect-[4/3] p-3 flex flex-col items-center justify-center gap-2"
-                          style={{ background: template.previewBg }}
-                        >
+                        {/* Mini header */}
+                        <div className="flex items-center gap-1.5 mb-2">
                           <div
-                            className="w-full h-3 rounded-full opacity-60"
-                            style={{ background: template.previewAccent }}
+                            className="h-4 w-4 rounded-full"
+                            style={{ background: template.accentColor, opacity: 0.8 }}
                           />
                           <div
-                            className="w-full flex-1 rounded-md border"
+                            className="h-1.5 w-16 rounded-full"
+                            style={{ background: template.textPrimary, opacity: 0.6 }}
+                          />
+                        </div>
+
+                        {/* Mini card */}
+                        <div
+                          className="flex-1 rounded-lg border p-2.5 flex flex-col gap-1.5"
+                          style={{
+                            background: template.cardBg,
+                            borderColor: template.cardBorder,
+                            borderRadius: template.borderRadius || '0.5rem',
+                            backdropFilter: template.id === 'glassmorphism' ? 'blur(8px)' : undefined,
+                          }}
+                        >
+                          {/* Title line */}
+                          <div
+                            className="h-2 w-3/5 rounded-full"
+                            style={{ background: template.accentColor, opacity: 0.8 }}
+                          />
+                          {/* Input mock */}
+                          <div
+                            className="h-4 w-full rounded"
                             style={{
-                              background: template.previewCard,
-                              borderColor: template.previewAccent + '40',
+                              background: template.inputBg,
+                              border: `1px solid ${template.cardBorder}`,
+                              borderRadius: template.borderRadius || '0.25rem',
                             }}
-                          >
-                            <div className="p-2 space-y-1.5">
-                              <div className="h-1.5 w-3/4 rounded-full" style={{ background: template.previewAccent, opacity: 0.7 }} />
-                              <div className="h-1 w-full rounded-full" style={{ background: template.previewAccent, opacity: 0.2 }} />
-                              <div className="h-1 w-2/3 rounded-full" style={{ background: template.previewAccent, opacity: 0.2 }} />
+                          />
+                          {/* Another input mock */}
+                          <div
+                            className="h-4 w-full rounded"
+                            style={{
+                              background: template.inputBg,
+                              border: `1px solid ${template.cardBorder}`,
+                              borderRadius: template.borderRadius || '0.25rem',
+                            }}
+                          />
+                          {/* Button mock */}
+                          <div
+                            className="h-4 w-full rounded mt-auto"
+                            style={{
+                              background: template.buttonGradient,
+                              borderRadius: template.borderRadius || '0.25rem',
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Label area */}
+                      <div className="px-3 py-2.5 bg-card border-t border-border">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-semibold">{template.name}</p>
+                            <p className="text-[11px] text-muted-foreground leading-tight">{template.description}</p>
+                          </div>
+                          {isSelected && (
+                            <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center shrink-0">
+                              <Check className="h-3.5 w-3.5 text-primary-foreground" />
                             </div>
-                          </div>
+                          )}
                         </div>
-                        {/* Label */}
-                        <div className="px-2 py-2 bg-card text-left">
-                          <p className="text-sm font-medium truncate">{template.name}</p>
-                          <p className="text-[11px] text-muted-foreground truncate">{template.description}</p>
+                      </div>
+
+                      {/* Selected badge */}
+                      {isSelected && (
+                        <div
+                          className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                          style={{ background: template.accentColor, color: template.textPrimary }}
+                        >
+                          ACTIVE
                         </div>
-                        {/* Selected check */}
-                        {isSelected && (
-                          <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                            <Check className="h-3 w-3 text-primary-foreground" />
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
