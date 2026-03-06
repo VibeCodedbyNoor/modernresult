@@ -550,7 +550,7 @@ export default function ResultPortal() {
 
       <footer className="py-4 text-center print:hidden">
         <p className="text-xs" style={{ color: tpl.textSecondary }}>
-          Powered by <a href="/" className="story-link font-medium" style={{ color: accent }}>ResultCheck</a>
+          Powered by <a href="/" className="story-link font-medium" style={{ color: accent }}>OnlineResultPortal</a>
         </p>
       </footer>
     </div>

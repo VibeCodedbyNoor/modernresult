@@ -306,7 +306,7 @@ export default function DemoPortal() {
 
       <footer className="py-4 text-center">
         <p className="text-xs" style={{ color: tpl.textSecondary }}>
-          Powered by <Link to="/" className="font-medium" style={{ color: accent }}>ResultCheck</Link>
+          Powered by <Link to="/" className="font-medium" style={{ color: accent }}>OnlineResultPortal</Link>
         </p>
       </footer>
     </div>
