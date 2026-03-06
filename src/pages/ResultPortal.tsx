@@ -465,7 +465,7 @@ export default function ResultPortal() {
               <Download className="h-4 w-4 mr-2" /> Download Result Card
             </Button>
 
-            <Button variant="outline" onClick={handleCheckAnother} className="w-full hover-scale" style={{ borderColor: tpl.cardBorder, color: tpl.textPrimary }}>
+            <Button onClick={handleCheckAnother} className="w-full hover-scale font-semibold" style={{ background: tpl.buttonGradient, color: tpl.id === 'glassmorphism' ? '#fff' : tpl.id === 'minimalist' || tpl.id === 'kawaii' ? '#fff' : '#111' }}>
               <RotateCcw className="h-4 w-4 mr-2" /> Check Another Result
             </Button>
           </div>
