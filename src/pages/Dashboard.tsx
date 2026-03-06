@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Plus, Upload, Link as LinkIcon, LogOut, Eye, Trash2, School, Settings, FileSpreadsheet, Check, Palette, Coins, Zap, Gift, Clock } from 'lucide-react';
+import { Plus, Upload, Link as LinkIcon, LogOut, Eye, Trash2, School, Settings, FileSpreadsheet, Check, Palette, Coins, Zap, Gift, Clock, MessageCircle, CreditCard } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { resultTemplates, getTemplate } from '@/lib/resultTemplates';
 
@@ -610,64 +610,80 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="rounded-xl bg-muted/50 border border-border p-4 space-y-2">
+                <div className="rounded-xl bg-muted/50 border border-border p-4 space-y-3">
                   <p className="text-sm font-semibold text-foreground">Payment Details</p>
-                  <div className="space-y-1 text-sm text-muted-foreground">
+                  <div className="space-y-1.5 text-sm text-muted-foreground">
                     <p><strong className="text-foreground">Easypaisa:</strong> 03479104843</p>
+                    <p><strong className="text-foreground">JazzCash:</strong> 03479104843</p>
                     <p><strong className="text-foreground">Account Name:</strong> Muhammad Irfan</p>
                   </div>
-                  <div className="pt-2 border-t border-border mt-2">
+                  <div className="pt-3 border-t border-border space-y-3">
                     <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                       <Clock className="h-3 w-3" />
-                      Send payment screenshot via WhatsApp — credits added within 1 hour
+                      Send payment & screenshot via WhatsApp — credits added within 1 hour
+                    </p>
+                    <a
+                      href={`https://wa.me/923479104843?text=${encodeURIComponent(
+                        `Assalam o Alaikum! 🎓\n\nI have purchased credits on ResultCheck.\n\n📧 My Email: ${user?.email || ''}\n🏫 School: ${school?.name || ''}\n💰 Package: [50 / 100 / 500 credits]\n\nPayment screenshot is attached. Please add my credits. JazakAllah! 🙏`
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <Button className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white">
+                        <MessageCircle className="h-4 w-4" />
+                        Send Payment Screenshot via WhatsApp
+                      </Button>
+                    </a>
+                    <p className="text-[11px] text-muted-foreground text-center">
+                      Click the button above after payment — your email & school info will be auto-filled. Just attach the screenshot and send!
                     </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Transaction History */}
-            {transactions.length > 0 && (
-              <Card className="max-w-2xl">
-                <CardHeader>
-                  <CardTitle className="font-display text-lg">Transaction History</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Description</TableHead>
-                        <TableHead className="text-right">Amount</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {transactions.map(tx => (
-                        <TableRow key={tx.id}>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {new Date(tx.created_at).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                            <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
-                              tx.type === 'signup_bonus' ? 'bg-green-500/10 text-green-600' :
-                              tx.type === 'purchase' ? 'bg-primary/10 text-primary' :
-                              'bg-muted text-muted-foreground'
-                            }`}>
-                              {tx.type === 'signup_bonus' ? 'Bonus' : tx.type === 'purchase' ? 'Purchase' : 'Usage'}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-sm">{tx.description || '—'}</TableCell>
-                          <TableCell className={`text-right font-mono text-sm font-semibold ${tx.amount > 0 ? 'text-green-600' : 'text-muted-foreground'}`}>
-                            {tx.amount > 0 ? '+' : ''}{tx.amount}
-                          </TableCell>
+            {/* Daily Credits Used */}
+            {transactions.length > 0 && (() => {
+              // Group result_check transactions by date
+              const dailyUsage: Record<string, number> = {};
+              transactions.forEach(tx => {
+                if (tx.type === 'result_check') {
+                  const date = new Date(tx.created_at).toLocaleDateString('en-PK', { year: 'numeric', month: 'short', day: 'numeric' });
+                  dailyUsage[date] = (dailyUsage[date] || 0) + Math.abs(tx.amount);
+                }
+              });
+              const dailyEntries = Object.entries(dailyUsage);
+              if (dailyEntries.length === 0) return null;
+              return (
+                <Card className="max-w-2xl">
+                  <CardHeader>
+                    <CardTitle className="font-display text-lg flex items-center gap-2">
+                      <CreditCard className="h-5 w-5 text-primary" /> Daily Credits Used
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead className="text-right">Credits Used</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            )}
+                      </TableHeader>
+                      <TableBody>
+                        {dailyEntries.map(([date, count]) => (
+                          <TableRow key={date}>
+                            <TableCell className="text-sm text-foreground">{date}</TableCell>
+                            <TableCell className="text-right font-mono text-sm font-semibold text-muted-foreground">
+                              {count}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              );
+            })()}
           </TabsContent>
 
           <TabsContent value="settings" className="mt-6 space-y-6">
