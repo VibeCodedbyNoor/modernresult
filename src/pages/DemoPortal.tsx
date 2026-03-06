@@ -146,23 +146,23 @@ export default function DemoPortal() {
         </Link>
       </div>
 
-      <header className="pt-6 pb-4 text-center">
+      <header className="pt-4 sm:pt-6 pb-3 sm:pb-4 text-center">
         <div className="container mx-auto px-4">
-          <h1 className="font-display text-3xl md:text-5xl font-bold tracking-tight" style={{ color: accent }}>
+          <h1 className="font-display text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight" style={{ color: accent }}>
             Demo Academy
           </h1>
-          <p className="tracking-[0.4em] text-xs md:text-sm mt-2 uppercase" style={{ color: tpl.textSecondary }}>
+          <p className="tracking-[0.3em] sm:tracking-[0.4em] text-[10px] sm:text-xs md:text-sm mt-1.5 sm:mt-2 uppercase" style={{ color: tpl.textSecondary }}>
             Student Result Portal
           </p>
           <div
-            className="mt-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-sm"
+            className="mt-3 sm:mt-4 inline-flex items-center gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full border text-xs sm:text-sm"
             style={{ borderColor: `${accent}50`, color: accent, background: tpl.cardBg }}
           >
             <span className="w-2 h-2 rounded-full" style={{ background: accent }} />
             Annual Examination 2026
           </div>
-          <p className="text-xs mt-3 italic" style={{ color: tpl.textSecondary }}>
-            This is a demo — try searching "Ahmed", "Fatima", "Usman", "Aisha" or roll numbers 901, 902, 1001, 1002
+          <p className="text-[10px] sm:text-xs mt-2 sm:mt-3 italic px-2" style={{ color: tpl.textSecondary }}>
+            This is a demo — enter any name or roll number to see a sample result
           </p>
         </div>
       </header>
