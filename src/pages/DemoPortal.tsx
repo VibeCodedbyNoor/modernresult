@@ -297,7 +297,7 @@ export default function DemoPortal() {
               </CardContent>
             </Card>
 
-            <Button variant="outline" onClick={handleCheckAnother} className="w-full" style={{ borderColor: tpl.cardBorder, color: tpl.textPrimary }}>
+            <Button onClick={handleCheckAnother} className="w-full font-semibold" style={{ background: tpl.buttonGradient, color: btnTextColor }}>
               <RotateCcw className="h-4 w-4 mr-2" /> Check Another Result
             </Button>
           </div>
