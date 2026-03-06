@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Plus, Upload, Link as LinkIcon, LogOut, Eye, Trash2, School, Settings, FileSpreadsheet, Check, Palette } from 'lucide-react';
+import { Plus, Upload, Link as LinkIcon, LogOut, Eye, Trash2, School, Settings, FileSpreadsheet, Check, Palette, Coins, Zap, Gift, Clock } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { resultTemplates, getTemplate } from '@/lib/resultTemplates';
 
@@ -104,6 +104,10 @@ export default function Dashboard() {
   // Class filter
   const [classFilter, setClassFilter] = useState<string>('all');
 
+  // Credits state
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/login');
@@ -117,8 +121,17 @@ export default function Dashboard() {
     if (data) {
       setSchool(data);
       fetchExams(data.id);
+      fetchCredits(data.id);
     }
     setLoading(false);
+  }
+
+  async function fetchCredits(schoolId: string) {
+    const { data: creditData } = await supabase.from('school_credits').select('balance').eq('school_id', schoolId).single();
+    if (creditData) setCreditBalance(creditData.balance);
+
+    const { data: txData } = await supabase.from('credit_transactions').select('*').eq('school_id', schoolId).order('created_at', { ascending: false }).limit(50);
+    setTransactions(txData || []);
   }
 
   async function fetchExams(schoolId: string) {
@@ -385,6 +398,7 @@ export default function Dashboard() {
         <Tabs defaultValue="exams">
           <TabsList>
             <TabsTrigger value="exams">Exams & Results</TabsTrigger>
+            <TabsTrigger value="credits">Credits</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
@@ -536,6 +550,121 @@ export default function Dashboard() {
                 <CardContent className="p-12 text-center">
                   <Plus className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                   <p className="text-muted-foreground">Create your first exam to start uploading results.</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="credits" className="mt-6 space-y-6">
+            {/* Balance Card */}
+            <Card className="max-w-2xl">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Coins className="h-7 w-7 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Available Credits</p>
+                    <p className="text-4xl font-display font-bold text-foreground">{creditBalance ?? '—'}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">1 credit = 1 student result check</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Buy Credits */}
+            <Card className="max-w-2xl border-primary/20">
+              <CardHeader>
+                <CardTitle className="font-display flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-primary" /> Buy Credits
+                </CardTitle>
+                <CardDescription className="text-base">
+                  A printed DMC costs over <strong>Rs. 50</strong> — go digital for just <strong>Rs. 9 per student</strong>. Save 80%+ compared to traditional result printing!
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* 50 credits */}
+                  <div className="rounded-xl border border-border p-4 text-center space-y-1">
+                    <p className="text-2xl font-display font-bold text-foreground">50</p>
+                    <p className="text-xs text-muted-foreground">credits</p>
+                    <p className="text-lg font-semibold text-primary">PKR 450</p>
+                    <p className="text-[10px] text-muted-foreground">Rs. 9/credit</p>
+                  </div>
+                  {/* 100 credits */}
+                  <div className="rounded-xl border border-border p-4 text-center space-y-1">
+                    <p className="text-2xl font-display font-bold text-foreground">100</p>
+                    <p className="text-xs text-muted-foreground">credits</p>
+                    <p className="text-lg font-semibold text-primary">PKR 900</p>
+                    <p className="text-[10px] text-muted-foreground">Rs. 9/credit</p>
+                  </div>
+                  {/* 500 credits + bonus */}
+                  <div className="rounded-xl border-2 border-primary p-4 text-center space-y-1 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[9px] font-bold px-2 py-0.5 rounded-bl-lg flex items-center gap-1">
+                      <Gift className="h-2.5 w-2.5" /> LIMITED TIME
+                    </div>
+                    <p className="text-2xl font-display font-bold text-foreground">500</p>
+                    <p className="text-xs text-primary font-semibold">+ 50 FREE bonus!</p>
+                    <p className="text-lg font-semibold text-primary">PKR 4,500</p>
+                    <p className="text-[10px] text-muted-foreground">Rs. 8.18/credit effective</p>
+                  </div>
+                </div>
+
+                <div className="rounded-xl bg-muted/50 border border-border p-4 space-y-2">
+                  <p className="text-sm font-semibold text-foreground">Payment Details</p>
+                  <div className="space-y-1 text-sm text-muted-foreground">
+                    <p><strong className="text-foreground">Easypaisa:</strong> 03479104843</p>
+                    <p><strong className="text-foreground">Account Name:</strong> Muhammad Irfan</p>
+                  </div>
+                  <div className="pt-2 border-t border-border mt-2">
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                      <Clock className="h-3 w-3" />
+                      Send payment screenshot via WhatsApp — credits added within 1 hour
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Transaction History */}
+            {transactions.length > 0 && (
+              <Card className="max-w-2xl">
+                <CardHeader>
+                  <CardTitle className="font-display text-lg">Transaction History</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {transactions.map(tx => (
+                        <TableRow key={tx.id}>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {new Date(tx.created_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
+                              tx.type === 'signup_bonus' ? 'bg-green-500/10 text-green-600' :
+                              tx.type === 'purchase' ? 'bg-primary/10 text-primary' :
+                              'bg-muted text-muted-foreground'
+                            }`}>
+                              {tx.type === 'signup_bonus' ? 'Bonus' : tx.type === 'purchase' ? 'Purchase' : 'Usage'}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-sm">{tx.description || '—'}</TableCell>
+                          <TableCell className={`text-right font-mono text-sm font-semibold ${tx.amount > 0 ? 'text-green-600' : 'text-muted-foreground'}`}>
+                            {tx.amount > 0 ? '+' : ''}{tx.amount}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </CardContent>
               </Card>
             )}
