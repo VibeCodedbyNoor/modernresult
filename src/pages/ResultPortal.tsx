@@ -306,7 +306,24 @@ export default function ResultPortal() {
       </header>
 
       <main className="flex-1 container mx-auto px-4 pb-10 max-w-2xl">
-        {!result && !notFound ? (
+        {noCredits ? (
+          <Card className="animate-enter backdrop-blur-sm" style={{ background: tpl.cardBg, borderColor: tpl.cardBorder, borderRadius: tpl.borderRadius }}>
+            <CardContent className="p-8 text-center space-y-4">
+              <div className="h-14 w-14 rounded-full flex items-center justify-center mx-auto" style={{ background: `${accent}18` }}>
+                <Search className="h-6 w-6" style={{ color: accent }} />
+              </div>
+              <div>
+                <h3 className="font-display text-lg font-semibold" style={{ color: tpl.textPrimary }}>Results Temporarily Unavailable</h3>
+                <p className="text-sm mt-2" style={{ color: tpl.textSecondary }}>
+                  This school's result portal is temporarily unavailable. Please contact your school administrator.
+                </p>
+              </div>
+              <Button variant="outline" onClick={handleCheckAnother} className="gap-2 hover-scale" style={{ borderColor: tpl.cardBorder, color: tpl.textPrimary }}>
+                <RotateCcw className="h-4 w-4" /> Go Back
+              </Button>
+            </CardContent>
+          </Card>
+        ) : !result && !notFound ? (
           <Card className="animate-enter backdrop-blur-sm" style={{ background: tpl.cardBg, borderColor: tpl.cardBorder, borderRadius: tpl.borderRadius }}>
             <CardContent className="p-6 md:p-8 space-y-5">
               <h2 className="font-display text-xl text-center flex items-center justify-center gap-2" style={{ color: accent }}>
