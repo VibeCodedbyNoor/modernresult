@@ -100,11 +100,9 @@ export default function DemoPortal() {
       (r) => r.student_name.toLowerCase().includes(q) || r.roll_number === q
     );
 
-    if (found) {
-      setResult(found);
-    } else {
-      setNotFound(true);
-    }
+    // For demo: if no exact match, return the first result from that class
+    setResult(found || classResults[0] || null);
+    if (!found && classResults.length === 0) setNotFound(true);
   }
 
   function handleCheckAnother() {
