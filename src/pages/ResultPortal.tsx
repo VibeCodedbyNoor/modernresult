@@ -240,6 +240,7 @@ export default function ResultPortal() {
   function handleCheckAnother() {
     setResult(null);
     setNotFound(false);
+    setNoCredits(false);
     setQuery('');
   }
 
