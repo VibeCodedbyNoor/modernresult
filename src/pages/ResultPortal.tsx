@@ -465,7 +465,7 @@ export default function ResultPortal() {
               <Download className="h-4 w-4 mr-2" /> Download Result Card
             </Button>
 
-            <Button variant="outline" onClick={handleCheckAnother} className="w-full hover-scale" style={{ borderColor: tpl.cardBorder, color: tpl.textPrimary }}>
+            <Button onClick={handleCheckAnother} className="w-full hover-scale font-semibold" style={{ background: tpl.buttonGradient, color: tpl.id === 'glassmorphism' ? '#fff' : tpl.id === 'minimalist' || tpl.id === 'kawaii' ? '#fff' : '#111' }}>
               <RotateCcw className="h-4 w-4 mr-2" /> Check Another Result
             </Button>
           </div>
@@ -550,7 +550,7 @@ export default function ResultPortal() {
 
       <footer className="py-4 text-center print:hidden">
         <p className="text-xs" style={{ color: tpl.textSecondary }}>
-          Powered by <a href="/" className="story-link font-medium" style={{ color: accent }}>ResultCheck</a>
+          Powered by <a href="/" className="story-link font-medium" style={{ color: accent }}>OnlineResultPortal</a>
         </p>
       </footer>
     </div>

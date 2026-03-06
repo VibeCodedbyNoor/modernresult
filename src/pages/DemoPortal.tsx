@@ -146,28 +146,28 @@ export default function DemoPortal() {
         </Link>
       </div>
 
-      <header className="pt-6 pb-4 text-center">
+      <header className="pt-4 sm:pt-6 pb-3 sm:pb-4 text-center">
         <div className="container mx-auto px-4">
-          <h1 className="font-display text-3xl md:text-5xl font-bold tracking-tight" style={{ color: accent }}>
+          <h1 className="font-display text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight" style={{ color: accent }}>
             Demo Academy
           </h1>
-          <p className="tracking-[0.4em] text-xs md:text-sm mt-2 uppercase" style={{ color: tpl.textSecondary }}>
+          <p className="tracking-[0.3em] sm:tracking-[0.4em] text-[10px] sm:text-xs md:text-sm mt-1.5 sm:mt-2 uppercase" style={{ color: tpl.textSecondary }}>
             Student Result Portal
           </p>
           <div
-            className="mt-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-sm"
+            className="mt-3 sm:mt-4 inline-flex items-center gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full border text-xs sm:text-sm"
             style={{ borderColor: `${accent}50`, color: accent, background: tpl.cardBg }}
           >
             <span className="w-2 h-2 rounded-full" style={{ background: accent }} />
             Annual Examination 2026
           </div>
-          <p className="text-xs mt-3 italic" style={{ color: tpl.textSecondary }}>
-            This is a demo — try searching "Ahmed", "Fatima", "Usman", "Aisha" or roll numbers 901, 902, 1001, 1002
+          <p className="text-[10px] sm:text-xs mt-2 sm:mt-3 italic px-2" style={{ color: tpl.textSecondary }}>
+            This is a demo — enter any name or roll number to see a sample result
           </p>
         </div>
       </header>
 
-      <main className="flex-1 container mx-auto px-4 pb-10 max-w-2xl">
+      <main className="flex-1 container mx-auto px-3 sm:px-4 pb-8 sm:pb-10 max-w-2xl">
         {!result && !notFound ? (
           <Card className="backdrop-blur-sm" style={{ background: tpl.cardBg, borderColor: tpl.cardBorder, borderRadius: tpl.borderRadius }}>
             <CardContent className="p-6 md:p-8 space-y-5">
@@ -230,33 +230,33 @@ export default function DemoPortal() {
           <div className="space-y-4">
             <Card className="overflow-hidden backdrop-blur-sm" style={{ background: tpl.cardBg, borderColor: tpl.cardBorder, borderRadius: tpl.borderRadius }}>
               <CardContent className="p-0">
-                <div className="px-6 py-4 text-center" style={{ borderBottom: `1px solid ${tpl.cardBorder}`, background: tpl.tableHeaderBg }}>
-                  <p className="text-xs uppercase tracking-[0.25em]" style={{ color: tpl.textSecondary }}>Demo Academy</p>
-                  <p className="text-xs mt-1" style={{ color: accent }}>Annual Examination 2026</p>
+                <div className="px-4 sm:px-6 py-3 sm:py-4 text-center" style={{ borderBottom: `1px solid ${tpl.cardBorder}`, background: tpl.tableHeaderBg }}>
+                  <p className="text-[10px] sm:text-xs uppercase tracking-[0.25em]" style={{ color: tpl.textSecondary }}>Demo Academy</p>
+                  <p className="text-[10px] sm:text-xs mt-1" style={{ color: accent }}>Annual Examination 2026</p>
                 </div>
 
-                <div className="px-6 py-5 grid grid-cols-2 gap-4" style={{ borderBottom: `1px solid ${tpl.cardBorder}` }}>
+                <div className="px-4 sm:px-6 py-3 sm:py-5 grid grid-cols-2 gap-3 sm:gap-4" style={{ borderBottom: `1px solid ${tpl.cardBorder}` }}>
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Student</p>
-                    <p className="font-display text-2xl font-bold" style={{ color: tpl.textPrimary }}>{result.student_name}</p>
-                    <p className="text-xs mt-1" style={{ color: tpl.textSecondary }}>Roll: {result.roll_number}</p>
+                    <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Student</p>
+                    <p className="font-display text-lg sm:text-2xl font-bold" style={{ color: tpl.textPrimary }}>{result.student_name}</p>
+                    <p className="text-[10px] sm:text-xs mt-1" style={{ color: tpl.textSecondary }}>Roll: {result.roll_number}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Class</p>
-                    <p className="font-display text-2xl font-bold" style={{ color: tpl.textPrimary }}>{result.class_name}</p>
+                    <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Class</p>
+                    <p className="font-display text-lg sm:text-2xl font-bold" style={{ color: tpl.textPrimary }}>{result.class_name}</p>
                   </div>
                 </div>
 
-                <div className="px-6 py-4 grid grid-cols-3 gap-3" style={{ borderBottom: `1px solid ${tpl.cardBorder}` }}>
+                <div className="px-4 sm:px-6 py-3 sm:py-4 grid grid-cols-3 gap-2 sm:gap-3" style={{ borderBottom: `1px solid ${tpl.cardBorder}` }}>
                   {[
                     { icon: Trophy, label: 'Position', value: processedResult.position },
                     { icon: TrendingUp, label: 'Percentage', value: `${processedResult.percentage.toFixed(2)}%` },
                     { icon: Award, label: 'Marks', value: `${processedResult.totalObtained}/${processedResult.totalMax}` },
                   ].map(({ icon: Icon, label, value }) => (
-                    <div key={label} className="rounded-lg p-3 text-center" style={{ border: `1px solid ${tpl.cardBorder}`, background: tpl.inputBg }}>
-                      <Icon className="h-4 w-4 mx-auto mb-1" style={{ color: accent }} />
-                      <p className="font-display text-lg font-bold leading-tight" style={{ color: tpl.textPrimary }}>{value}</p>
-                      <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: tpl.textSecondary }}>{label}</p>
+                    <div key={label} className="rounded-lg p-2 sm:p-3 text-center" style={{ border: `1px solid ${tpl.cardBorder}`, background: tpl.inputBg }}>
+                      <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 mx-auto mb-1" style={{ color: accent }} />
+                      <p className="font-display text-sm sm:text-lg font-bold leading-tight" style={{ color: tpl.textPrimary }}>{value}</p>
+                      <p className="text-[8px] sm:text-[10px] uppercase tracking-[0.18em]" style={{ color: tpl.textSecondary }}>{label}</p>
                     </div>
                   ))}
                 </div>
@@ -297,7 +297,7 @@ export default function DemoPortal() {
               </CardContent>
             </Card>
 
-            <Button variant="outline" onClick={handleCheckAnother} className="w-full" style={{ borderColor: tpl.cardBorder, color: tpl.textPrimary }}>
+            <Button onClick={handleCheckAnother} className="w-full font-semibold" style={{ background: tpl.buttonGradient, color: btnTextColor }}>
               <RotateCcw className="h-4 w-4 mr-2" /> Check Another Result
             </Button>
           </div>
@@ -306,7 +306,7 @@ export default function DemoPortal() {
 
       <footer className="py-4 text-center">
         <p className="text-xs" style={{ color: tpl.textSecondary }}>
-          Powered by <Link to="/" className="font-medium" style={{ color: accent }}>ResultCheck</Link>
+          Powered by <Link to="/" className="font-medium" style={{ color: accent }}>OnlineResultPortal</Link>
         </p>
       </footer>
     </div>

@@ -10,16 +10,16 @@ export default function Index() {
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0a0b14 0%, #0f1021 50%, #0a0b14 100%)' }}>
       {/* Navbar */}
       <nav className="sticky top-0 z-50 backdrop-blur-md" style={{ background: 'rgba(10,11,20,0.85)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="font-display text-xl font-bold" style={{ color: '#a78bfa' }}>
-            ResultCheck
+        <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
+          <Link to="/" className="font-display text-lg sm:text-xl font-bold" style={{ color: '#a78bfa' }}>
+            OnlineResultPortal
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link to="/login">
-              <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white hover:bg-white/10">Log in</Button>
+              <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white hover:bg-white/10 text-xs sm:text-sm px-2 sm:px-3">Log in</Button>
             </Link>
             <Link to="/signup">
-              <Button size="sm" style={{ background: 'linear-gradient(90deg, #a78bfa, #6d28d9)', color: '#fff' }}>
+              <Button size="sm" className="text-xs sm:text-sm px-3 sm:px-4" style={{ background: 'linear-gradient(90deg, #a78bfa, #6d28d9)', color: '#fff' }}>
                 Get Started
               </Button>
             </Link>
@@ -28,33 +28,33 @@ export default function Index() {
       </nav>
 
       {/* Hero */}
-      <section className="container mx-auto px-4 pt-20 pb-16 text-center">
-        <div className="max-w-3xl mx-auto space-y-6">
+      <section className="container mx-auto px-4 pt-12 sm:pt-20 pb-10 sm:pb-16 text-center">
+        <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
           <div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium"
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium"
             style={{ background: 'rgba(167,139,250,0.12)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.2)' }}
           >
-            <Sparkles className="h-3.5 w-3.5" />
+            <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             {resultTemplates.length} Beautiful Design Templates
           </div>
-          <h1 className="font-display text-4xl md:text-6xl font-bold tracking-tight leading-tight" style={{ color: '#f1f0f5' }}>
+          <h1 className="font-display text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight leading-tight" style={{ color: '#f1f0f5' }}>
             Build beautiful
             <span style={{ color: '#a78bfa' }}> result portals</span>
             {' '}for your school
           </h1>
-          <p className="text-lg md:text-xl max-w-2xl mx-auto" style={{ color: '#8b8a9e' }}>
+          <p className="text-base sm:text-lg md:text-xl max-w-2xl mx-auto" style={{ color: '#8b8a9e' }}>
             Upload student results, choose a stunning design, and share a branded link. Students check their results instantly.
           </p>
-          <div className="flex gap-3 justify-center pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2 sm:pt-4">
             <Link to="/signup">
-              <Button size="lg" className="gap-2" style={{ background: 'linear-gradient(90deg, #a78bfa, #6d28d9)', color: '#fff' }}>
+              <Button size="lg" className="gap-2 w-full sm:w-auto" style={{ background: 'linear-gradient(90deg, #a78bfa, #6d28d9)', color: '#fff' }}>
                 Get Your Portal <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <Button
               size="lg"
               variant="outline"
-              className="border-white/10 hover:bg-white/5"
+              className="border-white/10 hover:bg-white/5 w-full sm:w-auto"
               style={{ color: '#c4c3d4' }}
               onClick={() => document.getElementById('designs')?.scrollIntoView({ behavior: 'smooth' })}
             >
@@ -65,48 +65,48 @@ export default function Index() {
       </section>
 
       {/* Design Grid */}
-      <section className="container mx-auto px-4 py-16" id="designs">
-        <div className="text-center mb-12">
-          <h2 className="font-display text-3xl md:text-4xl font-bold" style={{ color: '#f1f0f5' }}>
+      <section className="container mx-auto px-4 py-10 sm:py-16" id="designs">
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold" style={{ color: '#f1f0f5' }}>
             Choose Your Style
           </h2>
-          <p className="mt-3 text-lg" style={{ color: '#8b8a9e' }}>
+          <p className="mt-2 sm:mt-3 text-sm sm:text-lg" style={{ color: '#8b8a9e' }}>
             Click any design to see a live demo with sample data
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-7xl mx-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 max-w-7xl mx-auto">
           {resultTemplates.map((t) => (
             <button
               key={t.id}
               onClick={() => navigate(`/demo/${t.id}`)}
-              className="group rounded-xl overflow-hidden text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+              className="group rounded-lg sm:rounded-xl overflow-hidden text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/50"
               style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)' }}
             >
               {/* Mini preview */}
               <div
-                className="h-44 p-4 flex flex-col justify-between relative overflow-hidden"
+                className="h-28 sm:h-44 p-2 sm:p-4 flex flex-col justify-between relative overflow-hidden"
                 style={{ background: t.background }}
               >
                 {/* Fake portal preview */}
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <div className="text-center">
-                    <p className="text-[10px] font-bold tracking-wide" style={{ color: t.accentColor }}>
+                    <p className="text-[8px] sm:text-[10px] font-bold tracking-wide" style={{ color: t.accentColor }}>
                       Demo Academy
                     </p>
-                    <p className="text-[7px] uppercase tracking-[0.3em]" style={{ color: t.textSecondary }}>
+                    <p className="text-[6px] sm:text-[7px] uppercase tracking-[0.2em] sm:tracking-[0.3em]" style={{ color: t.textSecondary }}>
                       Student Result Portal
                     </p>
                   </div>
                 </div>
                 <div
-                  className="rounded-md p-2.5 space-y-1.5 backdrop-blur-sm"
+                  className="rounded-md p-1.5 sm:p-2.5 space-y-1 sm:space-y-1.5 backdrop-blur-sm"
                   style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: t.borderRadius }}
                 >
-                  <div className="rounded h-4" style={{ background: t.inputBg, border: `1px solid ${t.cardBorder}` }} />
-                  <div className="rounded h-4" style={{ background: t.inputBg, border: `1px solid ${t.cardBorder}` }} />
-                  <div className="rounded h-5 flex items-center justify-center" style={{ background: t.buttonGradient, borderRadius: t.borderRadius }}>
-                    <span className="text-[7px] font-semibold" style={{ color: ['glassmorphism', 'minimalist', 'kawaii'].includes(t.id) ? '#fff' : '#111' }}>
+                  <div className="rounded h-3 sm:h-4" style={{ background: t.inputBg, border: `1px solid ${t.cardBorder}` }} />
+                  <div className="rounded h-3 sm:h-4" style={{ background: t.inputBg, border: `1px solid ${t.cardBorder}` }} />
+                  <div className="rounded h-4 sm:h-5 flex items-center justify-center" style={{ background: t.buttonGradient, borderRadius: t.borderRadius }}>
+                    <span className="text-[6px] sm:text-[7px] font-semibold" style={{ color: ['glassmorphism', 'minimalist', 'kawaii'].includes(t.id) ? '#fff' : '#111' }}>
                       ✦ View Result
                     </span>
                   </div>
@@ -114,14 +114,14 @@ export default function Index() {
               </div>
 
               {/* Label */}
-              <div className="px-4 py-3" style={{ background: 'rgba(15,16,33,0.95)' }}>
+              <div className="px-2.5 py-2 sm:px-4 sm:py-3" style={{ background: 'rgba(15,16,33,0.95)' }}>
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold" style={{ color: '#e4e3f1' }}>{t.name}</p>
-                    <p className="text-[11px] mt-0.5" style={{ color: '#6b6a80' }}>{t.description}</p>
+                  <div className="min-w-0">
+                    <p className="text-xs sm:text-sm font-semibold truncate" style={{ color: '#e4e3f1' }}>{t.name}</p>
+                    <p className="text-[9px] sm:text-[11px] mt-0.5 truncate" style={{ color: '#6b6a80' }}>{t.description}</p>
                   </div>
                   <div
-                    className="w-3 h-3 rounded-full flex-shrink-0"
+                    className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0 ml-2"
                     style={{ background: t.accentColor }}
                   />
                 </div>
@@ -132,15 +132,15 @@ export default function Index() {
       </section>
 
       {/* CTA */}
-      <section className="container mx-auto px-4 py-20 text-center">
+      <section className="container mx-auto px-4 py-12 sm:py-20 text-center">
         <div
-          className="max-w-2xl mx-auto rounded-2xl p-10 space-y-5"
+          className="max-w-2xl mx-auto rounded-2xl p-6 sm:p-10 space-y-4 sm:space-y-5"
           style={{ background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.15)' }}
         >
-          <h2 className="font-display text-3xl font-bold" style={{ color: '#f1f0f5' }}>
+          <h2 className="font-display text-2xl sm:text-3xl font-bold" style={{ color: '#f1f0f5' }}>
             Ready to get started?
           </h2>
-          <p style={{ color: '#8b8a9e' }}>
+          <p className="text-sm sm:text-base" style={{ color: '#8b8a9e' }}>
             Create your school's result portal in under 5 minutes. No coding needed.
           </p>
           <div className="flex gap-3 justify-center">
@@ -154,9 +154,9 @@ export default function Index() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 text-center" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <p className="text-sm" style={{ color: '#6b6a80' }}>
-          &copy; {new Date().getFullYear()} ResultCheck. All rights reserved.
+      <footer className="py-6 sm:py-8 text-center" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <p className="text-xs sm:text-sm" style={{ color: '#6b6a80' }}>
+          &copy; {new Date().getFullYear()} OnlineResultPortal. All rights reserved.
         </p>
       </footer>
     </div>
