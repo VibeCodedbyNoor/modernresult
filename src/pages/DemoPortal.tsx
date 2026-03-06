@@ -230,33 +230,33 @@ export default function DemoPortal() {
           <div className="space-y-4">
             <Card className="overflow-hidden backdrop-blur-sm" style={{ background: tpl.cardBg, borderColor: tpl.cardBorder, borderRadius: tpl.borderRadius }}>
               <CardContent className="p-0">
-                <div className="px-6 py-4 text-center" style={{ borderBottom: `1px solid ${tpl.cardBorder}`, background: tpl.tableHeaderBg }}>
-                  <p className="text-xs uppercase tracking-[0.25em]" style={{ color: tpl.textSecondary }}>Demo Academy</p>
-                  <p className="text-xs mt-1" style={{ color: accent }}>Annual Examination 2026</p>
+                <div className="px-4 sm:px-6 py-3 sm:py-4 text-center" style={{ borderBottom: `1px solid ${tpl.cardBorder}`, background: tpl.tableHeaderBg }}>
+                  <p className="text-[10px] sm:text-xs uppercase tracking-[0.25em]" style={{ color: tpl.textSecondary }}>Demo Academy</p>
+                  <p className="text-[10px] sm:text-xs mt-1" style={{ color: accent }}>Annual Examination 2026</p>
                 </div>
 
-                <div className="px-6 py-5 grid grid-cols-2 gap-4" style={{ borderBottom: `1px solid ${tpl.cardBorder}` }}>
+                <div className="px-4 sm:px-6 py-3 sm:py-5 grid grid-cols-2 gap-3 sm:gap-4" style={{ borderBottom: `1px solid ${tpl.cardBorder}` }}>
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Student</p>
-                    <p className="font-display text-2xl font-bold" style={{ color: tpl.textPrimary }}>{result.student_name}</p>
-                    <p className="text-xs mt-1" style={{ color: tpl.textSecondary }}>Roll: {result.roll_number}</p>
+                    <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Student</p>
+                    <p className="font-display text-lg sm:text-2xl font-bold" style={{ color: tpl.textPrimary }}>{result.student_name}</p>
+                    <p className="text-[10px] sm:text-xs mt-1" style={{ color: tpl.textSecondary }}>Roll: {result.roll_number}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Class</p>
-                    <p className="font-display text-2xl font-bold" style={{ color: tpl.textPrimary }}>{result.class_name}</p>
+                    <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Class</p>
+                    <p className="font-display text-lg sm:text-2xl font-bold" style={{ color: tpl.textPrimary }}>{result.class_name}</p>
                   </div>
                 </div>
 
-                <div className="px-6 py-4 grid grid-cols-3 gap-3" style={{ borderBottom: `1px solid ${tpl.cardBorder}` }}>
+                <div className="px-4 sm:px-6 py-3 sm:py-4 grid grid-cols-3 gap-2 sm:gap-3" style={{ borderBottom: `1px solid ${tpl.cardBorder}` }}>
                   {[
                     { icon: Trophy, label: 'Position', value: processedResult.position },
                     { icon: TrendingUp, label: 'Percentage', value: `${processedResult.percentage.toFixed(2)}%` },
                     { icon: Award, label: 'Marks', value: `${processedResult.totalObtained}/${processedResult.totalMax}` },
                   ].map(({ icon: Icon, label, value }) => (
-                    <div key={label} className="rounded-lg p-3 text-center" style={{ border: `1px solid ${tpl.cardBorder}`, background: tpl.inputBg }}>
-                      <Icon className="h-4 w-4 mx-auto mb-1" style={{ color: accent }} />
-                      <p className="font-display text-lg font-bold leading-tight" style={{ color: tpl.textPrimary }}>{value}</p>
-                      <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: tpl.textSecondary }}>{label}</p>
+                    <div key={label} className="rounded-lg p-2 sm:p-3 text-center" style={{ border: `1px solid ${tpl.cardBorder}`, background: tpl.inputBg }}>
+                      <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 mx-auto mb-1" style={{ color: accent }} />
+                      <p className="font-display text-sm sm:text-lg font-bold leading-tight" style={{ color: tpl.textPrimary }}>{value}</p>
+                      <p className="text-[8px] sm:text-[10px] uppercase tracking-[0.18em]" style={{ color: tpl.textSecondary }}>{label}</p>
                     </div>
                   ))}
                 </div>
