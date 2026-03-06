@@ -121,8 +121,17 @@ export default function Dashboard() {
     if (data) {
       setSchool(data);
       fetchExams(data.id);
+      fetchCredits(data.id);
     }
     setLoading(false);
+  }
+
+  async function fetchCredits(schoolId: string) {
+    const { data: creditData } = await supabase.from('school_credits').select('balance').eq('school_id', schoolId).single();
+    if (creditData) setCreditBalance(creditData.balance);
+
+    const { data: txData } = await supabase.from('credit_transactions').select('*').eq('school_id', schoolId).order('created_at', { ascending: false }).limit(50);
+    setTransactions(txData || []);
   }
 
   async function fetchExams(schoolId: string) {
