@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import ResultPortal from "./pages/ResultPortal";
+import DemoPortal from "./pages/DemoPortal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/results/:slug" element={<ResultPortal />} />
+            <Route path="/demo/:templateId" element={<DemoPortal />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
