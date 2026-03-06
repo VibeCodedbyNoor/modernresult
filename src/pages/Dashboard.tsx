@@ -104,6 +104,10 @@ export default function Dashboard() {
   // Class filter
   const [classFilter, setClassFilter] = useState<string>('all');
 
+  // Credits state
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/login');
