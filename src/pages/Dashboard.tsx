@@ -398,6 +398,7 @@ export default function Dashboard() {
         <Tabs defaultValue="exams">
           <TabsList>
             <TabsTrigger value="exams">Exams & Results</TabsTrigger>
+            <TabsTrigger value="credits">Credits</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
