@@ -147,6 +147,13 @@ export default function ResultPortal() {
     });
 
     if (data && data.length > 0) {
+      // Deduct credit before showing result
+      const { data: creditOk } = await supabase.rpc('deduct_credit', { p_school_id: school!.id });
+      if (!creditOk) {
+        setNoCredits(true);
+        setSearching(false);
+        return;
+      }
       setResult(data[0]);
     } else {
       setNotFound(true);
