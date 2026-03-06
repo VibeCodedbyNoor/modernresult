@@ -27,6 +27,7 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/results/:slug" element={<ResultPortal />} />
+            <Route path="/demo/:templateId" element={<DemoPortal />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
