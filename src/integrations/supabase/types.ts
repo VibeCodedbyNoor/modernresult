@@ -199,6 +199,10 @@ export type Database = {
     }
     Functions: {
       deduct_credit: { Args: { p_school_id: string }; Returns: boolean }
+      deduct_credits_bulk: {
+        Args: { p_count: number; p_school_id: string }
+        Returns: number
+      }
       fuzzy_search_results: {
         Args: { p_class_name: string; p_exam_id: string; p_query: string }
         Returns: {
