@@ -857,6 +857,18 @@ export default function Dashboard() {
         </Tabs>
       </div>
 
+      {/* Bulk Marksheet Generator */}
+      <BulkMarksheetGenerator
+        open={bulkDialogOpen}
+        onOpenChange={setBulkDialogOpen}
+        results={results}
+        school={school}
+        examName={exams.find(e => e.id === selectedExam)?.name || 'Exam'}
+        classNames={classNames}
+        creditBalance={creditBalance}
+        onCreditsUpdated={() => fetchCredits(school.id)}
+      />
+
       {/* Column Mapping Dialog */}
       <Dialog open={columnMappingOpen} onOpenChange={setColumnMappingOpen}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
