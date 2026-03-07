@@ -482,6 +482,16 @@ export default function Dashboard() {
                     {exams.find(e => e.id === selectedExam)?.is_published ? 'Unpublish' : 'Publish'}
                   </Button>
 
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setBulkDialogOpen(true)}
+                    className="gap-1.5"
+                    disabled={filteredResults.length === 0}
+                  >
+                    <Download className="h-3.5 w-3.5" /> Download Marksheets
+                  </Button>
+
                   {classNames.length > 0 && (
                     <Select value={classFilter} onValueChange={setClassFilter}>
                       <SelectTrigger className="w-40 ml-auto">
