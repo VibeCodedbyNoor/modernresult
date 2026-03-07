@@ -12,9 +12,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Plus, Upload, Link as LinkIcon, LogOut, Eye, Trash2, School, Settings, FileSpreadsheet, Check, Palette, Coins, Zap, Gift, Clock, MessageCircle, CreditCard } from 'lucide-react';
+import { Plus, Upload, Link as LinkIcon, LogOut, Eye, Trash2, School, Settings, FileSpreadsheet, Check, Palette, Coins, Zap, Gift, Clock, MessageCircle, CreditCard, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { resultTemplates, getTemplate } from '@/lib/resultTemplates';
+import BulkMarksheetGenerator from '@/components/BulkMarksheetGenerator';
 
 interface SchoolData {
   id: string;
@@ -107,7 +108,7 @@ export default function Dashboard() {
   // Credits state
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
-
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/login');
@@ -481,6 +482,16 @@ export default function Dashboard() {
                     {exams.find(e => e.id === selectedExam)?.is_published ? 'Unpublish' : 'Publish'}
                   </Button>
 
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setBulkDialogOpen(true)}
+                    className="gap-1.5"
+                    disabled={filteredResults.length === 0}
+                  >
+                    <Download className="h-3.5 w-3.5" /> Download Marksheets
+                  </Button>
+
                   {classNames.length > 0 && (
                     <Select value={classFilter} onValueChange={setClassFilter}>
                       <SelectTrigger className="w-40 ml-auto">
@@ -845,6 +856,18 @@ export default function Dashboard() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Bulk Marksheet Generator */}
+      <BulkMarksheetGenerator
+        open={bulkDialogOpen}
+        onOpenChange={setBulkDialogOpen}
+        results={results}
+        school={school}
+        examName={exams.find(e => e.id === selectedExam)?.name || 'Exam'}
+        classNames={classNames}
+        creditBalance={creditBalance}
+        onCreditsUpdated={() => fetchCredits(school.id)}
+      />
 
       {/* Column Mapping Dialog */}
       <Dialog open={columnMappingOpen} onOpenChange={setColumnMappingOpen}>
