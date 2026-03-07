@@ -108,7 +108,7 @@ export default function Dashboard() {
   // Credits state
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
-
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/login');
