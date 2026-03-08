@@ -627,15 +627,24 @@ export default function Dashboard() {
                       </div>
                     </DialogContent>
                   </Dialog>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleTogglePublish(selectedExam, exams.find(e => e.id === selectedExam)?.is_published || false)}
-                    className="gap-1.5"
-                  >
-                    <Eye className="h-3.5 w-3.5" />
-                    {exams.find(e => e.id === selectedExam)?.is_published ? 'Unpublish' : 'Publish'}
-                  </Button>
+                  {exams.find(e => e.id === selectedExam)?.is_published ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleTogglePublish(selectedExam, true)}
+                      className="gap-1.5"
+                    >
+                      <Eye className="h-3.5 w-3.5" /> Unpublish
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      onClick={() => handleTogglePublish(selectedExam, false)}
+                      className="gap-1.5 bg-green-600 hover:bg-green-700 text-white shadow-md animate-pulse"
+                    >
+                      <Eye className="h-3.5 w-3.5" /> ✦ Publish Exam
+                    </Button>
+                  )}
 
                   {classNames.length > 0 && (
                     <Select value={classFilter} onValueChange={setClassFilter}>
