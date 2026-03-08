@@ -614,6 +614,7 @@ export default function Dashboard() {
                       <div className="space-y-2">
                         <Label>Exam Name</Label>
                         <Input value={newExamName} onChange={e => setNewExamName(e.target.value)} placeholder="e.g. Mid-Term 2026" />
+                        <p className="text-xs text-muted-foreground">Give your exam a clear name like "Annual Exam 2026" or "Mid-Term 2026"</p>
                       </div>
                       <Button onClick={handleCreateExam} className="w-full">Create Exam</Button>
                     </div>
