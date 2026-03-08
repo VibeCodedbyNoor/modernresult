@@ -1074,13 +1074,12 @@ export default function Dashboard() {
                         
                         // Check if this will cost credits and confirm
                         if (school.template_changes_count >= 3) {
-                          const confirmed = window.confirm(
-                            'This design change will cost 5 credits. Continue?'
-                          );
-                          if (!confirmed) return;
+                          setPendingTemplateId(template.id);
+                          setTemplateConfirmOpen(true);
+                          return;
                         }
 
-                        // Call the DB function to handle credit deduction + counter
+                        // Free change — proceed directly
                         const { data: success, error: rpcError } = await supabase
                           .rpc('deduct_template_change_credits', { p_school_id: school.id });
                         
