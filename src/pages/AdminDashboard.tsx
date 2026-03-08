@@ -226,7 +226,7 @@ export default function AdminDashboard() {
 
       toast({ title: `✅ ${creditAmount} credits added to ${selectedSchool.name}!` });
       setCreditAmount('');
-      setSelectedSchool(null);
+      setPaidCredits('');
       setSearchQuery('');
       loadData();
     } catch (err: any) {
