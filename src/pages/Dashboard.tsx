@@ -1002,6 +1002,43 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
+            {/* Search Fields Config */}
+            <Card className="max-w-lg">
+              <CardHeader>
+                <CardTitle className="font-display text-lg flex items-center gap-2">
+                  <Search className="h-5 w-5 text-primary" /> Portal Search Fields
+                </CardTitle>
+                <CardDescription>Choose which fields students use to search their results on your portal.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {[
+                  { id: 'roll_number', label: 'Roll Number' },
+                  { id: 'student_name', label: 'Student Name' },
+                  { id: 'father_name', label: 'Father Name' },
+                ].map(field => (
+                  <div key={field.id} className="flex items-center gap-3">
+                    <Checkbox
+                      checked={(school.search_fields || ['roll_number', 'student_name']).includes(field.id)}
+                      onCheckedChange={async (checked) => {
+                        const current = school.search_fields || ['roll_number', 'student_name'];
+                        const updated = checked
+                          ? [...current, field.id]
+                          : current.filter(f => f !== field.id);
+                        if (updated.length === 0) {
+                          toast.error('You must keep at least one search field');
+                          return;
+                        }
+                        const { error } = await supabase.from('schools').update({ search_fields: updated } as any).eq('id', school.id);
+                        if (error) { toast.error(error.message); }
+                        else { setSchool({ ...school, search_fields: updated }); toast.success('Search fields updated'); }
+                      }}
+                    />
+                    <Label className="text-sm">{field.label}</Label>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
             {/* Result Design Template Picker */}
             <div className="space-y-4">
               <div>
