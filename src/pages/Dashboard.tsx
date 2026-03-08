@@ -1031,24 +1031,21 @@ export default function Dashboard() {
                           : 'border-border hover:border-muted-foreground/40'
                       }`}
                     >
-                      {/* Mini portal preview */}
-                      <div
-                        className="aspect-[4/3] p-3 flex flex-col"
-                        style={{ background: template.background }}
-                      >
-                        <div className="flex items-center gap-1.5 mb-2">
-                          <div className="h-4 w-4 rounded-full" style={{ background: template.accentColor, opacity: 0.8 }} />
-                          <div className="h-1.5 w-16 rounded-full" style={{ background: template.textPrimary, opacity: 0.6 }} />
-                        </div>
-                        <div
-                          className="flex-1 rounded-lg border p-2.5 flex flex-col gap-1.5"
-                          style={{ background: template.cardBg, borderColor: template.cardBorder, borderRadius: template.borderRadius || '0.5rem', backdropFilter: template.id === 'glassmorphism' ? 'blur(8px)' : undefined }}
-                        >
-                          <div className="h-2 w-3/5 rounded-full" style={{ background: template.accentColor, opacity: 0.8 }} />
-                          <div className="h-4 w-full rounded" style={{ background: template.inputBg, border: `1px solid ${template.cardBorder}`, borderRadius: template.borderRadius || '0.25rem' }} />
-                          <div className="h-4 w-full rounded" style={{ background: template.inputBg, border: `1px solid ${template.cardBorder}`, borderRadius: template.borderRadius || '0.25rem' }} />
-                          <div className="h-4 w-full rounded mt-auto" style={{ background: template.buttonGradient, borderRadius: template.borderRadius || '0.25rem' }} />
-                        </div>
+                      {/* Live iframe preview */}
+                      <div className="aspect-[4/3] relative overflow-hidden rounded-t-xl">
+                        <iframe
+                          src={`/demo/${template.id}`}
+                          title={template.name}
+                          className="absolute top-0 left-0 pointer-events-none border-0"
+                          style={{
+                            width: '400%',
+                            height: '400%',
+                            transform: 'scale(0.25)',
+                            transformOrigin: 'top left',
+                          }}
+                          loading="lazy"
+                          tabIndex={-1}
+                        />
                       </div>
                       <div className="px-3 py-2.5 bg-card border-t border-border">
                         <div className="flex items-center justify-between">
