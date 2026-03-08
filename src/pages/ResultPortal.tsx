@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { CLASS_SUBJECTS } from '@/lib/classSubjects';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search } from 'lucide-react';
 
