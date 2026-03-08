@@ -27,7 +27,7 @@ const NeonPortal = ({ isDemo = true, schoolName = "SHAHEEN PUBLIC HIGH SCHOOL", 
       const progressInterval = setInterval(() => { setProgress(prev => { if (prev >= 90) { clearInterval(progressInterval); return prev; } return prev + 10; }); }, 200);
       setTimeout(() => { const name = formValues['student_name'] || formValues['roll_number'] || 'Student'; setProgress(100); setResult(generateDemoResult(name, selectedClass)); clearInterval(progressInterval); setLoading(false); toast.success('Result loaded successfully!'); setTimeout(() => setProgress(0), 1000); }, 2000);
     } else if (onSearch) {
-      try { const r = await onSearch({ className: selectedClass, rollNumber: formValues['roll_number'] || '', studentName: formValues['student_name'] || '', fatherName: formValues['father_name'] || '' }); if (r) { setResult(r); toast.success('Result loaded successfully!'); } else { setError('No result found'); } } catch { setError('Search failed'); } finally { setLoading(false); }
+      try { const r = await onSearch({ className: selectedClass, rollNumber: formValues['roll_number'] || '', studentName: formValues['student_name'] || '', fatherName: formValues['father_name'] || '' }); if (r) { setResult(r); toast.success('Result loaded successfully!'); } else { setError('No result found'); } } catch (err: any) { setError(err?.message || 'Search failed'); } finally { setLoading(false); }
     }
   };
 
