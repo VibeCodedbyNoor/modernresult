@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
+import WhatsAppHelpButton from '@/components/WhatsAppHelpButton';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Sparkles, UserPlus, Building, FileSpreadsheet, CheckCircle, Share2 } from 'lucide-react';
 import { resultTemplates } from '@/lib/resultTemplates';
@@ -206,6 +207,7 @@ export default function Index() {
           &copy; {new Date().getFullYear()} OnlineResultPortal. All rights reserved.
         </p>
       </footer>
+      <WhatsAppHelpButton />
     </div>
   );
 }

@@ -18,6 +18,7 @@ import { resultTemplates, getTemplate } from '@/lib/resultTemplates';
 import { generateSlugSuggestions } from '@/lib/slugSuggestions';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import WhatsAppHelpButton from '@/components/WhatsAppHelpButton';
 
 interface SchoolData {
   id: string;
@@ -1122,6 +1123,7 @@ export default function Dashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <WhatsAppHelpButton />
     </div>
   );
 }
