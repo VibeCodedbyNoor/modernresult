@@ -92,6 +92,8 @@ export type Database = {
           created_at: string
           id: string
           owner_name: string
+          referral_code: string | null
+          referred_by: string | null
           school_name: string
           updated_at: string
           user_id: string
@@ -101,6 +103,8 @@ export type Database = {
           created_at?: string
           id?: string
           owner_name?: string
+          referral_code?: string | null
+          referred_by?: string | null
           school_name?: string
           updated_at?: string
           user_id: string
@@ -110,10 +114,68 @@ export type Database = {
           created_at?: string
           id?: string
           owner_name?: string
+          referral_code?: string | null
+          referred_by?: string | null
           school_name?: string
           updated_at?: string
           user_id?: string
           whatsapp_number?: string
+        }
+        Relationships: []
+      }
+      referral_earnings: {
+        Row: {
+          commission_credits: number
+          created_at: string | null
+          credits_purchased: number
+          id: string
+          referral_id: string | null
+          referrer_id: string
+        }
+        Insert: {
+          commission_credits: number
+          created_at?: string | null
+          credits_purchased: number
+          id?: string
+          referral_id?: string | null
+          referrer_id: string
+        }
+        Update: {
+          commission_credits?: number
+          created_at?: string | null
+          credits_purchased?: number
+          id?: string
+          referral_id?: string | null
+          referrer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_earnings_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "referrals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          created_at: string | null
+          id: string
+          referred_user_id: string
+          referrer_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          referred_user_id: string
+          referrer_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          referred_user_id?: string
+          referrer_id?: string
         }
         Relationships: []
       }
@@ -241,6 +303,24 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          key: string
+          updated_at: string | null
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string | null
+          value?: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -255,6 +335,45 @@ export type Database = {
         Update: {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      withdrawal_requests: {
+        Row: {
+          account_name: string
+          account_number: string
+          admin_note: string | null
+          amount: number
+          created_at: string | null
+          id: string
+          payment_method: string
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          account_name: string
+          account_number: string
+          admin_note?: string | null
+          amount: number
+          created_at?: string | null
+          id?: string
+          payment_method: string
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          account_name?: string
+          account_number?: string
+          admin_note?: string | null
+          amount?: number
+          created_at?: string | null
+          id?: string
+          payment_method?: string
+          status?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -333,6 +452,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      process_referral_commission: {
+        Args: { p_credits_added: number; p_school_id: string }
+        Returns: undefined
       }
     }
     Enums: {
