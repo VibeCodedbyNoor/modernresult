@@ -186,7 +186,7 @@ export default function Index() {
             Ready to get started?
           </h2>
           <p className="text-sm sm:text-base" style={{ color: '#c4c3d4' }}>
-            Each printed DMC costs over <strong style={{ color: '#a78bfa' }}>Rs. 50</strong> — deliver results digitally for just <strong style={{ color: '#a78bfa' }}>Rs. 9 per student</strong>.
+            Deliver results digitally and <strong style={{ color: '#a78bfa' }}>save over 80%</strong> compared to traditional printed DMCs.
           </p>
           <p className="text-xs sm:text-sm" style={{ color: '#8b8a9e' }}>
             Create your school's result portal in under 5 minutes. No coding needed. Start with 20 free credits!

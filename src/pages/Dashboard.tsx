@@ -19,6 +19,7 @@ import { generateSlugSuggestions } from '@/lib/slugSuggestions';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import WhatsAppHelpButton from '@/components/WhatsAppHelpButton';
+import CountdownDisplay from '@/components/CountdownDisplay';
 
 interface SchoolData {
   id: string;
@@ -561,7 +562,7 @@ export default function Dashboard() {
                               </div>
                               <p className="text-xs text-muted-foreground mt-0.5">
                                 {status === 'live' && 'Results are visible on the portal'}
-                                {status === 'countdown' && `Results will show at ${format(new Date(exam.display_at!), 'PPp')}`}
+                                {status === 'countdown' && <CountdownDisplay targetDate={exam.display_at!} />}
                                 {status === 'stopped' && 'Results are hidden from the portal'}
                               </p>
                             </div>
@@ -755,7 +756,7 @@ export default function Dashboard() {
                   <Zap className="h-5 w-5 text-primary" /> Buy Credits
                 </CardTitle>
                 <CardDescription className="text-base">
-                  A printed DMC costs over <strong>Rs. 50</strong> — go digital for just <strong>Rs. 9 per student</strong>. Save 80%+ compared to traditional result printing!
+                  Go digital and <strong>save over 80%</strong> compared to traditional printed DMCs!
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -894,7 +895,7 @@ export default function Dashboard() {
                   <div className="flex items-center gap-2">
                     <LinkIcon className="h-4 w-4 text-muted-foreground" />
                     <code className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded">
-                      {window.location.origin}/results/{school.slug}
+                      resultportal.online/results/{school.slug}
                     </code>
                   </div>
                 </div>
