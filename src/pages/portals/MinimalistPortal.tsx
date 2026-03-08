@@ -1,32 +1,15 @@
-import { useState, useRef } from 'react';
-import { toast } from 'sonner';
 import { CLASS_SUBJECTS } from '@/lib/classSubjects';
-import { generateDemoResult } from '@/lib/demoResults';
-
+import { SEARCH_FIELD_LABELS, SEARCH_FIELD_PLACEHOLDERS } from '@/lib/portalTypes';
+import { usePortalSearch } from '@/hooks/usePortalSearch';
+import type { PortalProps } from '@/lib/portalTypes';
 import BackButton from '@/components/portal/BackButton';
 import ResultActions from '@/components/portal/ResultActions';
 
-interface PortalProps { isDemo?: boolean; schoolName?: string; logoUrl?: string | null; onSearch?: (className: string, studentName: string) => Promise<any>; demoResult?: any; }
-
-const MinimalistPortal = ({ isDemo = true, schoolName = "Al-Huda Model School", logoUrl, onSearch, demoResult }: PortalProps) => {
-  const [selectedClass, setSelectedClass] = useState('');
-  const [studentName, setStudentName] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(demoResult || null);
-  const [error, setError] = useState('');
-  const resultRef = useRef<HTMLDivElement>(null);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedClass || !studentName) { toast.error('Please select a class and enter your name'); return; }
-    setLoading(true); setError(''); setResult(null);
-    if (isDemo) { setTimeout(() => { setResult(generateDemoResult(studentName, selectedClass)); setLoading(false); toast.success('Result loaded successfully!'); }, 1000); }
-    else if (onSearch) { try { const r = await onSearch(selectedClass, studentName); if (r) { setResult(r); toast.success('Result loaded successfully!'); } else { setError('No result found'); } } catch { setError('Search failed'); } finally { setLoading(false); } }
-  };
+const MinimalistPortal = ({ isDemo = true, schoolName = "Al-Huda Model School", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult }: PortalProps) => {
+  const { selectedClass, setSelectedClass, formValues, setField, loading, result, error, resultRef, handleSubmit } = usePortalSearch({ isDemo, onSearch, demoResult });
 
   return (
     <div className="min-h-screen bg-white">
-      
       <BackButton variant="light" />
       <main className="container mx-auto px-3 sm:px-4 pt-14 sm:pt-16 pb-20 max-w-2xl">
         <header className="mb-6 sm:mb-16 border-b border-black pb-4 sm:pb-8">
@@ -34,23 +17,22 @@ const MinimalistPortal = ({ isDemo = true, schoolName = "Al-Huda Model School", 
           <h1 className="text-2xl sm:text-4xl font-bold text-black mb-1 sm:mb-2">{schoolName}</h1>
           <p className="text-sm sm:text-lg text-gray-600">Result Portal</p>
         </header>
-
         <div className="mb-6 sm:mb-12">
           <h2 className="text-lg sm:text-2xl font-semibold text-black mb-4 sm:mb-8">Check Result</h2>
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <form onSubmit={(e) => handleSubmit(e, searchFields)} className="space-y-4 sm:space-y-6">
             <div className="group"><label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Class</label><select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 bg-white text-sm sm:text-base text-black focus:outline-none focus:border-black transition-all" required><option value="">Select class</option>{Object.keys(CLASS_SUBJECTS).map((cls) => (<option key={cls} value={cls}>{cls}</option>))}</select></div>
-            <div className="group"><label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Student Name</label><input type="text" value={studentName} onChange={(e) => setStudentName(e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 bg-white text-sm sm:text-base text-black focus:outline-none focus:border-black transition-all" placeholder="Enter your name" required /></div>
+            {searchFields.map(field => (
+              <div key={field} className="group"><label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">{SEARCH_FIELD_LABELS[field] || field}</label><input type="text" value={formValues[field] || ''} onChange={(e) => setField(field, e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 bg-white text-sm sm:text-base text-black focus:outline-none focus:border-black transition-all" placeholder={SEARCH_FIELD_PLACEHOLDERS[field] || ''} required /></div>
+            ))}
             <button type="submit" disabled={loading} className="w-full py-2.5 sm:py-3 px-6 bg-black text-sm sm:text-base text-white font-medium hover:bg-gray-800 transition-all disabled:bg-gray-400">{loading ? 'Loading...' : 'Check Result'}</button>
           </form>
         </div>
-
         {error && (<div className="mb-4 sm:mb-8 p-3 sm:p-4 border-l-4 border-red-500 bg-red-50"><p className="text-red-800 text-sm sm:text-base">{error}</p></div>)}
-
         {result && !error && (
           <>
             <div ref={resultRef} className="border-t border-black pt-4 sm:pt-8 bg-white p-3 sm:p-6">
               <div className="text-center mb-3 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-200"><h3 className="text-lg sm:text-xl font-bold text-black mb-0.5 sm:mb-1">{schoolName}</h3></div>
-              <div className="mb-3 sm:mb-6"><p className="text-xs sm:text-sm text-gray-600 mb-0.5 sm:mb-1">Student Name</p><p className="text-base sm:text-lg font-semibold text-black">{result.name}</p></div>
+              <div className="mb-3 sm:mb-6"><p className="text-xs sm:text-sm text-gray-600 mb-0.5 sm:mb-1">Student Name</p><p className="text-base sm:text-lg font-semibold text-black">{result.name}</p>{result.father_name && <p className="text-xs sm:text-sm text-gray-500 mt-1">Father: {result.father_name}</p>}</div>
               <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-8">
                 <div><p className="text-[10px] sm:text-sm text-gray-600 mb-0.5">Class</p><p className="text-sm sm:text-lg font-semibold text-black">{result.class}</p></div>
                 <div><p className="text-[10px] sm:text-sm text-gray-600 mb-0.5">Position</p><p className="text-sm sm:text-lg font-semibold text-black">{result.position}</p></div>
