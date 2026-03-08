@@ -1420,6 +1420,23 @@ export default function Dashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <AlertDialog open={uploadConfirmOpen} onOpenChange={(open) => {
+        if (!open && uploadConfirmResolve) { uploadConfirmResolve(false); setUploadConfirmResolve(null); }
+        setUploadConfirmOpen(open);
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Upload Results</AlertDialogTitle>
+            <AlertDialogDescription>
+              This upload will cost <span className="font-semibold text-foreground">10 credits</span>. Your current balance is <span className="font-semibold text-foreground">{creditBalance ?? 0} credits</span>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { if (uploadConfirmResolve) { uploadConfirmResolve(false); setUploadConfirmResolve(null); } }}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { if (uploadConfirmResolve) { uploadConfirmResolve(true); setUploadConfirmResolve(null); } setUploadConfirmOpen(false); }}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <WhatsAppHelpButton />
     </div>
   );
