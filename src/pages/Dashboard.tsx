@@ -660,17 +660,27 @@ export default function Dashboard() {
                   )}
 
                   {classNames.length > 0 && (
-                    <Select value={classFilter} onValueChange={setClassFilter}>
-                      <SelectTrigger className="w-40 ml-auto">
-                        <SelectValue placeholder="Filter by class" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Classes</SelectItem>
-                        {classNames.map(cn => (
-                          <SelectItem key={cn} value={cn}>{cn}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="flex gap-1.5 flex-wrap ml-auto">
+                      <Button
+                        variant={classFilter === 'all' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setClassFilter('all')}
+                        className="text-xs h-7 px-2.5"
+                      >
+                        All ({results.length})
+                      </Button>
+                      {classNames.map(cn => (
+                        <Button
+                          key={cn}
+                          variant={classFilter === cn ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setClassFilter(cn)}
+                          className="text-xs h-7 px-2.5"
+                        >
+                          {cn} ({results.filter(r => r.class_name === cn).length})
+                        </Button>
+                      ))}
+                    </div>
                   )}
                 </div>
 
