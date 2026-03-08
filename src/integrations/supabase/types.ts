@@ -52,22 +52,28 @@ export type Database = {
       exams: {
         Row: {
           created_at: string
+          display_at: string | null
           id: string
           is_published: boolean
+          is_stopped: boolean
           name: string
           school_id: string
         }
         Insert: {
           created_at?: string
+          display_at?: string | null
           id?: string
           is_published?: boolean
+          is_stopped?: boolean
           name: string
           school_id: string
         }
         Update: {
           created_at?: string
+          display_at?: string | null
           id?: string
           is_published?: boolean
+          is_stopped?: boolean
           name?: string
           school_id?: string
         }
