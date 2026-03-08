@@ -315,6 +315,19 @@ export default function Dashboard() {
         return;
       }
 
+      // Compute position per class (sorted by total_marks descending)
+      const byClass: Record<string, typeof validRows> = {};
+      for (const row of validRows) {
+        if (!byClass[row.class_name]) byClass[row.class_name] = [];
+        byClass[row.class_name].push(row);
+      }
+      for (const className of Object.keys(byClass)) {
+        byClass[className].sort((a, b) => b.total_marks - a.total_marks);
+        byClass[className].forEach((row, idx) => {
+          row.subjects = { ...row.subjects, Position: idx + 1 };
+        });
+      }
+
       await supabase.from('results').delete().eq('exam_id', selectedExam);
 
       const { error } = await supabase.from('results').insert(validRows);
