@@ -1163,7 +1163,7 @@ export default function Dashboard() {
               const totalEarnings = referralEarnings.reduce((sum, e) => sum + e.commission_credits, 0);
               const totalWithdrawn = withdrawals.filter(w => w.status !== 'rejected').reduce((sum, w) => sum + w.amount, 0);
               const availableBalance = totalEarnings - totalWithdrawn;
-              const referralLink = referralCode ? `${window.location.origin}/signup?ref=${referralCode}` : '';
+              const referralLink = referralCode ? `https://resultportal.online/signup?ref=${referralCode}` : '';
 
               return (
                 <>
