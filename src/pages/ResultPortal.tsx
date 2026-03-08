@@ -78,8 +78,10 @@ export default function ResultPortal() {
     load();
   }, [slug]);
 
-  const handleSearch = useCallback(async (className: string, studentName: string) => {
+  const handleSearch = useCallback(async (searchParams: { rollNumber?: string; studentName?: string; fatherName?: string; className?: string }) => {
     if (!school) return null;
+
+    const { rollNumber = '', studentName = '', fatherName = '', className = '' } = searchParams;
 
     // Get published exams for this school
     const { data: exams } = await supabase
@@ -99,7 +101,9 @@ export default function ResultPortal() {
       p_exam_id: exam.id,
       p_class_name: className,
       p_query: studentName.trim(),
-    });
+      p_roll_number: rollNumber.trim(),
+      p_father_name: fatherName.trim(),
+    } as any);
 
     if (data && data.length > 0) {
       const { data: creditOk } = await supabase.rpc('deduct_credit', { p_school_id: school.id });
