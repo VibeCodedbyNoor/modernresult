@@ -315,6 +315,19 @@ export default function Dashboard() {
         return;
       }
 
+      // Compute position per class (sorted by total_marks descending)
+      const byClass: Record<string, typeof validRows> = {};
+      for (const row of validRows) {
+        if (!byClass[row.class_name]) byClass[row.class_name] = [];
+        byClass[row.class_name].push(row);
+      }
+      for (const className of Object.keys(byClass)) {
+        byClass[className].sort((a, b) => b.total_marks - a.total_marks);
+        byClass[className].forEach((row, idx) => {
+          row.subjects = { ...row.subjects, Position: idx + 1 };
+        });
+      }
+
       await supabase.from('results').delete().eq('exam_id', selectedExam);
 
       const { error } = await supabase.from('results').insert(validRows);
@@ -685,27 +698,52 @@ export default function Dashboard() {
                 </div>
 
                 {/* Results table */}
-                {filteredResults.length > 0 ? (
+                {filteredResults.length > 0 ? (() => {
+                  // Extract unique subject keys (exclude Position and non-subject metadata)
+                  const subjectKeys = [...new Set(
+                    filteredResults.flatMap(r => {
+                      if (typeof r.subjects !== 'object' || !r.subjects) return [];
+                      return Object.keys(r.subjects).filter(k => {
+                        const norm = k.toLowerCase();
+                        return norm !== 'position' && !NON_SUBJECT_PATTERNS.some(p => norm.includes(p));
+                      });
+                    })
+                  )];
+
+                  return (
                   <Card>
-                    <CardContent className="p-0">
+                    <CardContent className="p-0 overflow-x-auto">
                       <Table>
                         <TableHeader>
                           <TableRow>
                             <TableHead>Roll No.</TableHead>
                             <TableHead>Name</TableHead>
                             <TableHead>Class</TableHead>
-                            <TableHead>Total</TableHead>
+                            {subjectKeys.map(subj => (
+                              <TableHead key={subj} className="text-center whitespace-nowrap">{subj}</TableHead>
+                            ))}
+                            <TableHead className="text-center">Total</TableHead>
+                            <TableHead className="text-center">Pos</TableHead>
                             <TableHead>Grade</TableHead>
                             <TableHead className="w-12"></TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {filteredResults.map(r => (
+                          {filteredResults.map(r => {
+                            const subjects = (typeof r.subjects === 'object' && r.subjects) ? r.subjects : {};
+                            const position = subjects.Position;
+                            return (
                             <TableRow key={r.id}>
                               <TableCell className="font-mono">{r.roll_number}</TableCell>
                               <TableCell>{r.student_name}</TableCell>
                               <TableCell>{r.class_name}</TableCell>
-                              <TableCell>{r.total_marks}</TableCell>
+                              {subjectKeys.map(subj => {
+                                const val = subjects[subj];
+                                const obtained = typeof val === 'object' && val !== null ? val.obtained : (typeof val === 'number' ? val : '—');
+                                return <TableCell key={subj} className="text-center font-mono">{obtained}</TableCell>;
+                              })}
+                              <TableCell className="text-center font-semibold">{r.total_marks}</TableCell>
+                              <TableCell className="text-center font-mono">{position ?? '—'}</TableCell>
                               <TableCell>
                                 <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${r.grade === 'F' ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'}`}>
                                   {r.grade}
@@ -717,12 +755,14 @@ export default function Dashboard() {
                                 </Button>
                               </TableCell>
                             </TableRow>
-                          ))}
+                            );
+                          })}
                         </TableBody>
                       </Table>
                     </CardContent>
                   </Card>
-                ) : (
+                  );
+                })() : (
                   <Card className="border-dashed">
                     <CardContent className="p-12 text-center">
                       <FileSpreadsheet className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
