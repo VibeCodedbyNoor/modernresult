@@ -126,6 +126,7 @@ export type Database = {
       referral_earnings: {
         Row: {
           commission_credits: number
+          commission_rupees: number | null
           created_at: string | null
           credits_purchased: number
           id: string
@@ -134,6 +135,7 @@ export type Database = {
         }
         Insert: {
           commission_credits: number
+          commission_rupees?: number | null
           created_at?: string | null
           credits_purchased: number
           id?: string
@@ -142,6 +144,7 @@ export type Database = {
         }
         Update: {
           commission_credits?: number
+          commission_rupees?: number | null
           created_at?: string | null
           credits_purchased?: number
           id?: string
