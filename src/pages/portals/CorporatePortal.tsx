@@ -3,21 +3,14 @@ import { toast } from 'sonner';
 import { CLASS_SUBJECTS } from '@/lib/classSubjects';
 import { generateDemoResult } from '@/lib/demoResults';
 import { Building2 } from 'lucide-react';
+import { PortalProps, SEARCH_FIELD_LABELS, SEARCH_FIELD_PLACEHOLDERS } from '@/lib/portalTypes';
 
 import BackButton from '@/components/portal/BackButton';
 import ResultActions from '@/components/portal/ResultActions';
 
-interface PortalProps {
-  isDemo?: boolean;
-  schoolName?: string;
-  logoUrl?: string | null;
-  onSearch?: (className: string, studentName: string) => Promise<any>;
-  demoResult?: any;
-}
-
-const CorporatePortal = ({ isDemo = true, schoolName = "Premier Business School", logoUrl, onSearch, demoResult }: PortalProps) => {
+const CorporatePortal = ({ isDemo = true, schoolName = "Premier Business School", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult }: PortalProps) => {
   const [selectedClass, setSelectedClass] = useState('');
-  const [studentName, setStudentName] = useState('');
+  const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(demoResult || null);
   const [error, setError] = useState('');
@@ -25,37 +18,21 @@ const CorporatePortal = ({ isDemo = true, schoolName = "Premier Business School"
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!selectedClass || !studentName) {
-      toast.error('Please select a class and enter your name');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-    setResult(null);
-
+    const hasValue = searchFields.some(f => formValues[f]?.trim());
+    if (!selectedClass || !hasValue) { toast.error('Please fill in the required fields'); return; }
+    setLoading(true); setError(''); setResult(null);
     if (isDemo) {
       setTimeout(() => {
-        const demoRes = generateDemoResult(studentName, selectedClass);
-        setResult(demoRes);
+        const name = formValues['student_name'] || formValues['roll_number'] || 'Student';
+        setResult(generateDemoResult(name, selectedClass));
         setLoading(false);
         toast.success('Result loaded successfully!');
       }, 1000);
     } else if (onSearch) {
       try {
-        const searchResult = await onSearch(selectedClass, studentName);
-        if (searchResult) {
-          setResult(searchResult);
-          toast.success('Result loaded successfully!');
-        } else {
-          setError('No result found for the given details.');
-        }
-      } catch (err) {
-        setError('An error occurred while searching.');
-      } finally {
-        setLoading(false);
-      }
+        const r = await onSearch({ className: selectedClass, rollNumber: formValues['roll_number'] || '', studentName: formValues['student_name'] || '', fatherName: formValues['father_name'] || '' });
+        if (r) { setResult(r); toast.success('Result loaded successfully!'); } else { setError('No result found for the given details.'); }
+      } catch { setError('An error occurred while searching.'); } finally { setLoading(false); }
     }
   };
 
@@ -66,7 +43,6 @@ const CorporatePortal = ({ isDemo = true, schoolName = "Premier Business School"
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-slate-200 rounded-full blur-3xl opacity-30"></div>
       </div>
 
-      
       <BackButton variant="corporate" />
 
       <main className="relative z-10 container mx-auto px-3 sm:px-4 pt-14 sm:pt-6 pb-20 max-w-3xl">
@@ -77,16 +53,10 @@ const CorporatePortal = ({ isDemo = true, schoolName = "Premier Business School"
             <div className="relative inline-block mb-3 sm:mb-6">
               <Building2 className="absolute -top-1 sm:-top-4 -left-1 sm:-left-4 w-4 h-4 sm:w-8 sm:h-8 text-blue-600" />
               <Building2 className="absolute -top-1 sm:-top-4 -right-1 sm:-right-4 w-4 h-4 sm:w-8 sm:h-8 text-blue-600" />
-              <h1 className="relative text-xl sm:text-5xl md:text-6xl font-bold text-slate-800 px-6 sm:px-0">
-                {schoolName}
-              </h1>
+              <h1 className="relative text-xl sm:text-5xl md:text-6xl font-bold text-slate-800 px-6 sm:px-0">{schoolName}</h1>
             </div>
           )}
-          {logoUrl && (
-             <h1 className="relative text-xl sm:text-4xl md:text-5xl font-bold text-slate-800 px-6 sm:px-0">
-               {schoolName}
-             </h1>
-          )}
+          {logoUrl && <h1 className="relative text-xl sm:text-4xl md:text-5xl font-bold text-slate-800 px-6 sm:px-0">{schoolName}</h1>}
           <div className="w-20 sm:w-32 h-0.5 sm:h-1 mx-auto bg-gradient-to-r from-transparent via-blue-600 to-transparent mb-2 sm:mb-4 mt-2"></div>
           <p className="text-slate-600 text-xs sm:text-xl mb-1">Result Portal</p>
           <p className="text-blue-600/70 text-[10px] sm:text-lg italic">Excellence in Education</p>
@@ -99,47 +69,22 @@ const CorporatePortal = ({ isDemo = true, schoolName = "Premier Business School"
               <h2 className="text-xl sm:text-3xl font-bold text-slate-800 mb-1 sm:mb-2">Student Result Inquiry</h2>
               <div className="w-20 sm:w-24 h-0.5 mx-auto bg-gradient-to-r from-transparent via-blue-600 to-transparent"></div>
             </div>
-
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div>
-                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-2 sm:mb-3">
-                  Class Selection
-                </label>
-                <select
-                  value={selectedClass}
-                  onChange={(e) => setSelectedClass(e.target.value)}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-50 border sm:border-2 border-slate-200 text-sm sm:text-base text-slate-800 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 transition-all shadow-sm"
-                  required
-                >
+                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-2 sm:mb-3">Class Selection</label>
+                <select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-50 border sm:border-2 border-slate-200 text-sm sm:text-base text-slate-800 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 transition-all shadow-sm" required>
                   <option value="">Select Your Class...</option>
-                  {Object.keys(CLASS_SUBJECTS).map((cls) => (
-                    <option key={cls} value={cls}>{cls}</option>
-                  ))}
+                  {Object.keys(CLASS_SUBJECTS).map((cls) => (<option key={cls} value={cls}>{cls}</option>))}
                 </select>
               </div>
-
-              <div>
-                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-2 sm:mb-3">
-                  Student Name or Roll Number
-                </label>
-                <input
-                  type="text"
-                  value={studentName}
-                  onChange={(e) => setStudentName(e.target.value)}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-50 border sm:border-2 border-slate-200 text-sm sm:text-base text-slate-800 rounded-lg sm:rounded-xl placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all shadow-sm"
-                  placeholder="Enter Name or Roll Number..."
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 sm:py-4 px-6 bg-blue-600 hover:bg-blue-700 text-sm sm:text-lg text-white font-bold rounded-lg sm:rounded-xl transition-all shadow-lg disabled:opacity-50"
-              >
-                <span className="flex items-center justify-center gap-2">
-                  {loading ? 'Processing...' : <><Building2 className="w-4 h-4 sm:w-5 sm:h-5" /> View Result</>}
-                </span>
+              {searchFields.map(field => (
+                <div key={field}>
+                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-2 sm:mb-3">{SEARCH_FIELD_LABELS[field] || field}</label>
+                  <input type="text" value={formValues[field] || ''} onChange={(e) => setFormValues(prev => ({ ...prev, [field]: e.target.value }))} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-50 border sm:border-2 border-slate-200 text-sm sm:text-base text-slate-800 rounded-lg sm:rounded-xl placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all shadow-sm" placeholder={SEARCH_FIELD_PLACEHOLDERS[field] || ''} required />
+                </div>
+              ))}
+              <button type="submit" disabled={loading} className="w-full py-3 sm:py-4 px-6 bg-blue-600 hover:bg-blue-700 text-sm sm:text-lg text-white font-bold rounded-lg sm:rounded-xl transition-all shadow-lg disabled:opacity-50">
+                <span className="flex items-center justify-center gap-2">{loading ? 'Processing...' : <><Building2 className="w-4 h-4 sm:w-5 sm:h-5" /> View Result</>}</span>
               </button>
             </form>
           </div>
@@ -163,19 +108,13 @@ const CorporatePortal = ({ isDemo = true, schoolName = "Premier Business School"
                   <h3 className="text-base sm:text-xl font-bold text-slate-800 mb-0.5 sm:mb-1">{schoolName}</h3>
                   <p className="text-blue-600/70 text-xs sm:text-sm italic">Academic Excellence Report</p>
                 </div>
-
                 <div className="text-center mb-4 sm:mb-6">
-                  <p className="text-lg sm:text-2xl text-slate-800 font-bold mb-3 sm:mb-4">{result.name || result.student_name}</p>
+                  <p className="text-lg sm:text-2xl text-slate-800 font-bold mb-1">{result.name || result.student_name}</p>
+                  {result.father_name && <p className="text-sm sm:text-base text-slate-500 mb-3 sm:mb-4">Father: {result.father_name}</p>}
                   <div className="flex justify-center gap-2 sm:gap-4 flex-wrap">
-                    <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs sm:text-base text-slate-700">
-                      Class: <strong className="text-slate-900">{result.class || result.class_name}</strong>
-                    </span>
-                    <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs sm:text-base text-slate-700">
-                      Position: <strong className="text-slate-900">{result.position || '—'}</strong>
-                    </span>
-                    <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs sm:text-base text-slate-700">
-                      Grade: <strong className="text-blue-600">{result.grade}</strong>
-                    </span>
+                    <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs sm:text-base text-slate-700">Class: <strong className="text-slate-900">{result.class || result.class_name}</strong></span>
+                    <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs sm:text-base text-slate-700">Position: <strong className="text-slate-900">{result.position || '—'}</strong></span>
+                    <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs sm:text-base text-slate-700">Grade: <strong className="text-blue-600">{result.grade}</strong></span>
                   </div>
                 </div>
 
