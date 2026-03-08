@@ -1064,7 +1064,31 @@ export default function Dashboard() {
                   return (
                     <button
                       key={template.id}
-                      onClick={async () => {
+                    onClick={async () => {
+                        if (isSelected) return;
+                        
+                        // Check if this will cost credits and confirm
+                        if (school.template_changes_count >= 3) {
+                          const confirmed = window.confirm(
+                            'This design change will cost 5 credits. Continue?'
+                          );
+                          if (!confirmed) return;
+                        }
+
+                        // Call the DB function to handle credit deduction + counter
+                        const { data: success, error: rpcError } = await supabase
+                          .rpc('deduct_template_change_credits', { p_school_id: school.id });
+                        
+                        if (rpcError) {
+                          toast.error(rpcError.message);
+                          return;
+                        }
+                        if (!success) {
+                          toast.error('Not enough credits! You need at least 5 credits to change the design.');
+                          return;
+                        }
+
+                        // Now update the template
                         const { error } = await supabase
                           .from('schools')
                           .update({ result_template: template.id })
@@ -1072,8 +1096,23 @@ export default function Dashboard() {
                         if (error) {
                           toast.error(error.message);
                         } else {
-                          setSchool({ ...school, result_template: template.id });
-                          toast.success(`Design changed to "${template.name}"`);
+                          setSchool({
+                            ...school,
+                            result_template: template.id,
+                            template_changes_count: school.template_changes_count + 1,
+                          });
+                          if (school.template_changes_count < 3) {
+                            toast.success(`Design changed to "${template.name}" (free change used)`);
+                          } else {
+                            toast.success(`Design changed to "${template.name}" (5 credits deducted)`);
+                          }
+                          // Refresh credits display
+                          const { data: credData } = await supabase
+                            .from('school_credits')
+                            .select('balance')
+                            .eq('school_id', school.id)
+                            .single();
+                          if (credData) setCredits(credData.balance);
                         }
                       }}
                       className={`group relative rounded-xl border-2 overflow-hidden transition-all duration-200 hover:scale-[1.02] hover:shadow-lg text-left ${
