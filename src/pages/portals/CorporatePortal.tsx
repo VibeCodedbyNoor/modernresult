@@ -66,7 +66,7 @@ const CorporatePortal = ({ isDemo = true, schoolName = "Premier Business School"
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-slate-200 rounded-full blur-3xl opacity-30"></div>
       </div>
 
-      <PortalBranding variant="corporate" />
+      
       <BackButton variant="corporate" />
 
       <main className="relative z-10 container mx-auto px-3 sm:px-4 pt-14 sm:pt-6 pb-20 max-w-3xl">

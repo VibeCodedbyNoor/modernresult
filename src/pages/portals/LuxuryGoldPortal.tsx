@@ -38,7 +38,7 @@ const LuxuryGoldPortal = ({ isDemo = true, schoolName = "Royal Cambridge School"
             <h1 className="relative text-xl sm:text-5xl md:text-6xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 px-6 sm:px-0" style={{ textShadow: '0 0 30px rgba(251, 191, 36, 0.5)' }}>{schoolName}</h1>
           </div>
           <div className="w-20 sm:w-32 h-0.5 sm:h-1 mx-auto bg-gradient-to-r from-transparent via-amber-400 to-transparent mb-2 sm:mb-4"></div>
-          <p className="text-amber-200/80 text-[10px] sm:text-lg font-serif italic">Premium Result Portal</p>
+          <p className="text-amber-200/80 text-[10px] sm:text-lg font-serif italic">Online Result Portal</p>
         </header>
 
         <div className="relative mb-4 sm:mb-8">

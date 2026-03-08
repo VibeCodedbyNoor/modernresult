@@ -60,7 +60,7 @@ const CyberPunkPortal = ({ isDemo = true, schoolName = "FRONTIER ACADEMY", logoU
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
-      <PortalBranding variant="neon" />
+      
       <BackButton variant="neon" />
 
       {/* Animated grid background */}

@@ -61,7 +61,7 @@ const DarkModePortal = ({ isDemo = true, schoolName = "Cadet College", logoUrl, 
 
   return (
     <div className="min-h-screen bg-gray-950">
-      <PortalBranding variant="dark" />
+      
       <BackButton variant="dark" />
 
       <main className="container mx-auto px-3 sm:px-4 pt-14 sm:pt-12 pb-20 max-w-3xl relative z-10">

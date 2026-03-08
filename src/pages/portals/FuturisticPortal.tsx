@@ -38,7 +38,7 @@ const FuturisticPortal = ({ isDemo = true, schoolName = "TechEd Institute", logo
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-      <PortalBranding variant="dark" />
+      
       <BackButton variant="dark" />
       <main className="relative z-10 container mx-auto px-3 sm:px-4 pt-14 sm:pt-12 pb-20 max-w-4xl">
         <header className="text-center mb-6 sm:mb-12">
