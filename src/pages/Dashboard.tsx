@@ -217,21 +217,34 @@ export default function Dashboard() {
       .single();
     if (profile?.referral_code) setReferralCode(profile.referral_code);
 
-    // Fetch referrals
+    // Fetch referrals with joined profile data for school names
     const { data: refs } = await supabase
       .from('referrals')
-      .select('*')
+      .select(`
+        id,
+        referred_user_id,
+        created_at,
+        profiles!referrals_referred_user_id_fkey (school_name)
+      `)
       .eq('referrer_id', user.id)
       .order('created_at', { ascending: false });
-    setReferrals(refs || []);
+    
+    // Transform to match interface (handle the join result)
+    const transformedRefs = (refs || []).map((r: any) => ({
+      id: r.id,
+      referred_user_id: r.referred_user_id,
+      created_at: r.created_at,
+      profiles: r.profiles ? { school_name: r.profiles.school_name || '' } : undefined,
+    }));
+    setReferrals(transformedRefs);
 
-    // Fetch earnings
+    // Fetch earnings with commission_rupees
     const { data: earnings } = await supabase
       .from('referral_earnings')
-      .select('*')
+      .select('id, credits_purchased, commission_credits, commission_rupees, created_at')
       .eq('referrer_id', user.id)
       .order('created_at', { ascending: false });
-    setReferralEarnings(earnings || []);
+    setReferralEarnings((earnings || []) as ReferralEarning[]);
 
     // Fetch withdrawals
     const { data: wds } = await supabase
