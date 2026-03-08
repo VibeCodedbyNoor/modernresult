@@ -265,8 +265,8 @@ export default function Dashboard() {
     if (!user) return;
     
     const amount = parseFloat(withdrawAmount);
-    if (!amount || amount < 45) {
-      toast.error('Minimum withdrawal is ₨45');
+    if (!amount || amount < 400) {
+      toast.error('Minimum withdrawal is ₨400');
       return;
     }
     
@@ -1373,7 +1373,7 @@ export default function Dashboard() {
                       <CardTitle className="font-display flex items-center gap-2">
                         <Banknote className="h-5 w-5 text-primary" /> Withdraw Earnings
                       </CardTitle>
-                      <CardDescription>Minimum withdrawal: ₨45</CardDescription>
+                      <CardDescription>Minimum withdrawal: ₨400</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <form onSubmit={handleWithdrawal} className="space-y-4">
@@ -1384,7 +1384,7 @@ export default function Dashboard() {
                             value={withdrawAmount}
                             onChange={e => setWithdrawAmount(e.target.value)}
                             placeholder="e.g. 500"
-                            min={45}
+                            min={400}
                             max={availableBalance}
                           />
                           <p className="text-xs text-muted-foreground">Available: ₨{availableBalance.toFixed(0)}</p>

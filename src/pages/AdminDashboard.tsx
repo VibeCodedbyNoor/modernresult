@@ -59,6 +59,7 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSchool, setSelectedSchool] = useState<SchoolWithCredits | null>(null);
   const [creditAmount, setCreditAmount] = useState('');
+  const [paidCredits, setPaidCredits] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [lastUpdate, setLastUpdate] = useState<{ school: string; amount: number; newBalance: number } | null>(null);
   const [updating, setUpdating] = useState(false);
@@ -200,11 +201,15 @@ export default function AdminDashboard() {
 
     setUpdating(true);
     try {
-      const { data: newBalance, error } = await supabase.rpc('add_credits_admin', {
+      const rpcParams: any = {
         p_school_id: selectedSchool.id,
         p_amount: parseInt(creditAmount),
         p_description: `Admin top-up: ${creditAmount} credits`,
-      });
+      };
+      if (paidCredits && parseInt(paidCredits) > 0) {
+        rpcParams.p_paid_credits = parseInt(paidCredits);
+      }
+      const { data: newBalance, error } = await supabase.rpc('add_credits_admin', rpcParams);
 
       if (error) throw error;
 
@@ -221,7 +226,7 @@ export default function AdminDashboard() {
 
       toast({ title: `✅ ${creditAmount} credits added to ${selectedSchool.name}!` });
       setCreditAmount('');
-      setSelectedSchool(null);
+      setPaidCredits('');
       setSearchQuery('');
       loadData();
     } catch (err: any) {
@@ -545,6 +550,20 @@ resultportal.online`;
                     value={creditAmount}
                     onChange={e => setCreditAmount(e.target.value)}
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Paid Credits (for commission calculation)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="Leave empty if all are paid (no bonus)"
+                    value={paidCredits}
+                    onChange={e => setPaidCredits(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Only enter if package includes bonus credits. E.g. for 500+50 bonus, enter 500.
+                  </p>
                 </div>
 
                 <Button
