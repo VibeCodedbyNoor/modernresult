@@ -1373,7 +1373,7 @@ export default function Dashboard() {
                       <CardTitle className="font-display flex items-center gap-2">
                         <Banknote className="h-5 w-5 text-primary" /> Withdraw Earnings
                       </CardTitle>
-                      <CardDescription>Minimum withdrawal: ₨45</CardDescription>
+                      <CardDescription>Minimum withdrawal: ₨400</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <form onSubmit={handleWithdrawal} className="space-y-4">
