@@ -226,25 +226,29 @@ export default function Dashboard() {
         return;
       }
 
-      const headers = Array.from(
-        new Set(
-          sheets.flatMap(({ data }) => Object.keys(data[0] || {})).filter((header) => header.trim())
-        )
-      );
-      const rollKey = headers.find((h) => normalizeColumn(h).includes('roll')) || headers[0] || '';
-      const nameKey = headers.find((h) => normalizeColumn(h).includes('name')) || headers[1] || '';
+      // Build per-sheet mappings
+      const mappings: typeof sheetMappings = {};
+      for (const { sheetName, data: sheetData } of sheets) {
+        const headers = Object.keys(sheetData[0] || {}).filter(h => {
+          const trimmed = h.trim();
+          if (!trimmed) return false;
+          if (trimmed.startsWith('__EMPTY') || /^__EMPTY/.test(trimmed)) return false;
+          return true;
+        });
+        const rollKey = headers.find(h => normalizeColumn(h).includes('roll')) || headers[0] || '';
+        const nameKey = headers.find(h => normalizeColumn(h).includes('name')) || headers[1] || '';
 
-      const subjectDefaults: Record<string, boolean> = {};
-      for (const h of headers) {
-        if (h === rollKey || h === nameKey) continue;
-        subjectDefaults[h] = !isNonSubjectColumn(h);
+        const subjects: Record<string, { selected: boolean; totalMarks: number }> = {};
+        for (const h of headers) {
+          if (h === rollKey || h === nameKey) continue;
+          subjects[h] = { selected: !isNonSubjectColumn(h), totalMarks: 100 };
+        }
+        mappings[sheetName] = { headers, rollKey, nameKey, subjects };
       }
 
       setParsedSheets(sheets);
-      setAllHeaders(headers);
-      setSelectedRollKey(rollKey);
-      setSelectedNameKey(nameKey);
-      setSelectedSubjects(subjectDefaults);
+      setSheetMappings(mappings);
+      setActiveSheet(sheets[0].sheetName);
       setUploadDialogOpen(false);
       setColumnMappingOpen(true);
     } catch (err: any) {
