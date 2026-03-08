@@ -22,6 +22,7 @@ interface SchoolWithCredits {
   owner_name?: string;
   whatsapp_number?: string;
   owner_email?: string;
+  invited_by?: string;
 }
 
 interface TransactionRow {
