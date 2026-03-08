@@ -1042,13 +1042,20 @@ export default function Dashboard() {
 
             {/* Result Design Template Picker */}
             <div className="space-y-4">
-              <div>
-                <h2 className="font-display text-xl font-bold flex items-center gap-2">
-                  <Palette className="h-5 w-5 text-primary" /> Choose Your Result Portal Design
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Pick a style below — this is exactly how students will see your result portal. Just click to apply!
-                </p>
+              <div className="flex items-start justify-between flex-wrap gap-2">
+                <div>
+                  <h2 className="font-display text-xl font-bold flex items-center gap-2">
+                    <Palette className="h-5 w-5 text-primary" /> Choose Your Result Portal Design
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Pick a style below — this is exactly how students will see your result portal. Just click to apply!
+                  </p>
+                </div>
+                <Badge variant={school.template_changes_count < 3 ? 'default' : 'secondary'} className="text-xs shrink-0">
+                  {school.template_changes_count < 3
+                    ? `${3 - school.template_changes_count} free change${3 - school.template_changes_count !== 1 ? 's' : ''} remaining`
+                    : '5 credits per change'}
+                </Badge>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
