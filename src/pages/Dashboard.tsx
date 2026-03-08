@@ -103,10 +103,13 @@ export default function Dashboard() {
   // Column mapping state
   const [columnMappingOpen, setColumnMappingOpen] = useState(false);
   const [parsedSheets, setParsedSheets] = useState<{ sheetName: string; data: Record<string, any>[] }[]>([]);
-  const [allHeaders, setAllHeaders] = useState<string[]>([]);
-  const [selectedRollKey, setSelectedRollKey] = useState('');
-  const [selectedNameKey, setSelectedNameKey] = useState('');
-  const [selectedSubjects, setSelectedSubjects] = useState<Record<string, boolean>>({});
+  const [sheetMappings, setSheetMappings] = useState<Record<string, {
+    headers: string[];
+    rollKey: string;
+    nameKey: string;
+    subjects: Record<string, { selected: boolean; totalMarks: number }>;
+  }>>({});
+  const [activeSheet, setActiveSheet] = useState('');
 
   // Class filter
   const [classFilter, setClassFilter] = useState<string>('all');
