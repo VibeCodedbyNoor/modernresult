@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
-import { School, CreditCard, Users, BookOpen, Search, Plus, MessageCircle, LogOut, ArrowUpDown, Phone, User } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { School, CreditCard, Users, BookOpen, Search, Plus, MessageCircle, LogOut, ArrowUpDown, Phone, User, Wallet, CheckCircle, Ban, Clock } from 'lucide-react';
 
 interface SchoolWithCredits {
   id: string;
