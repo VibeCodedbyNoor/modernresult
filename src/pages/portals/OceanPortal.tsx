@@ -50,7 +50,8 @@ const OceanPortal = ({ isDemo = true, schoolName = "Blue Pearl Academy", logoUrl
               <div className="relative bg-blue-900/80 backdrop-blur-sm border sm:border-2 border-cyan-400/30 rounded-xl sm:rounded-2xl p-3 sm:p-8 shadow-2xl">
                 <div className="text-center mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-cyan-400/30"><h3 className="text-base sm:text-xl font-bold text-cyan-300 mb-0.5 sm:mb-1">{schoolName}</h3><p className="text-cyan-400/70 text-xs sm:text-sm italic">Academic Excellence Report</p></div>
                 <div className="text-center mb-4 sm:mb-6">
-                  <p className="text-lg sm:text-2xl text-cyan-100 font-bold mb-3 sm:mb-4">{result.name}</p>
+                  <p className="text-lg sm:text-2xl text-cyan-100 font-bold mb-1">{result.name}</p>
+                  {result.father_name && <p className="text-sm sm:text-base text-cyan-300/70 mb-3 sm:mb-4">Father: {result.father_name}</p>}
                   <div className="flex justify-center gap-2 sm:gap-4 flex-wrap">
                     <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-950/50 border border-cyan-400/30 rounded-lg text-xs sm:text-base text-cyan-200">Class: <strong className="text-cyan-100">{result.class}</strong></span>
                     <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-950/50 border border-cyan-400/30 rounded-lg text-xs sm:text-base text-cyan-200">Position: <strong className="text-cyan-100">{result.position}</strong></span>
