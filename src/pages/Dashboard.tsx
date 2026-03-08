@@ -198,7 +198,86 @@ export default function Dashboard() {
       fetchExams(data.id);
       fetchCredits(data.id);
     }
+    fetchReferralData();
     setLoading(false);
+  }
+
+  async function fetchReferralData() {
+    if (!user) return;
+    
+    // Fetch profile for referral code
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('referral_code')
+      .eq('user_id', user.id)
+      .single();
+    if (profile?.referral_code) setReferralCode(profile.referral_code);
+
+    // Fetch referrals
+    const { data: refs } = await supabase
+      .from('referrals')
+      .select('*')
+      .eq('referrer_id', user.id)
+      .order('created_at', { ascending: false });
+    setReferrals(refs || []);
+
+    // Fetch earnings
+    const { data: earnings } = await supabase
+      .from('referral_earnings')
+      .select('*')
+      .eq('referrer_id', user.id)
+      .order('created_at', { ascending: false });
+    setReferralEarnings(earnings || []);
+
+    // Fetch withdrawals
+    const { data: wds } = await supabase
+      .from('withdrawal_requests')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    setWithdrawals(wds || []);
+  }
+
+  async function handleWithdrawal(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user) return;
+    
+    const amount = parseInt(withdrawAmount);
+    if (!amount || amount < 50) {
+      toast.error('Minimum withdrawal is 50 credits');
+      return;
+    }
+    
+    const availableBalance = totalEarnings - totalWithdrawn;
+    if (amount > availableBalance) {
+      toast.error('Insufficient balance');
+      return;
+    }
+
+    if (!withdrawAccount.trim() || !withdrawName.trim()) {
+      toast.error('Please fill all fields');
+      return;
+    }
+
+    setWithdrawing(true);
+    const { error } = await supabase.from('withdrawal_requests').insert({
+      user_id: user.id,
+      amount,
+      payment_method: withdrawMethod,
+      account_number: withdrawAccount,
+      account_name: withdrawName,
+    });
+
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success('Withdrawal request submitted!');
+      setWithdrawAmount('');
+      setWithdrawAccount('');
+      setWithdrawName('');
+      fetchReferralData();
+    }
+    setWithdrawing(false);
   }
 
   async function handleConfirmTemplateChange() {
