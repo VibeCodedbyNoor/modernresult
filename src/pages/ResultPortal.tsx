@@ -102,7 +102,28 @@ export default function ResultPortal() {
     if (data && data.length > 0) {
       const { data: creditOk } = await supabase.rpc('deduct_credit', { p_school_id: school.id });
       if (!creditOk) return null;
-      return data[0];
+
+      const row = data[0];
+      const subjects = Array.isArray(row.subjects) ? (row.subjects as any[]) : [];
+      const totalObtained = subjects.reduce((sum: number, s: any) => sum + (Number(s.obtained_marks) || 0), 0);
+      const totalMax = subjects.reduce((sum: number, s: any) => sum + (Number(s.total_marks) || 0), 0);
+      const percentage = totalMax > 0 ? ((totalObtained / totalMax) * 100).toFixed(1) + '%' : '0%';
+      const pct = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
+      const grade = row.grade || (pct >= 90 ? 'A+' : pct >= 80 ? 'A' : pct >= 70 ? 'B' : pct >= 60 ? 'C' : pct >= 50 ? 'D' : 'F');
+      const remarks = pct >= 80 ? 'Excellent' : pct >= 60 ? 'Good' : pct >= 50 ? 'Satisfactory' : 'Needs Improvement';
+
+      return {
+        name: row.student_name,
+        class: row.class_name,
+        roll_number: row.roll_number,
+        position: '-',
+        subjects,
+        total_obtained: totalObtained,
+        total_marks: totalMax,
+        percentage,
+        grade,
+        remarks,
+      };
     }
 
     return null;
