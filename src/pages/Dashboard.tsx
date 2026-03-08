@@ -295,7 +295,7 @@ export default function Dashboard() {
   }
 
   async function handleConfirmUpload() {
-    if (!selectedExam) return;
+    if (!selectedExam || !school) return;
 
     // Validate each sheet has roll + name selected
     for (const { sheetName } of parsedSheets) {
@@ -311,6 +311,20 @@ export default function Dashboard() {
         return;
       }
     }
+
+    // Check upload credits (2 free, then 10 credits each)
+    if (school.upload_count >= 2) {
+      const confirmed = await new Promise<boolean>(resolve => {
+        setUploadConfirmResolve(() => resolve);
+        setUploadConfirmOpen(true);
+      });
+      if (!confirmed) return;
+    }
+
+    // Deduct upload credits
+    const { data: uploadOk, error: uploadErr } = await supabase.rpc('deduct_upload_credits', { p_school_id: school.id });
+    if (uploadErr) { toast.error(uploadErr.message); return; }
+    if (!uploadOk) { toast.error('Not enough credits! You need at least 10 credits to upload results.'); return; }
 
     setUploading(true);
     try {
