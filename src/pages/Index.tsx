@@ -43,6 +43,11 @@ export default function Index() {
                 </Button>
               </Link>
             )}
+            <Link to="/terms">
+              <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-3" style={{ color: '#8b8a9e' }}>
+                Terms & Rules
+              </Button>
+            </Link>
             <Link to="/login">
               <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white hover:bg-white/10 text-xs sm:text-sm px-2 sm:px-3">Log in</Button>
             </Link>
