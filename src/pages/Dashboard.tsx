@@ -109,6 +109,7 @@ export default function Dashboard() {
     headers: string[];
     rollKey: string;
     nameKey: string;
+    fatherKey: string;
     subjects: Record<string, { selected: boolean; totalMarks: number }>;
   }>>({});
   const [activeSheet, setActiveSheet] = useState('');
