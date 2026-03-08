@@ -136,14 +136,16 @@ export default function Dashboard() {
   const [templateConfirmOpen, setTemplateConfirmOpen] = useState(false);
   const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(null);
 
+  const fetchedRef = useRef(false);
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/login');
       return;
     }
-    if (user) {
+    if (user && !fetchedRef.current) {
+      fetchedRef.current = true;
       fetchSchool();
-      // Pre-fill school name from profile
       supabase.from('profiles').select('school_name').eq('user_id', user.id).single().then(({ data }) => {
         if (data?.school_name && !schoolName) setSchoolName(data.school_name);
       });
