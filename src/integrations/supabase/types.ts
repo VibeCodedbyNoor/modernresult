@@ -390,6 +390,10 @@ export type Database = {
         Args: { p_amount: number; p_description?: string; p_school_id: string }
         Returns: number
       }
+      apply_referral_code: {
+        Args: { p_referral_code: string; p_referred_user_id: string }
+        Returns: boolean
+      }
       deduct_credit: { Args: { p_school_id: string }; Returns: boolean }
       deduct_credits_bulk: {
         Args: { p_count: number; p_school_id: string }
