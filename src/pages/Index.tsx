@@ -6,6 +6,7 @@ import { resultTemplates } from '@/lib/resultTemplates';
 import HeroSection from '@/components/landing/HeroSection';
 import HowItWorks from '@/components/landing/HowItWorks';
 import DesignGrid from '@/components/landing/DesignGrid';
+import DoneForYouSection from '@/components/landing/DoneForYouSection';
 import CTASection from '@/components/landing/CTASection';
 
 export default function Index() {

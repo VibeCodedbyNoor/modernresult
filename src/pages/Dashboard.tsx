@@ -577,6 +577,23 @@ export default function Dashboard() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Done-for-you help banner */}
+        <a
+          href={`https://wa.me/923479104843?text=${encodeURIComponent("Assalam o Alaikum! I want you to set up my result portal.\n\nMy school name is: ___\nGoogle Sheet link: ___")}`}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 mb-6 hover:bg-accent/30 transition-colors group"
+        >
+          <div className="h-8 w-8 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
+            <MessageCircle className="h-4 w-4 text-green-500" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">Need help setting up?</p>
+            <p className="text-xs text-muted-foreground">Send us your school name & Google Sheet — we'll configure everything for you.</p>
+          </div>
+          <span className="text-xs font-medium text-green-500 shrink-0 group-hover:underline">WhatsApp Us →</span>
+        </a>
+
         <Tabs defaultValue="exams">
           <TabsList>
             <TabsTrigger value="exams">Exams & Results</TabsTrigger>
