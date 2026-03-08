@@ -106,6 +106,9 @@ export default function Signup() {
                 <p className="text-muted-foreground">
                   Please check your inbox and click the link to verify your account.
                 </p>
+                <p className="text-sm text-amber-600 bg-amber-50 rounded-md px-3 py-2 mt-2">
+                  ⚠️ Don't see the email? Check your <strong>Spam</strong> or <strong>Junk</strong> folder.
+                </p>
               </div>
               <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
                 Once verified, you'll be redirected directly to your dashboard to get started.
