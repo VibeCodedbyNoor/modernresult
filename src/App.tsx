@@ -33,6 +33,7 @@ const App = () => (
             <Route path="/demo/:templateId" element={<DemoPortal />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/earn" element={<EarnWithUs />} />
+            <Route path="/terms" element={<Terms />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

@@ -62,10 +62,13 @@ export default function Index() {
       <CTASection />
 
       {/* Footer */}
-      <footer className="py-6 sm:py-8 text-center" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <footer className="py-6 sm:py-8 text-center space-y-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <p className="text-xs sm:text-sm" style={{ color: '#6b6a80' }}>
           &copy; {new Date().getFullYear()} OnlineResultPortal. All rights reserved.
         </p>
+        <Link to="/terms" className="text-[10px] hover:underline" style={{ color: '#3a3950' }}>
+          Terms & Rules
+        </Link>
       </footer>
       <WhatsAppHelpButton />
     </div>
