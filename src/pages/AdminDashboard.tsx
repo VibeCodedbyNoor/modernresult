@@ -201,11 +201,15 @@ export default function AdminDashboard() {
 
     setUpdating(true);
     try {
-      const { data: newBalance, error } = await supabase.rpc('add_credits_admin', {
+      const rpcParams: any = {
         p_school_id: selectedSchool.id,
         p_amount: parseInt(creditAmount),
         p_description: `Admin top-up: ${creditAmount} credits`,
-      });
+      };
+      if (paidCredits && parseInt(paidCredits) > 0) {
+        rpcParams.p_paid_credits = parseInt(paidCredits);
+      }
+      const { data: newBalance, error } = await supabase.rpc('add_credits_admin', rpcParams);
 
       if (error) throw error;
 
