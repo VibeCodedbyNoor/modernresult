@@ -107,7 +107,7 @@ export default function ResultPortal() {
 
     if (data && data.length > 0) {
       const { data: creditOk } = await supabase.rpc('deduct_credit', { p_school_id: school.id });
-      if (!creditOk) return null;
+      if (!creditOk) return { error: 'credits_exhausted' };
 
       const row = data[0];
       const rawSubjects = row.subjects as any;
