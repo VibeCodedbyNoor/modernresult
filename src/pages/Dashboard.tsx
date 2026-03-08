@@ -239,14 +239,15 @@ export default function Dashboard() {
           return true;
         });
         const rollKey = headers.find(h => normalizeColumn(h).includes('roll')) || headers[0] || '';
-        const nameKey = headers.find(h => normalizeColumn(h).includes('name')) || headers[1] || '';
+        const nameKey = headers.find(h => normalizeColumn(h).includes('name') && !FATHER_NAME_PATTERNS.some(p => normalizeColumn(h).includes(p))) || headers[1] || '';
+        const fatherKey = headers.find(h => FATHER_NAME_PATTERNS.some(p => normalizeColumn(h).includes(p))) || '';
 
         const subjects: Record<string, { selected: boolean; totalMarks: number }> = {};
         for (const h of headers) {
-          if (h === rollKey || h === nameKey) continue;
+          if (h === rollKey || h === nameKey || h === fatherKey) continue;
           subjects[h] = { selected: !isNonSubjectColumn(h), totalMarks: 100 };
         }
-        mappings[sheetName] = { headers, rollKey, nameKey, subjects };
+        mappings[sheetName] = { headers, rollKey, nameKey, fatherKey, subjects };
       }
 
       setParsedSheets(sheets);
