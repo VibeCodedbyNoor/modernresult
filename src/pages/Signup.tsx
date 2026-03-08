@@ -46,16 +46,38 @@ export default function Signup() {
       return;
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
+    const { data: { user: newUser } } = await supabase.auth.getUser();
+    if (newUser) {
+      // Update profile with owner info
+      const profileUpdate: any = {
+        owner_name: ownerName.trim(),
+        school_name: schoolName.trim(),
+        whatsapp_number: whatsappNumber.trim(),
+      };
+
+      // If referred, store referrer's user_id
+      if (refCode) {
+        const { data: referrerProfile } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .eq('referral_code', refCode)
+          .maybeSingle();
+        
+        if (referrerProfile) {
+          profileUpdate.referred_by = referrerProfile.user_id;
+
+          // Create referral record
+          await supabase.from('referrals').insert({
+            referrer_id: referrerProfile.user_id,
+            referred_user_id: newUser.id,
+          });
+        }
+      }
+
       await supabase
         .from('profiles')
-        .update({
-          owner_name: ownerName.trim(),
-          school_name: schoolName.trim(),
-          whatsapp_number: whatsappNumber.trim(),
-        })
-        .eq('user_id', user.id);
+        .update(profileUpdate)
+        .eq('user_id', newUser.id);
     }
 
     setLoading(false);
