@@ -70,7 +70,7 @@ export default function AdminDashboard() {
   // Check admin role
   useEffect(() => {
     if (authLoading) return;
-    if (!user) { navigate('/login'); return; }
+    if (!user) { navigate('/login?redirect=/admin'); return; }
 
     const checkAdmin = async () => {
       const { data } = await supabase
