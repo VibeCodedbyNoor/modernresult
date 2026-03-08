@@ -1099,6 +1099,7 @@ export default function Dashboard() {
                     <Label className="text-sm">{field.label}</Label>
                   </div>
                 ))}
+                <p className="text-xs text-muted-foreground mt-2">Changes are applied instantly to your live portal at <strong>resultportal.online/results/{school.slug}</strong>. Design previews below show default fields.</p>
               </CardContent>
             </Card>
 
