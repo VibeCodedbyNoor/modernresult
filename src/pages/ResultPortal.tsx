@@ -1,13 +1,57 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Download, RotateCcw, Award, TrendingUp, Trophy, Clock, StopCircle } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import { getTemplate, type ResultTemplate } from '@/lib/resultTemplates';
+import { Search } from 'lucide-react';
+
+// Import all portal components
+import CorporatePortal from './portals/CorporatePortal';
+import CyberPunkPortal from './portals/CyberPunkPortal';
+import DarkModePortal from './portals/DarkModePortal';
+import ElegantPortal from './portals/ElegantPortal';
+import FuturisticPortal from './portals/FuturisticPortal';
+import GalaxyPortal from './portals/GalaxyPortal';
+import GlassmorphismPortal from './portals/GlassmorphismPortal';
+import GradientModernPortal from './portals/GradientModernPortal';
+import IslamicPortal from './portals/IslamicPortal';
+import KawaiiPortal from './portals/KawaiiPortal';
+import LuxuryGoldPortal from './portals/LuxuryGoldPortal';
+import MaterialDesignPortal from './portals/MaterialDesignPortal';
+import MinimalistPortal from './portals/MinimalistPortal';
+import MonochromePortal from './portals/MonochromePortal';
+import NaturePortal from './portals/NaturePortal';
+import NeonPortal from './portals/NeonPortal';
+import NeumorphismPortal from './portals/NeumorphismPortal';
+import OceanPortal from './portals/OceanPortal';
+import PastelPortal from './portals/PastelPortal';
+import RetroPortal from './portals/RetroPortal';
+import RoyalPurplePortal from './portals/RoyalPurplePortal';
+import SunsetPortal from './portals/SunsetPortal';
+
+const PORTAL_MAP: Record<string, React.ComponentType<any>> = {
+  'corporate': CorporatePortal,
+  'cyberpunk': CyberPunkPortal,
+  'dark-mode': DarkModePortal,
+  'elegant': ElegantPortal,
+  'futuristic': FuturisticPortal,
+  'galaxy': GalaxyPortal,
+  'glassmorphism': GlassmorphismPortal,
+  'gradient-modern': GradientModernPortal,
+  'islamic': IslamicPortal,
+  'kawaii': KawaiiPortal,
+  'luxury-gold': LuxuryGoldPortal,
+  'material-design': MaterialDesignPortal,
+  'minimalist': MinimalistPortal,
+  'monochrome': MonochromePortal,
+  'nature': NaturePortal,
+  'neon': NeonPortal,
+  'neumorphism': NeumorphismPortal,
+  'ocean': OceanPortal,
+  'pastel': PastelPortal,
+  'retro': RetroPortal,
+  'royal-purple': RoyalPurplePortal,
+  'sunset': SunsetPortal,
+};
 
 interface SchoolData {
   id: string;
@@ -18,278 +62,51 @@ interface SchoolData {
   result_template: string;
 }
 
-interface Exam {
-  id: string;
-  name: string;
-  display_at: string | null;
-  is_stopped: boolean;
-}
-
-interface Result {
-  id: string;
-  student_name: string;
-  roll_number: string;
-  subjects: any;
-  total_marks: number;
-  grade: string;
-  class_name: string;
-}
-
-interface SubjectRow {
-  name: string;
-  obtained: number;
-  total: number;
-  percentage: number;
-}
-
-const NON_SUBJECT_PATTERNS = [
-  'total', 'position', 'rank', 'percentage', 'percent', '%age', 'grade', 'result', 'gpa', 'cgpa',
-  'status', 'remark', 'remarks', 'avg', 'average', 'division', 'obtained', 'overall', 'marks',
-];
-
-const normalizeColumn = (value: string) =>
-  value
-    .toLowerCase()
-    .replace(/[^a-z0-9%]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-const isNonSubjectColumn = (value: string) => {
-  const normalized = normalizeColumn(value);
-  return NON_SUBJECT_PATTERNS.some((pattern) => normalized.includes(pattern));
-};
-
-const getNumeric = (value: unknown) => {
-  const raw = String(value ?? '').trim();
-  if (!raw) return 0;
-  const match = raw.match(/-?\d+(\.\d+)?/);
-  return match ? Number(match[0]) : 0;
-};
-
-const parseSubjectValue = (value: unknown): { obtained: number; total: number } => {
-  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-    const row = value as Record<string, unknown>;
-    const obtained = getNumeric(row.obtained ?? row.obt ?? row.marks ?? row.score ?? row.mark ?? 0);
-    const total = getNumeric(row.total ?? row.max ?? row.maximum ?? 100) || 100;
-    return { obtained, total };
-  }
-
-  const raw = String(value ?? '').trim();
-  const fraction = raw.match(/(\d+)\s*\/\s*(\d+)/);
-  if (fraction) {
-    return { obtained: Number(fraction[1]), total: Number(fraction[2]) || 100 };
-  }
-
-  return { obtained: getNumeric(raw), total: 100 };
-};
-
 export default function ResultPortal() {
   const { slug } = useParams<{ slug: string }>();
   const [school, setSchool] = useState<SchoolData | null>(null);
-  const [exams, setExams] = useState<Exam[]>([]);
-  const [selectedExam, setSelectedExam] = useState('');
-  const [classes, setClasses] = useState<string[]>([]);
-  const [selectedClass, setSelectedClass] = useState('');
-  const [query, setQuery] = useState('');
-  const [result, setResult] = useState<Result | null>(null);
   const [loading, setLoading] = useState(true);
-  const [searching, setSearching] = useState(false);
-  const [notFound, setNotFound] = useState(false);
-  const [noCredits, setNoCredits] = useState(false);
-
-  // Countdown state
-  const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
-  const [isStopped, setIsStopped] = useState(false);
-
-  const resultCardRef = useRef<HTMLDivElement>(null);
-  const downloadCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function load() {
       const { data: schoolData } = await supabase.from('schools').select('*').eq('slug', slug).single();
-      if (schoolData) {
-        setSchool(schoolData);
-        const { data: examData } = await supabase
-          .from('exams')
-          .select('id, name, display_at, is_stopped')
-          .eq('school_id', schoolData.id)
-          .eq('is_published', true);
-        const typedExams = (examData || []) as Exam[];
-        setExams(typedExams);
-        if (typedExams.length > 0) setSelectedExam(typedExams[0].id);
-      }
+      if (schoolData) setSchool(schoolData);
       setLoading(false);
     }
-
     load();
   }, [slug]);
 
-  // Countdown timer effect
-  useEffect(() => {
-    if (!selectedExam || exams.length === 0) return;
+  const handleSearch = useCallback(async (className: string, studentName: string) => {
+    if (!school) return null;
 
-    const exam = exams.find(e => e.id === selectedExam);
-    if (!exam) return;
+    // Get published exams for this school
+    const { data: exams } = await supabase
+      .from('exams')
+      .select('id, name, display_at, is_stopped')
+      .eq('school_id', school.id)
+      .eq('is_published', true);
 
-    if (exam.is_stopped) {
-      setIsStopped(true);
-      setCountdown(null);
-      return;
-    }
+    if (!exams || exams.length === 0) return null;
 
-    setIsStopped(false);
-
-    if (!exam.display_at) {
-      setCountdown(null);
-      return;
-    }
-
-    const target = new Date(exam.display_at).getTime();
-
-    function updateCountdown() {
-      const now = Date.now();
-      const diff = target - now;
-      if (diff <= 0) {
-        setCountdown(null);
-        return;
-      }
-      const days = Math.floor(diff / 86400000);
-      const hours = Math.floor((diff % 86400000) / 3600000);
-      const minutes = Math.floor((diff % 3600000) / 60000);
-      const seconds = Math.floor((diff % 60000) / 1000);
-      setCountdown({ days, hours, minutes, seconds });
-    }
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(interval);
-  }, [selectedExam, exams]);
-
-  useEffect(() => {
-    if (!selectedExam) return;
-
-    async function loadClasses() {
-      const { data } = await supabase.from('results').select('class_name').eq('exam_id', selectedExam);
-      if (data) {
-        const unique = [...new Set(data.map((row) => row.class_name).filter(Boolean))];
-        setClasses(unique);
-        setSelectedClass('');
-      }
-    }
-
-    loadClasses();
-  }, [selectedExam]);
-
-  async function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!query.trim() || !selectedExam || !selectedClass) return;
-
-    setSearching(true);
-    setResult(null);
-    setNotFound(false);
+    // Use the first published exam
+    const exam = exams[0];
+    if (exam.is_stopped) return null;
+    if (exam.display_at && new Date(exam.display_at).getTime() > Date.now()) return null;
 
     const { data } = await supabase.rpc('fuzzy_search_results', {
-      p_exam_id: selectedExam,
-      p_class_name: selectedClass,
-      p_query: query.trim(),
+      p_exam_id: exam.id,
+      p_class_name: className,
+      p_query: studentName.trim(),
     });
 
     if (data && data.length > 0) {
-      const { data: creditOk } = await supabase.rpc('deduct_credit', { p_school_id: school!.id });
-      if (!creditOk) {
-        setNoCredits(true);
-        setSearching(false);
-        return;
-      }
-      setResult(data[0]);
-    } else {
-      setNotFound(true);
+      const { data: creditOk } = await supabase.rpc('deduct_credit', { p_school_id: school.id });
+      if (!creditOk) return null;
+      return data[0];
     }
 
-    setSearching(false);
-  }
-
-  const processedResult = useMemo(() => {
-    if (!result) {
-      return {
-        subjects: [] as SubjectRow[],
-        position: '—',
-        percentage: 0,
-        totalObtained: 0,
-        totalMax: 0,
-      };
-    }
-
-    let position = '—';
-    let percentage: number | null = null;
-    const subjectRows: SubjectRow[] = [];
-
-    for (const [key, value] of Object.entries(result.subjects || {})) {
-      const normalized = normalizeColumn(key);
-
-      if (normalized.includes('position') || normalized.includes('rank')) {
-        const parsed = String(value ?? '').trim();
-        if (parsed) position = parsed;
-        continue;
-      }
-
-      if (normalized.includes('percent') || normalized.includes('%age') || normalized === '%') {
-        const parsed = getNumeric(value);
-        if (parsed > 0) percentage = parsed;
-        continue;
-      }
-
-      if (isNonSubjectColumn(key)) continue;
-
-      const { obtained, total } = parseSubjectValue(value);
-      subjectRows.push({
-        name: key,
-        obtained,
-        total,
-        percentage: total > 0 ? (obtained / total) * 100 : 0,
-      });
-    }
-
-    const totalObtained = subjectRows.reduce((sum, subject) => sum + subject.obtained, 0);
-    const totalMax = subjectRows.reduce((sum, subject) => sum + subject.total, 0);
-    const computedPercentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
-
-    return {
-      subjects: subjectRows,
-      position,
-      percentage: percentage ?? computedPercentage,
-      totalObtained,
-      totalMax,
-    };
-  }, [result]);
-
-  const leftSubjects = processedResult.subjects.slice(0, Math.ceil(processedResult.subjects.length / 2));
-  const rightSubjects = processedResult.subjects.slice(Math.ceil(processedResult.subjects.length / 2));
-
-  async function handleDownload() {
-    const targetNode = downloadCardRef.current || resultCardRef.current;
-    if (!targetNode) return;
-
-    const canvas = await html2canvas(targetNode, {
-      backgroundColor: '#0f172a',
-      scale: 2,
-      useCORS: true,
-      windowWidth: targetNode.scrollWidth,
-      windowHeight: targetNode.scrollHeight,
-    });
-
-    const link = document.createElement('a');
-    link.download = `${result?.student_name || 'result'}-marksheet.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  }
-
-  function handleCheckAnother() {
-    setResult(null);
-    setNotFound(false);
-    setNoCredits(false);
-    setQuery('');
-  }
+    return null;
+  }, [school]);
 
   if (loading) {
     return (
@@ -313,367 +130,15 @@ export default function ResultPortal() {
     );
   }
 
-  const tpl = getTemplate(school.result_template || 'luxury-gold');
-  const accent = tpl.accentColor;
-
-  // Check if results are blocked
-  const isBlocked = isStopped || countdown !== null;
+  const templateId = school.result_template || 'luxury-gold';
+  const PortalComponent = PORTAL_MAP[templateId] || LuxuryGoldPortal;
 
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{
-        background: tpl.background,
-        color: tpl.textPrimary,
-      }}
-    >
-      <header className="pt-8 pb-4 text-center animate-fade-in">
-        <div className="container mx-auto px-4">
-          {school.logo_url && (
-            <img
-              src={school.logo_url}
-              alt={school.name}
-              className="h-20 w-20 mx-auto mb-4 rounded-full object-cover"
-              style={{ boxShadow: `0 0 40px ${accent}44`, border: `2px solid ${tpl.cardBorder}` }}
-            />
-          )}
-          <h1 className="font-display text-3xl md:text-5xl font-bold tracking-tight" style={{ color: accent }}>
-            {school.name}
-          </h1>
-          <p className="tracking-[0.4em] text-xs md:text-sm mt-2 uppercase" style={{ color: tpl.textSecondary }}>
-            Student Result Portal
-          </p>
-          {exams.length > 0 && (
-            <div
-              className="mt-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border bg-card/70 text-sm"
-              style={{ borderColor: `${accent}50`, color: accent }}
-            >
-              <span className="w-2 h-2 rounded-full pulse" style={{ background: accent }} />
-              {exams.find((exam) => exam.id === selectedExam)?.name || 'Select Exam'}
-            </div>
-          )}
-        </div>
-      </header>
-
-      <main className="flex-1 container mx-auto px-4 pb-10 max-w-2xl">
-        {/* Stopped state */}
-        {isStopped ? (
-          <Card className="animate-enter backdrop-blur-sm" style={{ background: tpl.cardBg, borderColor: tpl.cardBorder, borderRadius: tpl.borderRadius }}>
-            <CardContent className="p-8 text-center space-y-4">
-              <div className="h-14 w-14 rounded-full flex items-center justify-center mx-auto" style={{ background: `${accent}18` }}>
-                <StopCircle className="h-6 w-6" style={{ color: accent }} />
-              </div>
-              <div>
-                <h3 className="font-display text-lg font-semibold" style={{ color: tpl.textPrimary }}>Results Currently Unavailable</h3>
-                <p className="text-sm mt-2" style={{ color: tpl.textSecondary }}>
-                  The school administration has temporarily paused result display. Please check back later or contact your school.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        ) : countdown ? (
-          /* Countdown state */
-          <Card className="animate-enter backdrop-blur-sm" style={{ background: tpl.cardBg, borderColor: tpl.cardBorder, borderRadius: tpl.borderRadius }}>
-            <CardContent className="p-8 text-center space-y-6">
-              <div className="h-14 w-14 rounded-full flex items-center justify-center mx-auto" style={{ background: `${accent}18` }}>
-                <Clock className="h-6 w-6" style={{ color: accent }} />
-              </div>
-              <div>
-                <h3 className="font-display text-xl font-semibold" style={{ color: tpl.textPrimary }}>Results Coming Soon!</h3>
-                <p className="text-sm mt-2" style={{ color: tpl.textSecondary }}>
-                  Results will be available when the countdown ends.
-                </p>
-              </div>
-              <div className="grid grid-cols-4 gap-3 max-w-xs mx-auto">
-                {[
-                  { value: countdown.days, label: 'Days' },
-                  { value: countdown.hours, label: 'Hours' },
-                  { value: countdown.minutes, label: 'Min' },
-                  { value: countdown.seconds, label: 'Sec' },
-                ].map(({ value, label }) => (
-                  <div key={label} className="rounded-lg p-3 text-center" style={{ border: `1px solid ${tpl.cardBorder}`, background: tpl.inputBg }}>
-                    <p className="font-display text-2xl md:text-3xl font-bold tabular-nums" style={{ color: accent }}>
-                      {String(value).padStart(2, '0')}
-                    </p>
-                    <p className="text-[10px] uppercase tracking-[0.15em] mt-1" style={{ color: tpl.textSecondary }}>{label}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ) : noCredits ? (
-          <Card className="animate-enter backdrop-blur-sm" style={{ background: tpl.cardBg, borderColor: tpl.cardBorder, borderRadius: tpl.borderRadius }}>
-            <CardContent className="p-8 text-center space-y-4">
-              <div className="h-14 w-14 rounded-full flex items-center justify-center mx-auto" style={{ background: `${accent}18` }}>
-                <Search className="h-6 w-6" style={{ color: accent }} />
-              </div>
-              <div>
-                <h3 className="font-display text-lg font-semibold" style={{ color: tpl.textPrimary }}>Results Temporarily Unavailable</h3>
-                <p className="text-sm mt-2" style={{ color: tpl.textSecondary }}>
-                  This school's result portal is temporarily unavailable. Please contact your school administrator.
-                </p>
-              </div>
-              <Button variant="outline" onClick={handleCheckAnother} className="gap-2 hover-scale" style={{ borderColor: tpl.cardBorder, color: tpl.textPrimary }}>
-                <RotateCcw className="h-4 w-4" /> Go Back
-              </Button>
-            </CardContent>
-          </Card>
-        ) : !result && !notFound ? (
-          <Card className="animate-enter backdrop-blur-sm" style={{ background: tpl.cardBg, borderColor: tpl.cardBorder, borderRadius: tpl.borderRadius }}>
-            <CardContent className="p-6 md:p-8 space-y-5">
-              <h2 className="font-display text-xl text-center flex items-center justify-center gap-2" style={{ color: accent }}>
-                <Search className="h-5 w-5" /> Student Result Inquiry
-              </h2>
-
-              <form onSubmit={handleSearch} className="space-y-4">
-                {exams.length > 1 && (
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium" style={{ color: tpl.textSecondary }}>Exam</label>
-                    <Select value={selectedExam} onValueChange={setSelectedExam}>
-                      <SelectTrigger style={{ background: tpl.inputBg, borderColor: tpl.cardBorder, color: tpl.textPrimary }}>
-                        <SelectValue placeholder="Select exam" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {exams.map((exam) => (
-                          <SelectItem key={exam.id} value={exam.id}>
-                            {exam.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium" style={{ color: tpl.textSecondary }}>Class</label>
-                  <Select value={selectedClass} onValueChange={setSelectedClass}>
-                    <SelectTrigger style={{ background: tpl.inputBg, borderColor: tpl.cardBorder, color: tpl.textPrimary }}>
-                      <SelectValue placeholder="Select class" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {classes.map((className) => (
-                        <SelectItem key={className} value={className}>
-                          {className}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium" style={{ color: tpl.textSecondary }}>Roll Number or Student Name</label>
-                  <Input
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Enter roll number or student name"
-                    required
-                    style={{ background: tpl.inputBg, borderColor: tpl.cardBorder, color: tpl.textPrimary }}
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full hover-scale font-semibold"
-                  disabled={searching || !selectedClass}
-                  style={{ background: tpl.buttonGradient, color: tpl.id === 'glassmorphism' ? '#fff' : tpl.id === 'minimalist' || tpl.id === 'kawaii' ? '#fff' : '#111' }}
-                >
-                  {searching ? 'Searching...' : '✦ View Result'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        ) : notFound ? (
-          <Card className="animate-enter backdrop-blur-sm" style={{ background: tpl.cardBg, borderColor: tpl.cardBorder, borderRadius: tpl.borderRadius }}>
-            <CardContent className="p-8 text-center space-y-4">
-              <div className="h-14 w-14 rounded-full flex items-center justify-center mx-auto" style={{ background: `${accent}18` }}>
-                <Search className="h-6 w-6" style={{ color: accent }} />
-              </div>
-              <div>
-                <h3 className="font-display text-lg font-semibold" style={{ color: tpl.textPrimary }}>No Result Found</h3>
-                <p className="text-sm mt-1" style={{ color: tpl.textSecondary }}>
-                  We couldn't find a result for <strong>{query}</strong> in {selectedClass}.
-                </p>
-              </div>
-              <Button variant="outline" onClick={handleCheckAnother} className="gap-2 hover-scale" style={{ borderColor: tpl.cardBorder, color: tpl.textPrimary }}>
-                <RotateCcw className="h-4 w-4" /> Try Again
-              </Button>
-            </CardContent>
-          </Card>
-        ) : result ? (
-          <div className="space-y-4 animate-enter">
-            <Card ref={resultCardRef} className="overflow-hidden backdrop-blur-sm" style={{ background: tpl.cardBg, borderColor: tpl.cardBorder, borderRadius: tpl.borderRadius }}>
-              <CardContent className="p-0">
-                <div className="px-6 py-4 text-center" style={{ borderBottom: `1px solid ${tpl.cardBorder}`, background: tpl.tableHeaderBg }}>
-                  <p className="text-xs uppercase tracking-[0.25em]" style={{ color: tpl.textSecondary }}>{school.name}</p>
-                  <p className="text-xs mt-1" style={{ color: accent }}>{exams.find((exam) => exam.id === selectedExam)?.name}</p>
-                </div>
-
-                <div className="px-6 py-5 grid grid-cols-2 gap-4" style={{ borderBottom: `1px solid ${tpl.cardBorder}` }}>
-                  <div>
-                    <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Student</p>
-                    <p className="font-display text-2xl font-bold" style={{ color: tpl.textPrimary }}>{result.student_name}</p>
-                    <p className="text-xs mt-1" style={{ color: tpl.textSecondary }}>Roll: {result.roll_number}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Class</p>
-                    <p className="font-display text-2xl font-bold" style={{ color: tpl.textPrimary }}>{result.class_name}</p>
-                  </div>
-                </div>
-
-                <div className="px-6 py-4 grid grid-cols-3 gap-3" style={{ borderBottom: `1px solid ${tpl.cardBorder}` }}>
-                  {[
-                    { icon: Trophy, label: 'Position', value: processedResult.position },
-                    { icon: TrendingUp, label: 'Percentage', value: `${processedResult.percentage.toFixed(2)}%` },
-                    { icon: Award, label: 'Marks', value: `${processedResult.totalObtained}/${processedResult.totalMax || 0}` },
-                  ].map(({ icon: Icon, label, value }) => (
-                    <div
-                      key={label}
-                      className="rounded-lg p-3 text-center hover-scale"
-                      style={{ border: `1px solid ${tpl.cardBorder}`, background: tpl.inputBg }}
-                    >
-                      <Icon className="h-4 w-4 mx-auto mb-1" style={{ color: accent }} />
-                      <p className="font-display text-lg font-bold leading-tight" style={{ color: tpl.textPrimary }}>{value}</p>
-                      <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: tpl.textSecondary }}>{label}</p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="px-6 py-4">
-                  <p className="text-[11px] uppercase tracking-[0.2em] mb-2" style={{ color: tpl.textSecondary }}>Subject-wise marks</p>
-                  <div className="rounded-lg overflow-hidden" style={{ border: `1px solid ${tpl.cardBorder}` }}>
-                    <table className="w-full text-sm">
-                      <thead style={{ background: tpl.tableHeaderBg }}>
-                        <tr>
-                          <th className="py-2 px-3 text-left text-xs uppercase" style={{ color: tpl.textSecondary }}>Subject</th>
-                          <th className="py-2 px-3 text-center text-xs uppercase" style={{ color: tpl.textSecondary }}>Obt</th>
-                          <th className="py-2 px-3 text-center text-xs uppercase" style={{ color: tpl.textSecondary }}>Total</th>
-                          <th className="py-2 px-3 text-right text-xs uppercase" style={{ color: tpl.textSecondary }}>%</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {processedResult.subjects.map((subject) => (
-                          <tr key={subject.name} style={{ borderTop: `1px solid ${tpl.cardBorder}` }}>
-                            <td className="py-2.5 px-3 font-medium" style={{ color: tpl.textPrimary }}>{subject.name}</td>
-                            <td className="py-2.5 px-3 text-center font-mono" style={{ color: tpl.textPrimary }}>{subject.obtained}</td>
-                            <td className="py-2.5 px-3 text-center font-mono" style={{ color: tpl.textPrimary }}>{subject.total}</td>
-                            <td className="py-2.5 px-3 text-right font-mono font-semibold" style={{ color: accent }}>
-                              {subject.percentage.toFixed(0)}%
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                      <tfoot>
-                        <tr style={{ borderTop: `2px solid ${tpl.cardBorder}`, background: tpl.tableHeaderBg }}>
-                          <td className="py-2.5 px-3 font-semibold" style={{ color: tpl.textPrimary }}>Total</td>
-                          <td className="py-2.5 px-3 text-center font-mono font-semibold" style={{ color: tpl.textPrimary }}>{processedResult.totalObtained}</td>
-                          <td className="py-2.5 px-3 text-center font-mono font-semibold" style={{ color: tpl.textPrimary }}>{processedResult.totalMax}</td>
-                          <td className="py-2.5 px-3 text-right font-mono font-semibold" style={{ color: accent }}>
-                            {processedResult.percentage.toFixed(2)}%
-                          </td>
-                        </tr>
-                      </tfoot>
-                    </table>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Button
-              onClick={handleDownload}
-              className="w-full hover-scale font-semibold"
-              style={{ background: tpl.buttonGradient, color: tpl.id === 'glassmorphism' ? '#fff' : tpl.id === 'minimalist' || tpl.id === 'kawaii' ? '#fff' : '#111' }}
-            >
-              <Download className="h-4 w-4 mr-2" /> Download Result Card
-            </Button>
-
-            <Button onClick={handleCheckAnother} className="w-full hover-scale font-semibold" style={{ background: tpl.buttonGradient, color: tpl.id === 'glassmorphism' ? '#fff' : tpl.id === 'minimalist' || tpl.id === 'kawaii' ? '#fff' : '#111' }}>
-              <RotateCcw className="h-4 w-4 mr-2" /> Check Another Result
-            </Button>
-          </div>
-        ) : null}
-
-        {exams.length === 0 && (
-          <Card className="animate-fade-in border-border/70 bg-card/80">
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">No published results available yet. Please check back later.</p>
-            </CardContent>
-          </Card>
-        )}
-      </main>
-
-      {/* Compact download template (off-screen) */}
-      {result && (
-        <div className="fixed left-0 top-0 -translate-x-[200vw] pointer-events-none">
-          <div
-            ref={downloadCardRef}
-            className="w-[980px] p-8 rounded-2xl"
-            style={{ background: tpl.cardBg, border: `1px solid ${tpl.cardBorder}`, color: tpl.textPrimary }}
-          >
-            <div className="text-center pb-4" style={{ borderBottom: `1px solid ${tpl.cardBorder}` }}>
-              <h2 className="font-display text-3xl font-bold" style={{ color: accent }}>{school.name}</h2>
-              <p className="text-sm mt-1" style={{ color: tpl.textSecondary }}>{exams.find((exam) => exam.id === selectedExam)?.name} — {result.class_name}</p>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4 py-4 text-sm" style={{ borderBottom: `1px solid ${tpl.cardBorder}` }}>
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Student</p>
-                <p className="font-display text-2xl font-bold">{result.student_name}</p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Roll</p>
-                <p className="font-mono text-xl font-semibold">{result.roll_number}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs uppercase tracking-[0.2em]" style={{ color: tpl.textSecondary }}>Position / Percentage</p>
-                <p className="font-display text-xl font-bold">
-                  {processedResult.position} • {processedResult.percentage.toFixed(2)}%
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-6 pt-4">
-              {[leftSubjects, rightSubjects].map((list, index) => (
-                <table key={index} className="w-full text-sm rounded-lg overflow-hidden" style={{ border: `1px solid ${tpl.cardBorder}` }}>
-                  <thead style={{ background: tpl.tableHeaderBg }}>
-                    <tr>
-                      <th className="py-2 px-3 text-left text-xs uppercase" style={{ color: tpl.textSecondary }}>Subject</th>
-                      <th className="py-2 px-3 text-center text-xs uppercase" style={{ color: tpl.textSecondary }}>Obt</th>
-                      <th className="py-2 px-3 text-center text-xs uppercase" style={{ color: tpl.textSecondary }}>Total</th>
-                      <th className="py-2 px-3 text-right text-xs uppercase" style={{ color: tpl.textSecondary }}>%</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {list.map((subject) => (
-                      <tr key={subject.name} style={{ borderTop: `1px solid ${tpl.cardBorder}` }}>
-                        <td className="py-2 px-3">{subject.name}</td>
-                        <td className="py-2 px-3 text-center font-mono">{subject.obtained}</td>
-                        <td className="py-2 px-3 text-center font-mono">{subject.total}</td>
-                        <td className="py-2 px-3 text-right font-mono" style={{ color: accent }}>{subject.percentage.toFixed(0)}%</td>
-                      </tr>
-                    ))}
-                    {list.length === 0 && (
-                      <tr>
-                        <td colSpan={4} className="py-4 text-center text-xs" style={{ color: tpl.textSecondary }}>No subjects</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              ))}
-            </div>
-
-            <div className="mt-4 pt-4 flex items-center justify-end gap-6 text-lg font-semibold" style={{ borderTop: `1px solid ${tpl.cardBorder}` }}>
-              <span>Total: {processedResult.totalObtained}/{processedResult.totalMax}</span>
-              <span style={{ color: accent }}>Grade: {result.grade}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <footer className="py-4 text-center print:hidden">
-        <p className="text-xs" style={{ color: tpl.textSecondary }}>
-          Powered by <a href="/" className="story-link font-medium" style={{ color: accent }}>OnlineResultPortal</a>
-        </p>
-      </footer>
-    </div>
+    <PortalComponent
+      isDemo={false}
+      schoolName={school.name}
+      logoUrl={school.logo_url}
+      onSearch={handleSearch}
+    />
   );
 }
