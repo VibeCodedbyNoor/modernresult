@@ -32,7 +32,7 @@ const LuxuryGoldPortal = ({ isDemo = true, schoolName = "Royal Cambridge School"
       try {
         const r = await onSearch({ className: selectedClass, rollNumber: formValues['roll_number'] || '', studentName: formValues['student_name'] || '', fatherName: formValues['father_name'] || '' });
         if (r) { setResult(r); toast.success('Result loaded successfully!'); } else { setError('No result found'); }
-      } catch { setError('Search failed'); } finally { setLoading(false); }
+      } catch (err: any) { setError(err?.message || 'Search failed'); } finally { setLoading(false); }
     }
   };
 

@@ -47,8 +47,8 @@ export function usePortalSearch({ isDemo = true, onSearch, demoResult }: Pick<Po
         } else {
           setError('No result found');
         }
-      } catch {
-        setError('Search failed');
+      } catch (err: any) {
+        setError(err?.message || 'Search failed');
       } finally {
         setLoading(false);
       }

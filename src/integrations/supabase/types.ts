@@ -209,6 +209,7 @@ export type Database = {
           slug: string
           template_changes_count: number
           updated_at: string
+          upload_count: number
         }
         Insert: {
           accent_color?: string
@@ -222,6 +223,7 @@ export type Database = {
           slug: string
           template_changes_count?: number
           updated_at?: string
+          upload_count?: number
         }
         Update: {
           accent_color?: string
@@ -235,6 +237,7 @@ export type Database = {
           slug?: string
           template_changes_count?: number
           updated_at?: string
+          upload_count?: number
         }
         Relationships: []
       }
@@ -274,6 +277,7 @@ export type Database = {
         Args: { p_school_id: string }
         Returns: boolean
       }
+      deduct_upload_credits: { Args: { p_school_id: string }; Returns: boolean }
       fuzzy_search_results:
         | {
             Args: { p_class_name: string; p_exam_id: string; p_query: string }

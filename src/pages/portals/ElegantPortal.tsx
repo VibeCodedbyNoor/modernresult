@@ -22,7 +22,7 @@ const ElegantPortal = ({ isDemo = true, schoolName = "The Cambridge School", log
     if (!selectedClass || !hasValue) { toast.error('Please fill in the required fields'); return; }
     setLoading(true); setError(''); setResult(null);
     if (isDemo) { setTimeout(() => { const name = formValues['student_name'] || formValues['roll_number'] || 'Student'; setResult(generateDemoResult(name, selectedClass)); setLoading(false); toast.success('Result loaded successfully!'); }, 1000); }
-    else if (onSearch) { try { const r = await onSearch({ className: selectedClass, rollNumber: formValues['roll_number'] || '', studentName: formValues['student_name'] || '', fatherName: formValues['father_name'] || '' }); if (r) { setResult(r); toast.success('Result loaded successfully!'); } else { setError('No result found for the given details.'); } } catch { setError('An error occurred while searching.'); } finally { setLoading(false); } }
+    else if (onSearch) { try { const r = await onSearch({ className: selectedClass, rollNumber: formValues['roll_number'] || '', studentName: formValues['student_name'] || '', fatherName: formValues['father_name'] || '' }); if (r) { setResult(r); toast.success('Result loaded successfully!'); } else { setError('No result found for the given details.'); } } catch (err: any) { setError(err?.message || 'An error occurred while searching.'); } finally { setLoading(false); } }
   };
 
   return (

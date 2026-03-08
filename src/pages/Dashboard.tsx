@@ -31,6 +31,7 @@ interface SchoolData {
   result_template: string;
   search_fields: string[];
   template_changes_count: number;
+  upload_count: number;
 }
 
 interface Exam {
@@ -135,6 +136,10 @@ export default function Dashboard() {
   // Template change confirmation dialog
   const [templateConfirmOpen, setTemplateConfirmOpen] = useState(false);
   const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(null);
+
+  // Upload confirmation dialog
+  const [uploadConfirmOpen, setUploadConfirmOpen] = useState(false);
+  const [uploadConfirmResolve, setUploadConfirmResolve] = useState<((val: boolean) => void) | null>(null);
 
   const fetchedRef = useRef(false);
 
@@ -294,7 +299,7 @@ export default function Dashboard() {
   }
 
   async function handleConfirmUpload() {
-    if (!selectedExam) return;
+    if (!selectedExam || !school) return;
 
     // Validate each sheet has roll + name selected
     for (const { sheetName } of parsedSheets) {
@@ -310,6 +315,20 @@ export default function Dashboard() {
         return;
       }
     }
+
+    // Check upload credits (2 free, then 10 credits each)
+    if (school.upload_count >= 2) {
+      const confirmed = await new Promise<boolean>(resolve => {
+        setUploadConfirmResolve(() => resolve);
+        setUploadConfirmOpen(true);
+      });
+      if (!confirmed) return;
+    }
+
+    // Deduct upload credits
+    const { data: uploadOk, error: uploadErr } = await supabase.rpc('deduct_upload_credits', { p_school_id: school.id });
+    if (uploadErr) { toast.error(uploadErr.message); return; }
+    if (!uploadOk) { toast.error('Not enough credits! You need at least 10 credits to upload results.'); return; }
 
     setUploading(true);
     try {
@@ -372,10 +391,15 @@ export default function Dashboard() {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success(`${validRows.length} results uploaded from ${parsedSheets.length} class(es)!`);
+        const uploadMsg = school.upload_count < 2
+          ? `${validRows.length} results uploaded (free upload used)`
+          : `${validRows.length} results uploaded (10 credits deducted)`;
+        toast.success(uploadMsg);
+        setSchool({ ...school, upload_count: school.upload_count + 1 });
         setColumnMappingOpen(false);
         setParsedSheets([]);
         fetchResults(selectedExam);
+        fetchCredits(school.id);
       }
     } catch (err: any) {
       toast.error('Upload failed: ' + err.message);
@@ -668,6 +692,13 @@ export default function Dashboard() {
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" className="gap-1.5">
                         <FileSpreadsheet className="h-3.5 w-3.5" /> Upload Excel / CSV
+                        {school && (
+                          <Badge variant="secondary" className="ml-1 text-[10px]">
+                            {school.upload_count < 2
+                              ? `${2 - school.upload_count} free`
+                              : '10 credits'}
+                          </Badge>
+                        )}
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
@@ -1068,6 +1099,7 @@ export default function Dashboard() {
                     <Label className="text-sm">{field.label}</Label>
                   </div>
                 ))}
+                <p className="text-xs text-muted-foreground mt-2">Changes are applied instantly to your live portal at <strong>resultportal.online/results/{school.slug}</strong>. Design previews below show default fields.</p>
               </CardContent>
             </Card>
 
@@ -1393,6 +1425,23 @@ export default function Dashboard() {
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setPendingTemplateId(null)}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmTemplateChange}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={uploadConfirmOpen} onOpenChange={(open) => {
+        if (!open && uploadConfirmResolve) { uploadConfirmResolve(false); setUploadConfirmResolve(null); }
+        setUploadConfirmOpen(open);
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Upload Results</AlertDialogTitle>
+            <AlertDialogDescription>
+              This upload will cost <span className="font-semibold text-foreground">10 credits</span>. Your current balance is <span className="font-semibold text-foreground">{creditBalance ?? 0} credits</span>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { if (uploadConfirmResolve) { uploadConfirmResolve(false); setUploadConfirmResolve(null); } }}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { if (uploadConfirmResolve) { uploadConfirmResolve(true); setUploadConfirmResolve(null); } setUploadConfirmOpen(false); }}>Continue</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

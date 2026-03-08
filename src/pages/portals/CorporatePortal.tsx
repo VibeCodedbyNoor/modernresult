@@ -32,7 +32,7 @@ const CorporatePortal = ({ isDemo = true, schoolName = "Premier Business School"
       try {
         const r = await onSearch({ className: selectedClass, rollNumber: formValues['roll_number'] || '', studentName: formValues['student_name'] || '', fatherName: formValues['father_name'] || '' });
         if (r) { setResult(r); toast.success('Result loaded successfully!'); } else { setError('No result found for the given details.'); }
-      } catch { setError('An error occurred while searching.'); } finally { setLoading(false); }
+      } catch (err: any) { setError(err?.message || 'An error occurred while searching.'); } finally { setLoading(false); }
     }
   };
 
