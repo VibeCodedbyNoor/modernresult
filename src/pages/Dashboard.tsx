@@ -1073,91 +1073,141 @@ export default function Dashboard() {
 
       {/* Column Mapping Dialog */}
       <Dialog open={columnMappingOpen} onOpenChange={setColumnMappingOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display">Map Your Columns</DialogTitle>
           </DialogHeader>
-          <div className="space-y-5">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Roll Number Column</Label>
-                <Select value={selectedRollKey} onValueChange={setSelectedRollKey}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {allHeaders.map(h => (
-                      <SelectItem key={h} value={h}>{h}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Student Name Column</Label>
-                <Select value={selectedNameKey} onValueChange={setSelectedNameKey}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {allHeaders.map(h => (
-                      <SelectItem key={h} value={h}>{h}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Select Subject Columns</Label>
-              <p className="text-xs text-muted-foreground">Only subject columns are selectable. Metadata like Total, Position, Percentage, Rank, etc. is auto-separated.</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
-                {allHeaders
-                  .filter(h => h !== selectedRollKey && h !== selectedNameKey && h.trim() && !isNonSubjectColumn(h))
-                  .map(h => (
-                    <label key={h} className="flex items-center gap-2 text-sm rounded-md border border-border px-3 py-2 cursor-pointer hover:bg-accent/50 transition-colors hover-scale">
-                      <Checkbox
-                        checked={selectedSubjects[h] ?? false}
-                        onCheckedChange={(checked) =>
-                          setSelectedSubjects(prev => ({ ...prev, [h]: !!checked }))
-                        }
-                      />
-                      <span className="truncate">{h}</span>
-                    </label>
-                  ))}
-              </div>
-            </div>
-
-            {parsedSheets.length > 0 && (
-              <div className="space-y-2 animate-fade-in">
-                <Label>Preview ({parsedSheets[0].sheetName})</Label>
-                <div className="border rounded-md overflow-auto max-h-48">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{selectedRollKey}</TableHead>
-                        <TableHead>{selectedNameKey}</TableHead>
-                        {Object.entries(selectedSubjects)
-                          .filter(([, v]) => v)
-                          .filter(([k]) => !isNonSubjectColumn(k))
-                          .map(([k]) => (
-                            <TableHead key={k}>{k}</TableHead>
-                          ))}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {parsedSheets[0].data.slice(0, 3).map((row, i) => (
-                        <TableRow key={i}>
-                          <TableCell className="font-mono">{String(row[selectedRollKey] ?? '')}</TableCell>
-                          <TableCell>{String(row[selectedNameKey] ?? '')}</TableCell>
-                          {Object.entries(selectedSubjects)
-                            .filter(([, v]) => v)
-                            .filter(([k]) => !isNonSubjectColumn(k))
-                            .map(([k]) => (
-                              <TableCell key={k}>{String(row[k] ?? '')}</TableCell>
-                            ))}
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+          <div className="space-y-4">
+            {/* Sheet tabs */}
+            {parsedSheets.length > 1 && (
+              <div className="flex gap-1.5 flex-wrap">
+                {parsedSheets.map(({ sheetName }) => (
+                  <Button
+                    key={sheetName}
+                    variant={activeSheet === sheetName ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveSheet(sheetName)}
+                    className="text-xs h-7 px-2.5"
+                  >
+                    {sheetName}
+                  </Button>
+                ))}
               </div>
             )}
+
+            {activeSheet && sheetMappings[activeSheet] && (() => {
+              const mapping = sheetMappings[activeSheet];
+              const sheetData = parsedSheets.find(s => s.sheetName === activeSheet)?.data || [];
+              const subjectHeaders = mapping.headers.filter(h => h !== mapping.rollKey && h !== mapping.nameKey && !isNonSubjectColumn(h));
+
+              return (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Roll Number Column</Label>
+                      <Select value={mapping.rollKey} onValueChange={val => setSheetMappings(prev => ({ ...prev, [activeSheet]: { ...prev[activeSheet], rollKey: val } }))}>
+                        <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {mapping.headers.map(h => (
+                            <SelectItem key={h} value={h}>{h}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Student Name Column</Label>
+                      <Select value={mapping.nameKey} onValueChange={val => setSheetMappings(prev => ({ ...prev, [activeSheet]: { ...prev[activeSheet], nameKey: val } }))}>
+                        <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {mapping.headers.map(h => (
+                            <SelectItem key={h} value={h}>{h}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Subjects & Total Marks</Label>
+                    <p className="text-[11px] text-muted-foreground">Check subjects to include. Set total marks for each.</p>
+                    <div className="space-y-1 mt-1.5 max-h-48 overflow-y-auto">
+                      {subjectHeaders.map(h => {
+                        const subj = mapping.subjects[h];
+                        if (!subj) return null;
+                        return (
+                          <div key={h} className="flex items-center gap-2 rounded-md border border-border px-2.5 py-1.5">
+                            <Checkbox
+                              checked={subj.selected}
+                              onCheckedChange={(checked) =>
+                                setSheetMappings(prev => ({
+                                  ...prev,
+                                  [activeSheet]: {
+                                    ...prev[activeSheet],
+                                    subjects: { ...prev[activeSheet].subjects, [h]: { ...subj, selected: !!checked } }
+                                  }
+                                }))
+                              }
+                            />
+                            <span className="text-xs truncate flex-1">{h}</span>
+                            <Input
+                              type="number"
+                              min={1}
+                              value={subj.totalMarks}
+                              onChange={e =>
+                                setSheetMappings(prev => ({
+                                  ...prev,
+                                  [activeSheet]: {
+                                    ...prev[activeSheet],
+                                    subjects: { ...prev[activeSheet].subjects, [h]: { ...subj, totalMarks: Number(e.target.value) || 100 } }
+                                  }
+                                }))
+                              }
+                              className="w-16 h-7 text-xs text-center"
+                              disabled={!subj.selected}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Preview */}
+                  {sheetData.length > 0 && (
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Preview ({activeSheet})</Label>
+                      <div className="border rounded-md overflow-auto max-h-32 text-xs">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="text-xs py-1">{mapping.rollKey}</TableHead>
+                              <TableHead className="text-xs py-1">{mapping.nameKey}</TableHead>
+                              {Object.entries(mapping.subjects)
+                                .filter(([, v]) => v.selected)
+                                .map(([k]) => (
+                                  <TableHead key={k} className="text-xs py-1">{k}</TableHead>
+                                ))}
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {sheetData.slice(0, 2).map((row, i) => (
+                              <TableRow key={i}>
+                                <TableCell className="font-mono py-1">{String(row[mapping.rollKey] ?? '')}</TableCell>
+                                <TableCell className="py-1">{String(row[mapping.nameKey] ?? '')}</TableCell>
+                                {Object.entries(mapping.subjects)
+                                  .filter(([, v]) => v.selected)
+                                  .map(([k]) => (
+                                    <TableCell key={k} className="py-1">{String(row[k] ?? '')}</TableCell>
+                                  ))}
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setColumnMappingOpen(false)}>Cancel</Button>
