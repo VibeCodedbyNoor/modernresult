@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
-import { School, CreditCard, Users, BookOpen, Search, Plus, MessageCircle, LogOut, ArrowUpDown, Phone, User, Wallet, CheckCircle, Ban, Clock } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { School, CreditCard, Users, BookOpen, Search, Plus, MessageCircle, LogOut, ArrowUpDown, Phone, User, Wallet, CheckCircle, Ban, Clock, Trash2 } from 'lucide-react';
 
 interface SchoolWithCredits {
   id: string;
@@ -68,6 +69,7 @@ export default function AdminDashboard() {
   const [earnToggling, setEarnToggling] = useState(false);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
   const [updatingWithdrawal, setUpdatingWithdrawal] = useState<string | null>(null);
+  const [deletingSchool, setDeletingSchool] = useState<string | null>(null);
 
   // Check admin role
   useEffect(() => {
@@ -271,6 +273,20 @@ resultportal.online`;
     (s.invited_by || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleDeleteSchool = async (schoolId: string, schoolName: string) => {
+    setDeletingSchool(schoolId);
+    try {
+      const { error } = await supabase.rpc('admin_delete_school', { p_school_id: schoolId });
+      if (error) throw error;
+      toast({ title: `🗑️ "${schoolName}" and all its data have been deleted.` });
+      loadData();
+    } catch (err: any) {
+      toast({ title: 'Failed to delete school', description: err.message, variant: 'destructive' });
+    } finally {
+      setDeletingSchool(null);
+    }
+  };
+
   const totalCredits = schools.reduce((sum, s) => sum + s.credit_balance, 0);
   const todayTx = transactions.filter(t => {
     const today = new Date();
@@ -452,17 +468,43 @@ resultportal.online`;
                         {new Date(school.created_at).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedSchool(school);
-                            setActiveTab('credits');
-                            if (school.whatsapp_number) setWhatsappNumber(school.whatsapp_number);
-                          }}
-                        >
-                          <Plus className="h-3 w-3 mr-1" /> Add Credits
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedSchool(school);
+                              setActiveTab('credits');
+                              if (school.whatsapp_number) setWhatsappNumber(school.whatsapp_number);
+                            }}
+                          >
+                            <Plus className="h-3 w-3 mr-1" /> Credits
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="destructive" disabled={deletingSchool === school.id}>
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete "{school.name}"?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This will permanently delete <strong>{school.name}</strong> and ALL associated data including exams, results, credits, transactions, referrals, and withdrawal requests. This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteSchool(school.id, school.name)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete Everything
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
