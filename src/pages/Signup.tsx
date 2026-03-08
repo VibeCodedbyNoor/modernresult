@@ -18,7 +18,7 @@ export default function Signup() {
   const [schoolName, setSchoolName] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [loading, setLoading] = useState(false);
-  const [signupSuccess, setSignupSuccess] = useState(false);
+  const { signUp } = useAuth();
   const { signUp } = useAuth();
   const [searchParams] = useSearchParams();
   const refCode = searchParams.get('ref');
