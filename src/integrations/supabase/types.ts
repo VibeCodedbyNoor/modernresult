@@ -386,10 +386,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      add_credits_admin: {
-        Args: { p_amount: number; p_description?: string; p_school_id: string }
-        Returns: number
-      }
+      add_credits_admin:
+        | {
+            Args: {
+              p_amount: number
+              p_description?: string
+              p_school_id: string
+            }
+            Returns: number
+          }
+        | {
+            Args: {
+              p_amount: number
+              p_description?: string
+              p_paid_credits?: number
+              p_school_id: string
+            }
+            Returns: number
+          }
       apply_referral_code: {
         Args: { p_referral_code: string; p_referred_user_id: string }
         Returns: boolean
