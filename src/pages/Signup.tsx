@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { User, Phone, School, Mail } from 'lucide-react';
+import { User, Phone, School, Mail, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
@@ -17,8 +17,8 @@ export default function Signup() {
   const [schoolName, setSchoolName] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [loading, setLoading] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
   const { signUp } = useAuth();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,8 +44,6 @@ export default function Signup() {
       return;
     }
 
-    // Update profile with additional info
-    // The trigger creates a profile on signup, so we update it
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       await supabase
@@ -59,9 +57,46 @@ export default function Signup() {
     }
 
     setLoading(false);
-    toast.success('Account created! Check your email to confirm.');
-    navigate('/dashboard');
+    setSignupSuccess(true);
   };
+
+  if (signupSuccess) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="w-full max-w-md animate-fade-in">
+          <div className="text-center mb-8">
+            <Link to="/" className="font-display text-2xl font-bold text-primary">ResultCheck</Link>
+          </div>
+          <Card>
+            <CardContent className="pt-8 pb-8 text-center space-y-5">
+              <div className="flex justify-center">
+                <div className="rounded-full bg-green-100 p-4">
+                  <CheckCircle2 className="h-12 w-12 text-green-600" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold font-display">Account Created Successfully!</h2>
+                <p className="text-muted-foreground">
+                  We've sent a confirmation email to <span className="font-semibold text-foreground">{email}</span>.
+                </p>
+                <p className="text-muted-foreground">
+                  Please check your inbox and click the link to verify your account.
+                </p>
+              </div>
+              <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
+                Once verified, you'll be redirected directly to your dashboard to get started.
+              </div>
+              <Link to="/login">
+                <Button variant="outline" className="mt-2 gap-2">
+                  Go to Login <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
