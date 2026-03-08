@@ -34,6 +34,20 @@ interface TransactionRow {
   created_at: string;
 }
 
+interface WithdrawalRow {
+  id: string;
+  user_id: string;
+  amount: number;
+  payment_method: string;
+  account_name: string;
+  account_number: string;
+  status: string;
+  admin_note: string | null;
+  created_at: string;
+  owner_name?: string;
+  owner_email?: string;
+}
+
 export default function AdminDashboard() {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
@@ -47,7 +61,11 @@ export default function AdminDashboard() {
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [lastUpdate, setLastUpdate] = useState<{ school: string; amount: number; newBalance: number } | null>(null);
   const [updating, setUpdating] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'credits' | 'transactions'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'credits' | 'transactions' | 'referrals'>('overview');
+  const [earnEnabled, setEarnEnabled] = useState(false);
+  const [earnToggling, setEarnToggling] = useState(false);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
+  const [updatingWithdrawal, setUpdatingWithdrawal] = useState<string | null>(null);
 
   // Check admin role
   useEffect(() => {
