@@ -1177,10 +1177,17 @@ export default function Dashboard() {
 
           <TabsContent value="referrals" className="mt-6 space-y-6">
             {(() => {
-              const totalEarnings = referralEarnings.reduce((sum, e) => sum + e.commission_credits, 0);
+              // Calculate earnings in PKR
+              const totalEarningsRupees = referralEarnings.reduce((sum, e) => sum + (e.commission_rupees || e.commission_credits * 9), 0);
               const totalWithdrawn = withdrawals.filter(w => w.status !== 'rejected').reduce((sum, w) => sum + w.amount, 0);
-              const availableBalance = totalEarnings - totalWithdrawn;
+              const availableBalance = totalEarningsRupees - totalWithdrawn;
               const referralLink = referralCode ? `https://resultportal.online/signup?ref=${referralCode}` : '';
+
+              // Helper to mask school name
+              const maskSchoolName = (name: string) => {
+                if (!name || name.length < 4) return '***';
+                return name.substring(0, 3) + '***';
+              };
 
               return (
                 <>
@@ -1204,7 +1211,7 @@ export default function Dashboard() {
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground">Total Earned</p>
-                          <p className="text-2xl font-display font-bold text-foreground">{totalEarnings}</p>
+                          <p className="text-2xl font-display font-bold text-foreground">₨{totalEarningsRupees.toFixed(0)}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1215,7 +1222,7 @@ export default function Dashboard() {
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground">Available Balance</p>
-                          <p className="text-2xl font-display font-bold text-foreground">{availableBalance}</p>
+                          <p className="text-2xl font-display font-bold text-foreground">₨{availableBalance.toFixed(0)}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1228,7 +1235,7 @@ export default function Dashboard() {
                         <LinkIcon className="h-5 w-5 text-primary" /> Your Referral Link
                       </CardTitle>
                       <CardDescription>
-                        Share this link with other schools. When they sign up and buy credits, you earn <strong>10% commission</strong>!
+                        Share this link with other schools. When they sign up and buy credits, you earn <strong>10% commission in PKR</strong>!
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -1252,6 +1259,40 @@ export default function Dashboard() {
                     </CardContent>
                   </Card>
 
+                  {/* Your Referrals List */}
+                  {referrals.length > 0 && (
+                    <Card className="max-w-3xl">
+                      <CardHeader>
+                        <CardTitle className="font-display text-lg flex items-center gap-2">
+                          <Users className="h-5 w-5 text-primary" /> Your Referrals
+                        </CardTitle>
+                        <CardDescription>Schools that signed up using your referral link</CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>School</TableHead>
+                              <TableHead>Joined</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {referrals.map(r => (
+                              <TableRow key={r.id}>
+                                <TableCell className="font-medium">
+                                  {r.profiles?.school_name ? maskSchoolName(r.profiles.school_name) : '***'}
+                                </TableCell>
+                                <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                                  {format(new Date(r.created_at), 'dd MMM yyyy')}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  )}
+
                   {/* How it works */}
                   <Card className="max-w-3xl">
                     <CardHeader>
@@ -1272,9 +1313,52 @@ export default function Dashboard() {
                         <div className="text-center p-4 rounded-lg bg-muted/50">
                           <div className="text-2xl mb-2">3️⃣</div>
                           <p className="text-sm font-medium">You Earn 10%</p>
-                          <p className="text-xs text-muted-foreground mt-1">Withdraw anytime via JazzCash/Easypaisa</p>
+                          <p className="text-xs text-muted-foreground mt-1">Withdraw via JazzCash/Easypaisa or exchange for credits</p>
                         </div>
                       </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Exchange for Credits Card */}
+                  <Card className="max-w-lg border-primary/20">
+                    <CardHeader>
+                      <CardTitle className="font-display flex items-center gap-2">
+                        <Zap className="h-5 w-5 text-primary" /> Exchange for Credits
+                      </CardTitle>
+                      <CardDescription>Convert your rupee earnings to credits for your portal</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="p-3 bg-muted/50 rounded-lg space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Exchange Rate:</span>
+                          <span className="font-semibold">₨9 = 1 Credit</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Your Balance:</span>
+                          <span className="font-semibold">₨{availableBalance.toFixed(0)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Can Get:</span>
+                          <span className="font-semibold text-primary">{Math.floor(availableBalance / 9)} Credits</span>
+                        </div>
+                      </div>
+                      <a
+                        href={`https://wa.me/923479104843?text=${encodeURIComponent(
+                          `Assalam o Alaikum!\n\nI want to exchange my referral earnings for credits.\n\n` +
+                          `My available balance: ₨${availableBalance.toFixed(0)}\n` +
+                          `Credits I want: ${Math.floor(availableBalance / 9)} credits\n\n` +
+                          `Please add these credits to my account.\n\nMy email: ${user?.email || '___'}`
+                        )}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <Button className="w-full gap-2" disabled={availableBalance < 9}>
+                          <MessageCircle className="h-4 w-4" /> Request Credit Exchange via WhatsApp
+                        </Button>
+                      </a>
+                      <p className="text-xs text-muted-foreground text-center">
+                        We'll add credits to your account after verifying your balance
+                      </p>
                     </CardContent>
                   </Card>
 
@@ -1284,21 +1368,21 @@ export default function Dashboard() {
                       <CardTitle className="font-display flex items-center gap-2">
                         <Banknote className="h-5 w-5 text-primary" /> Withdraw Earnings
                       </CardTitle>
-                      <CardDescription>Minimum withdrawal: 50 credits (PKR 450)</CardDescription>
+                      <CardDescription>Minimum withdrawal: ₨45</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <form onSubmit={handleWithdrawal} className="space-y-4">
                         <div className="space-y-2">
-                          <Label>Amount (credits)</Label>
+                          <Label>Amount (PKR)</Label>
                           <Input
                             type="number"
                             value={withdrawAmount}
                             onChange={e => setWithdrawAmount(e.target.value)}
-                            placeholder="e.g. 100"
-                            min={50}
+                            placeholder="e.g. 500"
+                            min={45}
                             max={availableBalance}
                           />
-                          <p className="text-xs text-muted-foreground">Available: {availableBalance} credits</p>
+                          <p className="text-xs text-muted-foreground">Available: ₨{availableBalance.toFixed(0)}</p>
                         </div>
                         <div className="space-y-2">
                           <Label>Payment Method</Label>
@@ -1326,7 +1410,7 @@ export default function Dashboard() {
                             placeholder="Muhammad Ali"
                           />
                         </div>
-                        <Button type="submit" className="w-full" disabled={withdrawing || availableBalance < 50}>
+                        <Button type="submit" className="w-full" disabled={withdrawing || availableBalance < 45}>
                           {withdrawing ? 'Submitting...' : 'Request Withdrawal'}
                         </Button>
                       </form>
@@ -1356,7 +1440,7 @@ export default function Dashboard() {
                                 <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
                                   {format(new Date(w.created_at), 'dd MMM yyyy')}
                                 </TableCell>
-                                <TableCell className="font-mono font-semibold">{w.amount}</TableCell>
+                                <TableCell className="font-mono font-semibold">₨{w.amount}</TableCell>
                                 <TableCell className="capitalize">{w.payment_method}</TableCell>
                                 <TableCell className="font-mono text-sm">{w.account_number}</TableCell>
                                 <TableCell>
@@ -1394,7 +1478,7 @@ export default function Dashboard() {
                                   {format(new Date(e.created_at), 'dd MMM yyyy')}
                                 </TableCell>
                                 <TableCell className="font-mono">{e.credits_purchased}</TableCell>
-                                <TableCell className="font-mono font-semibold text-green-500">+{e.commission_credits}</TableCell>
+                                <TableCell className="font-mono font-semibold text-green-600">+₨{(e.commission_rupees || e.commission_credits * 9).toFixed(0)}</TableCell>
                               </TableRow>
                             ))}
                           </TableBody>
