@@ -711,6 +711,7 @@ export default function Dashboard() {
           <TabsList>
             <TabsTrigger value="exams">Exams & Results</TabsTrigger>
             <TabsTrigger value="credits">Credits</TabsTrigger>
+            <TabsTrigger value="referrals">Referrals</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
