@@ -207,6 +207,7 @@ export type Database = {
           result_template: string
           search_fields: string[]
           slug: string
+          template_changes_count: number
           updated_at: string
         }
         Insert: {
@@ -219,6 +220,7 @@ export type Database = {
           result_template?: string
           search_fields?: string[]
           slug: string
+          template_changes_count?: number
           updated_at?: string
         }
         Update: {
@@ -231,6 +233,7 @@ export type Database = {
           result_template?: string
           search_fields?: string[]
           slug?: string
+          template_changes_count?: number
           updated_at?: string
         }
         Relationships: []
@@ -266,6 +269,10 @@ export type Database = {
       deduct_credits_bulk: {
         Args: { p_count: number; p_school_id: string }
         Returns: number
+      }
+      deduct_template_change_credits: {
+        Args: { p_school_id: string }
+        Returns: boolean
       }
       fuzzy_search_results:
         | {
