@@ -1117,7 +1117,7 @@ export default function Dashboard() {
                     <Palette className="h-5 w-5 text-primary" /> Choose Your Result Portal Design
                   </h2>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Pick a style below — this is exactly how students will see your result portal. Just click to apply!
+                    This design is what students see when they check results on your portal. Just click any design to apply it!
                   </p>
                 </div>
                 <Badge variant={school.template_changes_count < 3 ? 'default' : 'secondary'} className="text-xs shrink-0" title="First 3 design changes are free, then 5 credits each">
