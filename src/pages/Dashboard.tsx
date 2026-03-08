@@ -603,61 +603,80 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {/* 50 credits */}
-                  <div className="rounded-xl border border-border p-4 text-center space-y-1">
-                    <p className="text-2xl font-display font-bold text-foreground">50</p>
-                    <p className="text-xs text-muted-foreground">credits</p>
-                    <p className="text-lg font-semibold text-primary">PKR 450</p>
-                    <p className="text-[10px] text-muted-foreground">Rs. 9/credit</p>
-                  </div>
-                  {/* 100 credits */}
-                  <div className="rounded-xl border border-border p-4 text-center space-y-1">
-                    <p className="text-2xl font-display font-bold text-foreground">100</p>
-                    <p className="text-xs text-muted-foreground">credits</p>
-                    <p className="text-lg font-semibold text-primary">PKR 900</p>
-                    <p className="text-[10px] text-muted-foreground">Rs. 9/credit</p>
-                  </div>
-                  {/* 500 credits + bonus */}
-                  <div className="rounded-xl border-2 border-primary p-4 text-center space-y-1 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[9px] font-bold px-2 py-0.5 rounded-bl-lg flex items-center gap-1">
-                      <Gift className="h-2.5 w-2.5" /> LIMITED TIME
-                    </div>
-                    <p className="text-2xl font-display font-bold text-foreground">500</p>
-                    <p className="text-xs text-primary font-semibold">+ 50 FREE bonus!</p>
-                    <p className="text-lg font-semibold text-primary">PKR 4,500</p>
-                    <p className="text-[10px] text-muted-foreground">Rs. 8.18/credit effective</p>
-                  </div>
+                  {[
+                    { credits: 50, price: 450, perCredit: '9', bonus: 0, label: '50 Credits — PKR 450' },
+                    { credits: 100, price: 900, perCredit: '9', bonus: 0, label: '100 Credits — PKR 900' },
+                    { credits: 500, price: 4500, perCredit: '8.18', bonus: 50, label: '500+50 Credits — PKR 4,500' },
+                  ].map(plan => (
+                    <button
+                      key={plan.credits}
+                      type="button"
+                      onClick={() => setSelectedPlan(plan.credits)}
+                      className={`rounded-xl p-4 text-center space-y-1 relative overflow-hidden transition-all border-2 ${
+                        selectedPlan === plan.credits
+                          ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                          : 'border-border hover:border-primary/40'
+                      }`}
+                    >
+                      {plan.bonus > 0 && (
+                        <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[9px] font-bold px-2 py-0.5 rounded-bl-lg flex items-center gap-1">
+                          <Gift className="h-2.5 w-2.5" /> BEST VALUE
+                        </div>
+                      )}
+                      <p className="text-2xl font-display font-bold text-foreground">{plan.credits}</p>
+                      {plan.bonus > 0 && <p className="text-xs text-primary font-semibold">+ {plan.bonus} FREE bonus!</p>}
+                      {plan.bonus === 0 && <p className="text-xs text-muted-foreground">credits</p>}
+                      <p className="text-lg font-semibold text-primary">PKR {plan.price.toLocaleString()}</p>
+                      <p className="text-[10px] text-muted-foreground">Rs. {plan.perCredit}/credit</p>
+                      {selectedPlan === plan.credits && (
+                        <div className="flex items-center justify-center gap-1 text-xs text-primary font-medium pt-1">
+                          <Check className="h-3 w-3" /> Selected
+                        </div>
+                      )}
+                    </button>
+                  ))}
                 </div>
 
-                <div className="rounded-xl bg-muted/50 border border-border p-4 space-y-3">
-                  <p className="text-sm font-semibold text-foreground">Payment Details</p>
-                  <div className="space-y-1.5 text-sm text-muted-foreground">
-                    <p><strong className="text-foreground">Easypaisa:</strong> 03479104843</p>
-                    <p><strong className="text-foreground">JazzCash:</strong> 03479104843</p>
-                    <p><strong className="text-foreground">Account Name:</strong> Muhammad Irfan</p>
+                {!selectedPlan && (
+                  <p className="text-sm text-muted-foreground text-center animate-pulse">👆 Select a plan above to continue</p>
+                )}
+
+                {selectedPlan && (
+                  <div className="rounded-xl bg-muted/50 border border-border p-4 space-y-3 animate-in fade-in slide-in-from-bottom-2">
+                    <p className="text-sm font-semibold text-foreground">Payment Details</p>
+                    <div className="space-y-1.5 text-sm text-muted-foreground">
+                      <p><strong className="text-foreground">Easypaisa:</strong> 03479104843</p>
+                      <p><strong className="text-foreground">JazzCash:</strong> 03479104843</p>
+                      <p><strong className="text-foreground">Account Name:</strong> Muhammad Irfan</p>
+                      <p className="pt-1"><strong className="text-foreground">Amount:</strong>{' '}
+                        <span className="text-primary font-semibold">
+                          PKR {selectedPlan === 50 ? '450' : selectedPlan === 100 ? '900' : '4,500'}
+                        </span>
+                      </p>
+                    </div>
+                    <div className="pt-3 border-t border-border space-y-3">
+                      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        <Clock className="h-3 w-3" />
+                        Send payment & screenshot via WhatsApp — credits added within 1 hour
+                      </p>
+                      <a
+                        href={`https://wa.me/923479104843?text=${encodeURIComponent(
+                          `Assalam o Alaikum! 🎓\n\nI have purchased credits on ResultPortal.\n\n📧 My Email: ${user?.email || ''}\n🏫 School: ${school?.name || ''}\n💰 Package: ${selectedPlan === 500 ? '500 + 50 bonus' : selectedPlan} credits\n💵 Amount: PKR ${selectedPlan === 50 ? '450' : selectedPlan === 100 ? '900' : '4,500'}\n\nPayment screenshot is attached. Please add my credits. JazakAllah! 🙏`
+                        )}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <Button className="w-full gap-2 bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.9)] text-primary-foreground">
+                          <MessageCircle className="h-4 w-4" />
+                          Send Payment Screenshot via WhatsApp
+                        </Button>
+                      </a>
+                      <p className="text-[11px] text-muted-foreground text-center">
+                        Click above after payment — your email, school & package are auto-filled. Just attach the screenshot!
+                      </p>
+                    </div>
                   </div>
-                  <div className="pt-3 border-t border-border space-y-3">
-                    <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                      <Clock className="h-3 w-3" />
-                      Send payment & screenshot via WhatsApp — credits added within 1 hour
-                    </p>
-                    <a
-                      href={`https://wa.me/923479104843?text=${encodeURIComponent(
-                        `Assalam o Alaikum! 🎓\n\nI have purchased credits on ResultCheck.\n\n📧 My Email: ${user?.email || ''}\n🏫 School: ${school?.name || ''}\n💰 Package: [50 / 100 / 500 credits]\n\nPayment screenshot is attached. Please add my credits. JazakAllah! 🙏`
-                      )}`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <Button className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white">
-                        <MessageCircle className="h-4 w-4" />
-                        Send Payment Screenshot via WhatsApp
-                      </Button>
-                    </a>
-                    <p className="text-[11px] text-muted-foreground text-center">
-                      Click the button above after payment — your email & school info will be auto-filled. Just attach the screenshot and send!
-                    </p>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
