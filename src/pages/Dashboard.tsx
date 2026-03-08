@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Plus, Upload, Link as LinkIcon, LogOut, Eye, Trash2, School, Settings, FileSpreadsheet, Check, Palette, Coins, Zap, Gift, Clock, MessageCircle, CreditCard, Timer, Square, Play, StopCircle, CalendarClock, TrendingDown, BarChart3 } from 'lucide-react';
+import { Plus, Upload, Link as LinkIcon, LogOut, Eye, Trash2, School, Settings, FileSpreadsheet, Check, Palette, Coins, Zap, Gift, Clock, MessageCircle, CreditCard, Timer, Square, Play, StopCircle, CalendarClock, TrendingDown, BarChart3, Search } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { resultTemplates, getTemplate } from '@/lib/resultTemplates';
 import { generateSlugSuggestions } from '@/lib/slugSuggestions';
@@ -28,6 +28,7 @@ interface SchoolData {
   logo_url: string | null;
   accent_color: string;
   result_template: string;
+  search_fields: string[];
 }
 
 interface Exam {
@@ -53,10 +54,12 @@ const NON_SUBJECT_PATTERNS = [
   'total', 'position', 'percentage', 'percent', '%age', 'rank', 'grade', 'result',
   'status', 'remarks', 'remark', 'division', 'gpa', 'cgpa', 'average',
   'avg', 'pass', 'fail', 'obtained', 'max', 'minimum', 'maximum',
-  'sr', 'serial', 'class', 'section', 'father', 'mother', 'parent',
+  'sr', 'serial', 'class', 'section', 'mother', 'parent',
   'address', 'phone', 'mobile', 'email', 'dob', 'date', 'gender', 'age',
-  'no.', 'no', 's.no', 's.r', 'reg'
+  'no.', 'no', 's.no', 's.r', 'reg', 'father'
 ];
+
+const FATHER_NAME_PATTERNS = ['father', 'father name', 'father_name', 'fathername', 'walid', 'guardian'];
 
 const normalizeColumn = (value: string) =>
   value
@@ -107,6 +110,7 @@ export default function Dashboard() {
     headers: string[];
     rollKey: string;
     nameKey: string;
+    fatherKey: string;
     subjects: Record<string, { selected: boolean; totalMarks: number }>;
   }>>({});
   const [activeSheet, setActiveSheet] = useState('');
@@ -236,14 +240,15 @@ export default function Dashboard() {
           return true;
         });
         const rollKey = headers.find(h => normalizeColumn(h).includes('roll')) || headers[0] || '';
-        const nameKey = headers.find(h => normalizeColumn(h).includes('name')) || headers[1] || '';
+        const nameKey = headers.find(h => normalizeColumn(h).includes('name') && !FATHER_NAME_PATTERNS.some(p => normalizeColumn(h).includes(p))) || headers[1] || '';
+        const fatherKey = headers.find(h => FATHER_NAME_PATTERNS.some(p => normalizeColumn(h).includes(p))) || '';
 
         const subjects: Record<string, { selected: boolean; totalMarks: number }> = {};
         for (const h of headers) {
-          if (h === rollKey || h === nameKey) continue;
+          if (h === rollKey || h === nameKey || h === fatherKey) continue;
           subjects[h] = { selected: !isNonSubjectColumn(h), totalMarks: 100 };
         }
-        mappings[sheetName] = { headers, rollKey, nameKey, subjects };
+        mappings[sheetName] = { headers, rollKey, nameKey, fatherKey, subjects };
       }
 
       setParsedSheets(sheets);
@@ -300,6 +305,7 @@ export default function Dashboard() {
             exam_id: selectedExam,
             roll_number: String(row[mapping.rollKey] || '').trim(),
             student_name: String(row[mapping.nameKey] || '').trim(),
+            father_name: mapping.fatherKey ? String(row[mapping.fatherKey] || '').trim() : '',
             subjects,
             total_marks: total,
             grade,
@@ -996,6 +1002,43 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
+            {/* Search Fields Config */}
+            <Card className="max-w-lg">
+              <CardHeader>
+                <CardTitle className="font-display text-lg flex items-center gap-2">
+                  <Search className="h-5 w-5 text-primary" /> Portal Search Fields
+                </CardTitle>
+                <CardDescription>Choose which fields students use to search their results on your portal.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {[
+                  { id: 'roll_number', label: 'Roll Number' },
+                  { id: 'student_name', label: 'Student Name' },
+                  { id: 'father_name', label: 'Father Name' },
+                ].map(field => (
+                  <div key={field.id} className="flex items-center gap-3">
+                    <Checkbox
+                      checked={(school.search_fields || ['roll_number', 'student_name']).includes(field.id)}
+                      onCheckedChange={async (checked) => {
+                        const current = school.search_fields || ['roll_number', 'student_name'];
+                        const updated = checked
+                          ? [...current, field.id]
+                          : current.filter(f => f !== field.id);
+                        if (updated.length === 0) {
+                          toast.error('You must keep at least one search field');
+                          return;
+                        }
+                        const { error } = await supabase.from('schools').update({ search_fields: updated } as any).eq('id', school.id);
+                        if (error) { toast.error(error.message); }
+                        else { setSchool({ ...school, search_fields: updated }); toast.success('Search fields updated'); }
+                      }}
+                    />
+                    <Label className="text-sm">{field.label}</Label>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
             {/* Result Design Template Picker */}
             <div className="space-y-4">
               <div>
@@ -1135,7 +1178,7 @@ export default function Dashboard() {
             {activeSheet && sheetMappings[activeSheet] && (() => {
               const mapping = sheetMappings[activeSheet];
               const sheetData = parsedSheets.find(s => s.sheetName === activeSheet)?.data || [];
-              const subjectHeaders = mapping.headers.filter(h => h !== mapping.rollKey && h !== mapping.nameKey && !isNonSubjectColumn(h));
+              const subjectHeaders = mapping.headers.filter(h => h !== mapping.rollKey && h !== mapping.nameKey && h !== mapping.fatherKey && !isNonSubjectColumn(h));
 
               return (
                 <>
@@ -1162,6 +1205,18 @@ export default function Dashboard() {
                         </SelectContent>
                       </Select>
                     </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Father Name Column <span className="text-muted-foreground">(optional)</span></Label>
+                    <Select value={mapping.fatherKey || '__none__'} onValueChange={val => setSheetMappings(prev => ({ ...prev, [activeSheet]: { ...prev[activeSheet], fatherKey: val === '__none__' ? '' : val } }))}>
+                      <SelectTrigger className="h-8 text-xs min-w-0"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">— None —</SelectItem>
+                        {mapping.headers.map(h => (
+                          <SelectItem key={h} value={h}>{h}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-1.5">
@@ -1221,6 +1276,12 @@ export default function Dashboard() {
                           <span className="text-muted-foreground">{mapping.nameKey}:</span>
                           <span className="font-medium truncate ml-2">{String(sheetData[0]?.[mapping.nameKey] ?? '—')}</span>
                         </div>
+                        {mapping.fatherKey && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">{mapping.fatherKey}:</span>
+                            <span className="font-medium truncate ml-2">{String(sheetData[0]?.[mapping.fatherKey] ?? '—')}</span>
+                          </div>
+                        )}
                         {Object.entries(mapping.subjects)
                           .filter(([, v]) => v.selected)
                           .map(([k, v]) => (

@@ -61,6 +61,7 @@ interface SchoolData {
   logo_url: string | null;
   accent_color: string;
   result_template: string;
+  search_fields: string[];
 }
 
 export default function ResultPortal() {
@@ -77,8 +78,10 @@ export default function ResultPortal() {
     load();
   }, [slug]);
 
-  const handleSearch = useCallback(async (className: string, studentName: string) => {
+  const handleSearch = useCallback(async (searchParams: { rollNumber?: string; studentName?: string; fatherName?: string; className?: string }) => {
     if (!school) return null;
+
+    const { rollNumber = '', studentName = '', fatherName = '', className = '' } = searchParams;
 
     // Get published exams for this school
     const { data: exams } = await supabase
@@ -98,7 +101,9 @@ export default function ResultPortal() {
       p_exam_id: exam.id,
       p_class_name: className,
       p_query: studentName.trim(),
-    });
+      p_roll_number: rollNumber.trim(),
+      p_father_name: fatherName.trim(),
+    } as any);
 
     if (data && data.length > 0) {
       const { data: creditOk } = await supabase.rpc('deduct_credit', { p_school_id: school.id });
@@ -139,6 +144,7 @@ export default function ResultPortal() {
 
       return {
         name: row.student_name,
+        father_name: (row as any).father_name || '',
         class: row.class_name,
         roll_number: row.roll_number,
         position,
@@ -185,6 +191,7 @@ export default function ResultPortal() {
       schoolName={school.name}
       logoUrl={school.logo_url}
       onSearch={handleSearch}
+      searchFields={school.search_fields || ['roll_number', 'student_name']}
     />
   );
 }

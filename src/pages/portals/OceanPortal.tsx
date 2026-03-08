@@ -1,29 +1,14 @@
-import { useState, useRef } from 'react';
-import { toast } from 'sonner';
-import { CLASS_SUBJECTS } from '@/lib/classSubjects';
-import { generateDemoResult } from '@/lib/demoResults';
 import { Waves } from 'lucide-react';
+import { CLASS_SUBJECTS } from '@/lib/classSubjects';
+import { SEARCH_FIELD_LABELS, SEARCH_FIELD_PLACEHOLDERS } from '@/lib/portalTypes';
+import { usePortalSearch } from '@/hooks/usePortalSearch';
+import type { PortalProps } from '@/lib/portalTypes';
 
 import BackButton from '@/components/portal/BackButton';
 import ResultActions from '@/components/portal/ResultActions';
 
-interface PortalProps { isDemo?: boolean; schoolName?: string; logoUrl?: string | null; onSearch?: (className: string, studentName: string) => Promise<any>; demoResult?: any; }
-
-const OceanPortal = ({ isDemo = true, schoolName = "Blue Pearl Academy", logoUrl, onSearch, demoResult }: PortalProps) => {
-  const [selectedClass, setSelectedClass] = useState('');
-  const [studentName, setStudentName] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(demoResult || null);
-  const [error, setError] = useState('');
-  const resultRef = useRef<HTMLDivElement>(null);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedClass || !studentName) { toast.error('Please select a class and enter your name'); return; }
-    setLoading(true); setError(''); setResult(null);
-    if (isDemo) { setTimeout(() => { setResult(generateDemoResult(studentName, selectedClass)); setLoading(false); toast.success('Result loaded successfully!'); }, 1000); }
-    else if (onSearch) { try { const r = await onSearch(selectedClass, studentName); if (r) { setResult(r); toast.success('Result loaded successfully!'); } else { setError('No result found'); } } catch { setError('Search failed'); } finally { setLoading(false); } }
-  };
+const OceanPortal = ({ isDemo = true, schoolName = "Blue Pearl Academy", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult }: PortalProps) => {
+  const { selectedClass, setSelectedClass, formValues, setField, loading, result, error, resultRef, handleSubmit } = usePortalSearch({ isDemo, onSearch, demoResult });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-900 via-blue-800 to-teal-900 relative overflow-hidden">
@@ -46,9 +31,11 @@ const OceanPortal = ({ isDemo = true, schoolName = "Blue Pearl Academy", logoUrl
           <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-teal-500 rounded-xl sm:rounded-2xl opacity-20 blur-xl"></div>
           <div className="relative bg-blue-900/80 backdrop-blur-sm border sm:border-2 border-cyan-400/30 rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-2xl">
             <div className="text-center mb-4 sm:mb-6"><h2 className="text-xl sm:text-3xl font-bold text-cyan-300 mb-1 sm:mb-2">Student Result Inquiry</h2><div className="w-20 sm:w-24 h-0.5 mx-auto bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div></div>
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            <form onSubmit={(e) => handleSubmit(e, searchFields)} className="space-y-4 sm:space-y-6">
               <div><label className="block text-xs sm:text-sm font-semibold text-cyan-200 mb-2 sm:mb-3">Class Selection</label><select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-blue-950/50 border sm:border-2 border-cyan-400/30 text-sm sm:text-base text-cyan-100 rounded-lg sm:rounded-xl focus:outline-none focus:border-cyan-400 transition-all shadow-lg" required><option value="">Select Your Class...</option>{Object.keys(CLASS_SUBJECTS).map((cls) => (<option key={cls} value={cls}>{cls}</option>))}</select></div>
-              <div><label className="block text-xs sm:text-sm font-semibold text-cyan-200 mb-2 sm:mb-3">Student Name</label><input type="text" value={studentName} onChange={(e) => setStudentName(e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-blue-950/50 border sm:border-2 border-cyan-400/30 text-sm sm:text-base text-cyan-100 rounded-lg sm:rounded-xl placeholder-blue-400/50 focus:outline-none focus:border-cyan-400 transition-all shadow-lg" placeholder="Enter Your Name..." required /></div>
+              {searchFields.map(field => (
+                <div key={field}><label className="block text-xs sm:text-sm font-semibold text-cyan-200 mb-2 sm:mb-3">{SEARCH_FIELD_LABELS[field] || field}</label><input type="text" value={formValues[field] || ''} onChange={(e) => setField(field, e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-blue-950/50 border sm:border-2 border-cyan-400/30 text-sm sm:text-base text-cyan-100 rounded-lg sm:rounded-xl placeholder-blue-400/50 focus:outline-none focus:border-cyan-400 transition-all shadow-lg" placeholder={SEARCH_FIELD_PLACEHOLDERS[field] || ''} required /></div>
+              ))}
               <button type="submit" disabled={loading} className="w-full py-3 sm:py-4 px-6 bg-gradient-to-r from-cyan-500 via-blue-500 to-teal-500 hover:from-cyan-400 hover:via-blue-400 hover:to-teal-400 text-sm sm:text-lg text-white font-bold rounded-lg sm:rounded-xl transition-all shadow-2xl disabled:opacity-50"><span className="flex items-center justify-center gap-2">{loading ? 'Processing...' : <><Waves className="w-4 h-4 sm:w-5 sm:h-5" /> View Result</>}</span></button>
             </form>
           </div>
@@ -63,7 +50,8 @@ const OceanPortal = ({ isDemo = true, schoolName = "Blue Pearl Academy", logoUrl
               <div className="relative bg-blue-900/80 backdrop-blur-sm border sm:border-2 border-cyan-400/30 rounded-xl sm:rounded-2xl p-3 sm:p-8 shadow-2xl">
                 <div className="text-center mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-cyan-400/30"><h3 className="text-base sm:text-xl font-bold text-cyan-300 mb-0.5 sm:mb-1">{schoolName}</h3><p className="text-cyan-400/70 text-xs sm:text-sm italic">Academic Excellence Report</p></div>
                 <div className="text-center mb-4 sm:mb-6">
-                  <p className="text-lg sm:text-2xl text-cyan-100 font-bold mb-3 sm:mb-4">{result.name}</p>
+                  <p className="text-lg sm:text-2xl text-cyan-100 font-bold mb-1">{result.name}</p>
+                  {result.father_name && <p className="text-sm sm:text-base text-cyan-300/70 mb-3 sm:mb-4">Father: {result.father_name}</p>}
                   <div className="flex justify-center gap-2 sm:gap-4 flex-wrap">
                     <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-950/50 border border-cyan-400/30 rounded-lg text-xs sm:text-base text-cyan-200">Class: <strong className="text-cyan-100">{result.class}</strong></span>
                     <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-950/50 border border-cyan-400/30 rounded-lg text-xs sm:text-base text-cyan-200">Position: <strong className="text-cyan-100">{result.position}</strong></span>
