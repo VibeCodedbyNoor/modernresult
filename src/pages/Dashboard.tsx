@@ -285,6 +285,9 @@ export default function Dashboard() {
         return;
       }
 
+      // Delete old results for this exam before inserting new ones
+      await supabase.from('results').delete().eq('exam_id', selectedExam);
+
       const { error } = await supabase.from('results').insert(validRows);
       if (error) {
         toast.error(error.message);
