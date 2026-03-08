@@ -695,7 +695,7 @@ export default function Dashboard() {
                       <Button variant="outline" size="sm" className="gap-1.5">
                         <FileSpreadsheet className="h-3.5 w-3.5" /> Upload Excel / CSV
                         {school && (
-                          <Badge variant="secondary" className="ml-1 text-[10px]">
+                          <Badge variant="secondary" className="ml-1 text-[10px]" title="First 2 uploads are free, then 10 credits each">
                             {school.upload_count < 2
                               ? `${2 - school.upload_count} free`
                               : '10 credits'}
