@@ -15,6 +15,8 @@ import { toast } from 'sonner';
 import { Plus, Upload, Link as LinkIcon, LogOut, Eye, Trash2, School, Settings, FileSpreadsheet, Check, Palette, Coins, Zap, Gift, Clock, MessageCircle, CreditCard } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { resultTemplates, getTemplate } from '@/lib/resultTemplates';
+import { generateSlugSuggestions } from '@/lib/slugSuggestions';
+import { Badge } from '@/components/ui/badge';
 
 interface SchoolData {
   id: string;
