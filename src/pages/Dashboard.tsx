@@ -1384,7 +1384,7 @@ export default function Dashboard() {
                             value={withdrawAmount}
                             onChange={e => setWithdrawAmount(e.target.value)}
                             placeholder="e.g. 500"
-                            min={45}
+                            min={400}
                             max={availableBalance}
                           />
                           <p className="text-xs text-muted-foreground">Available: ₨{availableBalance.toFixed(0)}</p>
