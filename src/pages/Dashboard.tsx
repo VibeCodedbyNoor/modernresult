@@ -15,6 +15,8 @@ import { toast } from 'sonner';
 import { Plus, Upload, Link as LinkIcon, LogOut, Eye, Trash2, School, Settings, FileSpreadsheet, Check, Palette, Coins, Zap, Gift, Clock, MessageCircle, CreditCard } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { resultTemplates, getTemplate } from '@/lib/resultTemplates';
+import { generateSlugSuggestions } from '@/lib/slugSuggestions';
+import { Badge } from '@/components/ui/badge';
 
 interface SchoolData {
   id: string;
@@ -351,9 +353,26 @@ export default function Dashboard() {
                 <div className="space-y-2">
                   <Label>URL Slug</Label>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span className="whitespace-nowrap">/results/</span>
+                    <span className="whitespace-nowrap">resultportal.online/results/</span>
                     <Input value={schoolSlug} onChange={e => setSchoolSlug(e.target.value)} placeholder="greenfield-academy" required />
                   </div>
+                  {schoolName && generateSlugSuggestions(schoolName).length > 0 && (
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Suggestions — click to use</Label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {generateSlugSuggestions(schoolName).map(slug => (
+                          <Badge
+                            key={slug}
+                            variant={schoolSlug === slug ? 'default' : 'outline'}
+                            className="cursor-pointer text-xs hover:bg-accent transition-colors"
+                            onClick={() => setSchoolSlug(slug)}
+                          >
+                            {slug}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Accent Color</Label>
