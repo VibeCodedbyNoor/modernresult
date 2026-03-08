@@ -56,7 +56,7 @@ export default function Terms() {
             <li>When someone signs up using your referral link and later purchases credits, you earn a <strong>10% commission</strong> in PKR.</li>
             <li>Commission is calculated on the <strong>paid credit amount only</strong> — bonus credits are excluded.</li>
             <li>The commission rate is <strong>₨0.9 per paid credit</strong> purchased by your referral (based on ₨9/credit pricing).</li>
-            <li className="font-semibold" style={{ color: '#f59e0b' }}>
+            <li>
               ⚠️ Maximum earning cap: <strong>₨2,000</strong> per referrer. Once your total referral earnings reach ₨2,000, no further commissions will be credited.
             </li>
             <li>Earnings can be <strong>withdrawn</strong> via JazzCash/Easypaisa or <strong>exchanged for credits</strong> at ₨9 per credit.</li>
