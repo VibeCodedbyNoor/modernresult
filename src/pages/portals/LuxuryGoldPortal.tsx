@@ -3,15 +3,14 @@ import { toast } from 'sonner';
 import { CLASS_SUBJECTS } from '@/lib/classSubjects';
 import { generateDemoResult } from '@/lib/demoResults';
 import { Sparkles } from 'lucide-react';
+import { PortalProps, SearchParams, SEARCH_FIELD_LABELS, SEARCH_FIELD_PLACEHOLDERS } from '@/lib/portalTypes';
 
 import BackButton from '@/components/portal/BackButton';
 import ResultActions from '@/components/portal/ResultActions';
 
-interface PortalProps { isDemo?: boolean; schoolName?: string; logoUrl?: string | null; onSearch?: (className: string, studentName: string) => Promise<any>; demoResult?: any; }
-
-const LuxuryGoldPortal = ({ isDemo = true, schoolName = "Royal Cambridge School", logoUrl, onSearch, demoResult }: PortalProps) => {
+const LuxuryGoldPortal = ({ isDemo = true, schoolName = "Royal Cambridge School", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult }: PortalProps) => {
   const [selectedClass, setSelectedClass] = useState('');
-  const [studentName, setStudentName] = useState('');
+  const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(demoResult || null);
   const [error, setError] = useState('');
@@ -19,10 +18,22 @@ const LuxuryGoldPortal = ({ isDemo = true, schoolName = "Royal Cambridge School"
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedClass || !studentName) { toast.error('Please select a class and enter your name'); return; }
+    const hasValue = searchFields.some(f => formValues[f]?.trim());
+    if (!selectedClass || !hasValue) { toast.error('Please fill in the required fields'); return; }
     setLoading(true); setError(''); setResult(null);
-    if (isDemo) { setTimeout(() => { setResult(generateDemoResult(studentName, selectedClass)); setLoading(false); toast.success('Result loaded successfully!'); }, 1000); }
-    else if (onSearch) { try { const r = await onSearch(selectedClass, studentName); if (r) { setResult(r); toast.success('Result loaded successfully!'); } else { setError('No result found'); } } catch { setError('Search failed'); } finally { setLoading(false); } }
+    if (isDemo) {
+      setTimeout(() => {
+        const name = formValues['student_name'] || formValues['roll_number'] || 'Student';
+        setResult(generateDemoResult(name, selectedClass));
+        setLoading(false);
+        toast.success('Result loaded successfully!');
+      }, 1000);
+    } else if (onSearch) {
+      try {
+        const r = await onSearch({ className: selectedClass, rollNumber: formValues['roll_number'] || '', studentName: formValues['student_name'] || '', fatherName: formValues['father_name'] || '' });
+        if (r) { setResult(r); toast.success('Result loaded successfully!'); } else { setError('No result found'); }
+      } catch { setError('Search failed'); } finally { setLoading(false); }
+    }
   };
 
   return (
@@ -47,7 +58,9 @@ const LuxuryGoldPortal = ({ isDemo = true, schoolName = "Royal Cambridge School"
             <div className="text-center mb-4 sm:mb-6"><h2 className="text-xl sm:text-3xl font-serif font-bold text-amber-400 mb-1 sm:mb-2">Student Result Inquiry</h2><div className="w-20 sm:w-24 h-0.5 mx-auto bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div></div>
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div><label className="block text-xs sm:text-sm font-serif font-semibold text-amber-300 mb-2 sm:mb-3">Class Selection</label><select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900/50 border sm:border-2 border-amber-500/30 text-sm sm:text-base text-amber-100 rounded-lg sm:rounded-xl focus:outline-none focus:border-amber-500 transition-all font-serif shadow-lg" required><option value="">Select Your Class...</option>{Object.keys(CLASS_SUBJECTS).map((cls) => (<option key={cls} value={cls}>{cls}</option>))}</select></div>
-              <div><label className="block text-xs sm:text-sm font-serif font-semibold text-amber-300 mb-2 sm:mb-3">Student Name</label><input type="text" value={studentName} onChange={(e) => setStudentName(e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900/50 border sm:border-2 border-amber-500/30 text-sm sm:text-base text-amber-100 rounded-lg sm:rounded-xl placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-all font-serif shadow-lg" placeholder="Enter Your Name..." required /></div>
+              {searchFields.map(field => (
+                <div key={field}><label className="block text-xs sm:text-sm font-serif font-semibold text-amber-300 mb-2 sm:mb-3">{SEARCH_FIELD_LABELS[field] || field}</label><input type="text" value={formValues[field] || ''} onChange={(e) => setFormValues(prev => ({ ...prev, [field]: e.target.value }))} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900/50 border sm:border-2 border-amber-500/30 text-sm sm:text-base text-amber-100 rounded-lg sm:rounded-xl placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-all font-serif shadow-lg" placeholder={SEARCH_FIELD_PLACEHOLDERS[field] || ''} required /></div>
+              ))}
               <button type="submit" disabled={loading} className="w-full py-3 sm:py-4 px-6 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 hover:from-amber-500 hover:via-yellow-400 hover:to-amber-500 text-sm sm:text-lg text-slate-900 font-serif font-bold rounded-lg sm:rounded-xl transition-all shadow-2xl disabled:opacity-50"><span className="flex items-center justify-center gap-2">{loading ? 'Processing...' : <><Sparkles className="w-4 h-4 sm:w-5 sm:h-5" /> View Result</>}</span></button>
             </form>
           </div>
@@ -62,7 +75,8 @@ const LuxuryGoldPortal = ({ isDemo = true, schoolName = "Royal Cambridge School"
               <div className="relative bg-slate-800/90 backdrop-blur-sm border sm:border-2 border-amber-500/30 rounded-xl sm:rounded-2xl p-3 sm:p-8 shadow-2xl">
                 <div className="text-center mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-amber-500/30"><h3 className="text-base sm:text-xl font-serif font-bold text-amber-400 mb-0.5 sm:mb-1">{schoolName}</h3><p className="text-amber-300/70 text-xs sm:text-sm font-serif italic">Certificate of Achievement</p></div>
                 <div className="text-center mb-4 sm:mb-6">
-                  <p className="text-lg sm:text-2xl text-amber-100 font-serif font-bold mb-3 sm:mb-4">{result.name}</p>
+                  <p className="text-lg sm:text-2xl text-amber-100 font-serif font-bold mb-1">{result.name}</p>
+                  {result.father_name && <p className="text-sm sm:text-base text-amber-300/70 font-serif mb-3 sm:mb-4">Father: {result.father_name}</p>}
                   <div className="flex justify-center gap-2 sm:gap-4 flex-wrap">
                     <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-900/50 border border-amber-500/30 rounded-lg text-xs sm:text-base text-amber-300 font-serif">Class: <strong className="text-amber-100">{result.class}</strong></span>
                     <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-900/50 border border-amber-500/30 rounded-lg text-xs sm:text-base text-amber-300 font-serif">Position: <strong className="text-amber-100">{result.position}</strong></span>
