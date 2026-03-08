@@ -1146,7 +1146,7 @@ export default function Dashboard() {
                     <div className="space-y-1.5">
                       <Label className="text-xs">Roll Number Column</Label>
                       <Select value={mapping.rollKey} onValueChange={val => setSheetMappings(prev => ({ ...prev, [activeSheet]: { ...prev[activeSheet], rollKey: val } }))}>
-                        <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-8 text-xs min-w-0"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {mapping.headers.map(h => (
                             <SelectItem key={h} value={h}>{h}</SelectItem>
