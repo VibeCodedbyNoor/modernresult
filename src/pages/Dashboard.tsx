@@ -258,42 +258,48 @@ export default function Dashboard() {
 
   async function handleConfirmUpload() {
     if (!selectedExam) return;
-    if (!selectedRollKey || !selectedNameKey || selectedRollKey === selectedNameKey) {
-      toast.error('Please choose different Roll Number and Student Name columns');
-      return;
-    }
 
-    const subjectKeys = Object.entries(selectedSubjects)
-      .filter(([, isSelected]) => isSelected)
-      .map(([key]) => key)
-      .filter((key) => !isNonSubjectColumn(key));
-
-    if (subjectKeys.length === 0) {
-      toast.error('Please select at least one valid subject column');
-      return;
+    // Validate each sheet has roll + name selected
+    for (const { sheetName } of parsedSheets) {
+      const mapping = sheetMappings[sheetName];
+      if (!mapping) continue;
+      if (!mapping.rollKey || !mapping.nameKey || mapping.rollKey === mapping.nameKey) {
+        toast.error(`Please choose different Roll Number and Student Name columns for "${sheetName}"`);
+        return;
+      }
+      const hasSubjects = Object.values(mapping.subjects).some(s => s.selected);
+      if (!hasSubjects) {
+        toast.error(`Please select at least one subject for "${sheetName}"`);
+        return;
+      }
     }
 
     setUploading(true);
     try {
       const allRows: any[] = [];
       for (const { sheetName, data } of parsedSheets) {
+        const mapping = sheetMappings[sheetName];
+        if (!mapping) continue;
+
+        const subjectEntries = Object.entries(mapping.subjects).filter(([, v]) => v.selected);
+
         for (const row of data) {
-          const subjects: Record<string, number> = {};
+          const subjects: Record<string, { obtained: number; total: number }> = {};
           let total = 0;
 
-          for (const subj of subjectKeys) {
+          for (const [subj, config] of subjectEntries) {
             const marks = parseMarksValue(row[subj]);
-            subjects[subj] = marks;
+            subjects[subj] = { obtained: marks, total: config.totalMarks };
             total += marks;
           }
 
-          const avg = subjectKeys.length > 0 ? total / subjectKeys.length : 0;
+          const avg = subjectEntries.length > 0 ? total / subjectEntries.length : 0;
           const grade = avg >= 90 ? 'A+' : avg >= 80 ? 'A' : avg >= 70 ? 'B' : avg >= 60 ? 'C' : avg >= 50 ? 'D' : 'F';
 
           allRows.push({
             exam_id: selectedExam,
-            roll_number: String(row[selectedRollKey] || '').trim(),
-            student_name: String(row[selectedNameKey] || '').trim(),
+            roll_number: String(row[mapping.rollKey] || '').trim(),
+            student_name: String(row[mapping.nameKey] || '').trim(),
             subjects,
             total_marks: total,
             grade,
