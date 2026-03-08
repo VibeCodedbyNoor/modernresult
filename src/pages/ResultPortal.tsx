@@ -144,6 +144,7 @@ export default function ResultPortal() {
 
       return {
         name: row.student_name,
+        father_name: (row as any).father_name || '',
         class: row.class_name,
         roll_number: row.roll_number,
         position,
