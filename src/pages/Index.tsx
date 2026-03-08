@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import WhatsAppHelpButton from '@/components/WhatsAppHelpButton';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Sparkles, UserPlus, Building, FileSpreadsheet, CheckCircle, Share2, MessageCircle } from 'lucide-react';
 import { resultTemplates } from '@/lib/resultTemplates';
+import { supabase } from '@/integrations/supabase/client';
 import HeroSection from '@/components/landing/HeroSection';
 import HowItWorks from '@/components/landing/HowItWorks';
 import DesignGrid from '@/components/landing/DesignGrid';
