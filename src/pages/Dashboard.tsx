@@ -57,12 +57,16 @@ interface ReferralData {
   id: string;
   referred_user_id: string;
   created_at: string;
+  profiles?: {
+    school_name: string;
+  };
 }
 
 interface ReferralEarning {
   id: string;
   credits_purchased: number;
   commission_credits: number;
+  commission_rupees?: number;
   created_at: string;
 }
 
