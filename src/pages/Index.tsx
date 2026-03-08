@@ -34,6 +34,7 @@ export default function Index() {
       <HeroSection />
       <DesignGrid />
       <HowItWorks />
+      <DoneForYouSection />
       <CTASection />
 
       {/* Footer */}
