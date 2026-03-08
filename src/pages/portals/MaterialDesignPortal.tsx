@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { CLASS_SUBJECTS } from '@/lib/classSubjects';
 import { generateDemoResult } from '@/lib/demoResults';
 import { CheckCircle2 } from 'lucide-react';
-import PortalBranding from '@/components/portal/PortalBranding';
+
 import BackButton from '@/components/portal/BackButton';
 import ResultActions from '@/components/portal/ResultActions';
 
@@ -27,7 +27,7 @@ const MaterialDesignPortal = ({ isDemo = true, schoolName = "Swat Public School"
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <PortalBranding variant="light" />
+      
       <BackButton variant="light" />
       <main className="container mx-auto px-3 sm:px-4 pt-14 sm:pt-8 pb-20 max-w-4xl">
         <header className="mb-4 sm:mb-8">

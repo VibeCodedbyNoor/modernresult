@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { CLASS_SUBJECTS } from '@/lib/classSubjects';
 import { generateDemoResult } from '@/lib/demoResults';
 import { Contrast } from 'lucide-react';
-import PortalBranding from '@/components/portal/PortalBranding';
+
 import BackButton from '@/components/portal/BackButton';
 import ResultActions from '@/components/portal/ResultActions';
 
@@ -28,7 +28,7 @@ const MonochromePortal = ({ isDemo = true, schoolName = "Elite School", logoUrl,
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none"><div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-white/5 to-transparent"></div></div>
-      <PortalBranding variant="monochrome" />
+      
       <BackButton variant="monochrome" />
       <main className="relative z-10 container mx-auto px-3 sm:px-4 pt-14 sm:pt-6 pb-20 max-w-3xl">
         <header className="text-center mb-6 sm:mb-12">

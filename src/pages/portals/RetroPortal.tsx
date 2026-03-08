@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { CLASS_SUBJECTS } from '@/lib/classSubjects';
 import { generateDemoResult } from '@/lib/demoResults';
-import PortalBranding from '@/components/portal/PortalBranding';
+
 import BackButton from '@/components/portal/BackButton';
 import ResultActions from '@/components/portal/ResultActions';
 
@@ -26,7 +26,7 @@ const RetroPortal = ({ isDemo = true, schoolName = "Government High School", log
 
   return (
     <div className="min-h-screen bg-[#f4e4c1]" style={{ fontFamily: 'Courier New, monospace' }}>
-      <PortalBranding variant="light" />
+      
       <BackButton variant="light" />
       <main className="container mx-auto px-3 sm:px-4 pt-14 sm:pt-12 pb-20 max-w-3xl">
         <header className="text-center mb-6 sm:mb-12">

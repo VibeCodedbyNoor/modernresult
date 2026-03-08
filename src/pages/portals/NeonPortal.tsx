@@ -6,7 +6,7 @@ import ResultCard from '@/components/portal/ResultCard';
 import { NeonInput } from '@/components/ui/neon-input';
 import { NeonSelect } from '@/components/ui/neon-select';
 import { NeonButton } from '@/components/ui/neon-button';
-import PortalBranding from '@/components/portal/PortalBranding';
+
 import BackButton from '@/components/portal/BackButton';
 
 interface PortalProps { isDemo?: boolean; schoolName?: string; logoUrl?: string | null; onSearch?: (className: string, studentName: string) => Promise<any>; demoResult?: any; }
@@ -34,7 +34,7 @@ const NeonPortal = ({ isDemo = true, schoolName = "SHAHEEN PUBLIC HIGH SCHOOL", 
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
-      <PortalBranding variant="neon" />
+      
       <BackButton variant="neon" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,255,255,0.15),transparent_50%)] animate-pulse"></div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,0,255,0.15),transparent_50%)] animate-pulse" style={{ animationDelay: '1s' }}></div>

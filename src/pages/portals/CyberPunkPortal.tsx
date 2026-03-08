@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { CLASS_SUBJECTS } from '@/lib/classSubjects';
 import { generateDemoResult } from '@/lib/demoResults';
-import PortalBranding from '@/components/portal/PortalBranding';
+
 import BackButton from '@/components/portal/BackButton';
 import ResultActions from '@/components/portal/ResultActions';
 
@@ -60,7 +60,7 @@ const CyberPunkPortal = ({ isDemo = true, schoolName = "FRONTIER ACADEMY", logoU
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
-      <PortalBranding variant="neon" />
+      
       <BackButton variant="neon" />
 
       {/* Animated grid background */}

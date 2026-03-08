@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { CLASS_SUBJECTS } from '@/lib/classSubjects';
 import { generateDemoResult } from '@/lib/demoResults';
 import { Heart } from 'lucide-react';
-import PortalBranding from '@/components/portal/PortalBranding';
+
 import BackButton from '@/components/portal/BackButton';
 import ResultActions from '@/components/portal/ResultActions';
 
@@ -36,7 +36,7 @@ const KawaiiPortal = ({ isDemo = true, schoolName = "Little Stars Academy", logo
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 relative overflow-hidden">
-      <PortalBranding variant="kawaii" />
+      
       <BackButton variant="kawaii" />
       <div className="absolute top-20 left-10 w-40 h-20 bg-white rounded-full opacity-70 shadow-lg hidden sm:block"></div>
       <div className="absolute top-40 right-20 w-32 h-16 bg-white rounded-full opacity-70 shadow-lg hidden sm:block"></div>

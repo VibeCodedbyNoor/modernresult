@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { CLASS_SUBJECTS } from '@/lib/classSubjects';
 import { generateDemoResult } from '@/lib/demoResults';
 import { Gem } from 'lucide-react';
-import PortalBranding from '@/components/portal/PortalBranding';
+
 import BackButton from '@/components/portal/BackButton';
 import ResultActions from '@/components/portal/ResultActions';
 
@@ -66,7 +66,7 @@ const ElegantPortal = ({ isDemo = true, schoolName = "The Cambridge School", log
         <div className="absolute bottom-20 left-20 w-64 h-64 bg-stone-200 rounded-full blur-3xl opacity-30"></div>
       </div>
 
-      <PortalBranding variant="elegant" />
+      
       <BackButton variant="elegant" />
 
       <main className="relative z-10 container mx-auto px-3 sm:px-4 pt-14 sm:pt-6 pb-20 max-w-3xl">

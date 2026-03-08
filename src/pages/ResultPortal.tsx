@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { CLASS_SUBJECTS } from '@/lib/classSubjects';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search } from 'lucide-react';
 
@@ -104,7 +105,31 @@ export default function ResultPortal() {
       if (!creditOk) return null;
 
       const row = data[0];
-      const subjects = Array.isArray(row.subjects) ? (row.subjects as any[]) : [];
+      const rawSubjects = row.subjects as any;
+      let subjects: any[] = [];
+      let position: string | number = '-';
+
+      if (Array.isArray(rawSubjects)) {
+        subjects = rawSubjects;
+      } else if (typeof rawSubjects === 'object' && rawSubjects !== null) {
+        // Extract position if stored in subjects object
+        if ('Position' in rawSubjects) {
+          position = rawSubjects.Position;
+        }
+        const classConfig = CLASS_SUBJECTS[row.class_name] || [];
+        subjects = Object.entries(rawSubjects)
+          .filter(([key]) => key !== 'Position')
+          .map(([name, value]) => {
+            const val = value as any;
+            const config = classConfig.find(c => c.subject.toLowerCase() === name.toLowerCase());
+            return {
+              subject: config?.subject || name,
+              obtained_marks: typeof val === 'object' ? Number(val.obtained) || 0 : Number(val) || 0,
+              total_marks: typeof val === 'object' ? Number(val.total) || 0 : config?.total_marks || 100,
+            };
+          });
+      }
+
       const totalObtained = subjects.reduce((sum: number, s: any) => sum + (Number(s.obtained_marks) || 0), 0);
       const totalMax = subjects.reduce((sum: number, s: any) => sum + (Number(s.total_marks) || 0), 0);
       const percentage = totalMax > 0 ? ((totalObtained / totalMax) * 100).toFixed(1) + '%' : '0%';
@@ -116,7 +141,7 @@ export default function ResultPortal() {
         name: row.student_name,
         class: row.class_name,
         roll_number: row.roll_number,
-        position: '-',
+        position,
         subjects,
         total_obtained: totalObtained,
         total_marks: totalMax,
