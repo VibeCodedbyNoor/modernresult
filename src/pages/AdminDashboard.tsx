@@ -273,6 +273,20 @@ resultportal.online`;
     (s.invited_by || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleDeleteSchool = async (schoolId: string, schoolName: string) => {
+    setDeletingSchool(schoolId);
+    try {
+      const { error } = await supabase.rpc('admin_delete_school', { p_school_id: schoolId });
+      if (error) throw error;
+      toast({ title: `🗑️ "${schoolName}" and all its data have been deleted.` });
+      loadData();
+    } catch (err: any) {
+      toast({ title: 'Failed to delete school', description: err.message, variant: 'destructive' });
+    } finally {
+      setDeletingSchool(null);
+    }
+  };
+
   const totalCredits = schools.reduce((sum, s) => sum + s.credit_balance, 0);
   const todayTx = transactions.filter(t => {
     const today = new Date();
