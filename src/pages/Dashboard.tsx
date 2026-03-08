@@ -894,9 +894,9 @@ export default function Dashboard() {
                   <Label>Public URL</Label>
                   <div className="flex items-center gap-2">
                     <LinkIcon className="h-4 w-4 text-muted-foreground" />
-                    <code className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded">
+                    <a href={`https://resultportal.online/results/${school.slug}`} target="_blank" rel="noreferrer" className="text-sm text-primary underline bg-muted px-2 py-1 rounded">
                       resultportal.online/results/{school.slug}
-                    </code>
+                    </a>
                   </div>
                 </div>
                 <div className="space-y-2">
