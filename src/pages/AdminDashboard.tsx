@@ -59,6 +59,7 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSchool, setSelectedSchool] = useState<SchoolWithCredits | null>(null);
   const [creditAmount, setCreditAmount] = useState('');
+  const [paidCredits, setPaidCredits] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [lastUpdate, setLastUpdate] = useState<{ school: string; amount: number; newBalance: number } | null>(null);
   const [updating, setUpdating] = useState(false);
