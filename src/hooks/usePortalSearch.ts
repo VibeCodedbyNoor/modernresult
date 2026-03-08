@@ -42,12 +42,8 @@ export function usePortalSearch({ isDemo = true, onSearch, demoResult }: Pick<Po
           fatherName: formValues['father_name'] || '',
         });
         if (r) {
-          if (r.error === 'credits_exhausted') {
-            setError('This school\'s result checking service is currently unavailable. Please contact the school administration.');
-          } else {
-            setResult(r);
-            toast.success('Result loaded successfully!');
-          }
+          setResult(r);
+          toast.success('Result loaded successfully!');
         } else {
           setError('No result found');
         }
