@@ -762,8 +762,7 @@ export default function Dashboard() {
                     </CardContent>
                   </Card>
                   );
-                })()
-                ) : (
+                })() : (
                   <Card className="border-dashed">
                     <CardContent className="p-12 text-center">
                       <FileSpreadsheet className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
