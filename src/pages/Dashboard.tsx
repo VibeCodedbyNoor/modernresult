@@ -19,6 +19,7 @@ import { generateSlugSuggestions } from '@/lib/slugSuggestions';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import WhatsAppHelpButton from '@/components/WhatsAppHelpButton';
+import CountdownDisplay from '@/components/CountdownDisplay';
 
 interface SchoolData {
   id: string;
