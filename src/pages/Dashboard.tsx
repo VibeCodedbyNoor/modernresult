@@ -218,14 +218,30 @@ export default function Dashboard() {
     if (profile?.referral_code) setReferralCode(profile.referral_code);
 
     // Fetch referrals using security definer function (bypasses RLS on profiles)
-    const { data: refs } = await supabase.rpc('get_my_referrals');
-    const transformedRefs = (refs || []).map((r: any) => ({
-      id: r.id,
-      referred_user_id: r.referred_user_id,
-      created_at: r.created_at,
-      profiles: { school_name: r.school_name || '' },
-    }));
-    setReferrals(transformedRefs);
+    const { data: refs, error: refsError } = await supabase.rpc('get_my_referrals');
+
+    if (refsError) {
+      console.error('get_my_referrals error:', refsError);
+      const { data: fallbackRefs } = await supabase
+        .from('referrals')
+        .select('id, referred_user_id, created_at')
+        .eq('referrer_id', user.id)
+        .order('created_at', { ascending: false });
+
+      setReferrals((fallbackRefs || []).map((r: any) => ({
+        id: r.id,
+        referred_user_id: r.referred_user_id,
+        created_at: r.created_at,
+      })));
+    } else {
+      const transformedRefs = (refs || []).map((r: any) => ({
+        id: r.id,
+        referred_user_id: r.referred_user_id,
+        created_at: r.created_at,
+        profiles: { school_name: r.school_name || '' },
+      }));
+      setReferrals(transformedRefs);
+    }
 
     // Fetch earnings with commission_rupees
     const { data: earnings } = await supabase
