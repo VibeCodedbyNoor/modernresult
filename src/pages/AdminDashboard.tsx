@@ -397,6 +397,7 @@ resultportal.online`;
                   <TableRow>
                     <TableHead>School Name</TableHead>
                     <TableHead>Owner</TableHead>
+                    <TableHead>Invited By</TableHead>
                     <TableHead>WhatsApp</TableHead>
                     <TableHead>Slug</TableHead>
                     <TableHead>Credits</TableHead>
@@ -419,12 +420,15 @@ resultportal.online`;
                         )}
                       </TableCell>
                       <TableCell>
+                        <span className="text-sm">{school.invited_by || '—'}</span>
+                      </TableCell>
+                      <TableCell>
                         {school.whatsapp_number ? (
                           <a
                             href={`https://wa.me/${school.whatsapp_number.replace(/\D/g, '')}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="flex items-center gap-1.5 text-sm text-green-600 hover:underline"
+                            className="flex items-center gap-1.5 text-sm text-primary hover:underline"
                           >
                             <Phone className="h-3.5 w-3.5" />
                             {school.whatsapp_number}
@@ -459,7 +463,7 @@ resultportal.online`;
                   ))}
                   {filteredSchools.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                         No schools found
                       </TableCell>
                     </TableRow>
