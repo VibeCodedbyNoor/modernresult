@@ -265,8 +265,8 @@ export default function Dashboard() {
     if (!user) return;
     
     const amount = parseFloat(withdrawAmount);
-    if (!amount || amount < 45) {
-      toast.error('Minimum withdrawal is ₨45');
+    if (!amount || amount < 400) {
+      toast.error('Minimum withdrawal is ₨400');
       return;
     }
     
