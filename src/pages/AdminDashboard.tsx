@@ -22,6 +22,7 @@ interface SchoolWithCredits {
   owner_name?: string;
   whatsapp_number?: string;
   owner_email?: string;
+  invited_by?: string;
 }
 
 interface TransactionRow {
@@ -118,21 +119,36 @@ export default function AdminDashboard() {
     // Load profiles for owner info
     const { data: profilesData } = await supabase
       .from('profiles')
-      .select('user_id, owner_name, whatsapp_number');
+      .select('user_id, owner_name, whatsapp_number, school_name');
+
+    const { data: referralsData } = await supabase
+      .from('referrals')
+      .select('referrer_id, referred_user_id');
 
     if (schoolsData && creditsData) {
       const creditMap = new Map(creditsData.map(c => [c.school_id, c.balance]));
       const profileMap = new Map(
-        (profilesData || []).map(p => [p.user_id, { owner_name: p.owner_name, whatsapp_number: p.whatsapp_number }])
+        (profilesData || []).map(p => [
+          p.user_id,
+          { owner_name: p.owner_name, whatsapp_number: p.whatsapp_number, school_name: p.school_name },
+        ])
       );
-      
+      const referralMap = new Map((referralsData || []).map(r => [r.referred_user_id, r.referrer_id]));
+      const schoolByOwnerMap = new Map(schoolsData.map(s => [s.owner_id, s.name]));
+
       const merged: SchoolWithCredits[] = schoolsData.map(s => {
         const profile = profileMap.get(s.owner_id);
+        const referrerId = referralMap.get(s.owner_id);
+        const referrerProfile = referrerId ? profileMap.get(referrerId) : undefined;
+
         return {
           ...s,
           credit_balance: creditMap.get(s.id) ?? 0,
           owner_name: profile?.owner_name || '',
           whatsapp_number: profile?.whatsapp_number || '',
+          invited_by: referrerId
+            ? (referrerProfile?.school_name || referrerProfile?.owner_name || schoolByOwnerMap.get(referrerId) || '—')
+            : '—',
         };
       });
       merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -246,7 +262,8 @@ resultportal.online`;
   const filteredSchools = schools.filter(s =>
     s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (s.owner_name || '').toLowerCase().includes(searchQuery.toLowerCase())
+    (s.owner_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (s.invited_by || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const totalCredits = schools.reduce((sum, s) => sum + s.credit_balance, 0);
@@ -380,6 +397,7 @@ resultportal.online`;
                   <TableRow>
                     <TableHead>School Name</TableHead>
                     <TableHead>Owner</TableHead>
+                    <TableHead>Invited By</TableHead>
                     <TableHead>WhatsApp</TableHead>
                     <TableHead>Slug</TableHead>
                     <TableHead>Credits</TableHead>
@@ -402,12 +420,15 @@ resultportal.online`;
                         )}
                       </TableCell>
                       <TableCell>
+                        <span className="text-sm">{school.invited_by || '—'}</span>
+                      </TableCell>
+                      <TableCell>
                         {school.whatsapp_number ? (
                           <a
                             href={`https://wa.me/${school.whatsapp_number.replace(/\D/g, '')}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="flex items-center gap-1.5 text-sm text-green-600 hover:underline"
+                            className="flex items-center gap-1.5 text-sm text-primary hover:underline"
                           >
                             <Phone className="h-3.5 w-3.5" />
                             {school.whatsapp_number}
@@ -442,7 +463,7 @@ resultportal.online`;
                   ))}
                   {filteredSchools.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                         No schools found
                       </TableCell>
                     </TableRow>
