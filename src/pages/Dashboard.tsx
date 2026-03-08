@@ -109,6 +109,7 @@ export default function Dashboard() {
   // Credits state
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<number | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
