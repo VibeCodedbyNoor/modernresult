@@ -31,6 +31,7 @@ interface SchoolData {
   result_template: string;
   search_fields: string[];
   template_changes_count: number;
+  upload_count: number;
 }
 
 interface Exam {
