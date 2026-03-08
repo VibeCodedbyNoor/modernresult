@@ -248,7 +248,9 @@ export default function Dashboard() {
       return;
     }
     
-    const availableBalance = totalEarnings - totalWithdrawn;
+    const totalEarned = referralEarnings.reduce((sum, earn) => sum + earn.commission_credits, 0);
+    const totalWithdrawnAmount = withdrawals.filter(w => w.status !== 'rejected').reduce((sum, w) => sum + w.amount, 0);
+    const availableBalance = totalEarned - totalWithdrawnAmount;
     if (amount > availableBalance) {
       toast.error('Insufficient balance');
       return;
