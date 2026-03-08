@@ -164,6 +164,17 @@ export default function Dashboard() {
   const [uploadConfirmOpen, setUploadConfirmOpen] = useState(false);
   const [uploadConfirmResolve, setUploadConfirmResolve] = useState<((val: boolean) => void) | null>(null);
 
+  // Referral state
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [referrals, setReferrals] = useState<ReferralData[]>([]);
+  const [referralEarnings, setReferralEarnings] = useState<ReferralEarning[]>([]);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawMethod, setWithdrawMethod] = useState('easypaisa');
+  const [withdrawAccount, setWithdrawAccount] = useState('');
+  const [withdrawName, setWithdrawName] = useState('');
+  const [withdrawing, setWithdrawing] = useState(false);
+
   const fetchedRef = useRef(false);
 
   useEffect(() => {
