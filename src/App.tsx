@@ -31,6 +31,7 @@ const App = () => (
             <Route path="/results/:slug" element={<ResultPortal />} />
             <Route path="/demo/:templateId" element={<DemoPortal />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/earn" element={<EarnWithUs />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

@@ -36,6 +36,13 @@ export default function Index() {
             OnlineResultPortal
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
+            {showEarn && (
+              <Link to="/earn">
+                <Button variant="ghost" size="sm" className="text-green-400 hover:text-green-300 hover:bg-green-500/10 text-xs sm:text-sm px-2 sm:px-3">
+                  💰 Earn With Us
+                </Button>
+              </Link>
+            )}
             <Link to="/login">
               <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white hover:bg-white/10 text-xs sm:text-sm px-2 sm:px-3">Log in</Button>
             </Link>
