@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search } from 'lucide-react';
-import { getTemplate } from '@/lib/resultTemplates';
 
 // Import all portal components
 import CorporatePortal from './portals/CorporatePortal';
@@ -71,13 +70,43 @@ export default function ResultPortal() {
   useEffect(() => {
     async function load() {
       const { data: schoolData } = await supabase.from('schools').select('*').eq('slug', slug).single();
-      if (schoolData) {
-        setSchool(schoolData);
-      }
+      if (schoolData) setSchool(schoolData);
       setLoading(false);
     }
     load();
   }, [slug]);
+
+  const handleSearch = useCallback(async (className: string, studentName: string) => {
+    if (!school) return null;
+
+    // Get published exams for this school
+    const { data: exams } = await supabase
+      .from('exams')
+      .select('id, name, display_at, is_stopped')
+      .eq('school_id', school.id)
+      .eq('is_published', true);
+
+    if (!exams || exams.length === 0) return null;
+
+    // Use the first published exam
+    const exam = exams[0];
+    if (exam.is_stopped) return null;
+    if (exam.display_at && new Date(exam.display_at).getTime() > Date.now()) return null;
+
+    const { data } = await supabase.rpc('fuzzy_search_results', {
+      p_exam_id: exam.id,
+      p_class_name: className,
+      p_query: studentName.trim(),
+    });
+
+    if (data && data.length > 0) {
+      const { data: creditOk } = await supabase.rpc('deduct_credit', { p_school_id: school.id });
+      if (!creditOk) return null;
+      return data[0];
+    }
+
+    return null;
+  }, [school]);
 
   if (loading) {
     return (
@@ -109,7 +138,7 @@ export default function ResultPortal() {
       isDemo={false}
       schoolName={school.name}
       logoUrl={school.logo_url}
-      schoolId={school.id}
+      onSearch={handleSearch}
     />
   );
 }
