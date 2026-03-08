@@ -1380,6 +1380,20 @@ export default function Dashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <AlertDialog open={templateConfirmOpen} onOpenChange={setTemplateConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Change Portal Design</AlertDialogTitle>
+            <AlertDialogDescription>
+              This design change will cost <span className="font-semibold text-foreground">5 credits</span>. Your current balance is <span className="font-semibold text-foreground">{creditBalance ?? 0} credits</span>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingTemplateId(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmTemplateChange}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <WhatsAppHelpButton />
     </div>
   );
