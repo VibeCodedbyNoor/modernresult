@@ -148,6 +148,32 @@ export default function AdminDashboard() {
         school_name: schoolMap.get(t.school_id) ?? 'Unknown',
       })));
     }
+
+    // Load earn_with_us setting
+    const { data: settingData } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'earn_with_us')
+      .maybeSingle();
+    if (settingData?.value && typeof settingData.value === 'object' && 'enabled' in (settingData.value as any)) {
+      setEarnEnabled((settingData.value as any).enabled === true);
+    }
+
+    // Load withdrawal requests
+    const { data: wdData } = await supabase
+      .from('withdrawal_requests')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (wdData && profilesData) {
+      const profileMap2 = new Map(
+        (profilesData || []).map(p => [p.user_id, { owner_name: p.owner_name }])
+      );
+      setWithdrawals(wdData.map(w => ({
+        ...w,
+        owner_name: profileMap2.get(w.user_id)?.owner_name || 'Unknown',
+      })));
+    }
   };
 
   const handleAddCredits = async () => {
