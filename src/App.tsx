@@ -12,6 +12,7 @@ import ResultPortal from "./pages/ResultPortal";
 import DemoPortal from "./pages/DemoPortal";
 import AdminDashboard from "./pages/AdminDashboard";
 import EarnWithUs from "./pages/EarnWithUs";
+import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
