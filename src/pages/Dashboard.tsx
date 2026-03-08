@@ -160,6 +160,30 @@ export default function Dashboard() {
     setLoading(false);
   }
 
+  async function handleConfirmTemplateChange() {
+    if (!school || !pendingTemplateId) return;
+    setTemplateConfirmOpen(false);
+
+    const { data: success, error: rpcError } = await supabase
+      .rpc('deduct_template_change_credits', { p_school_id: school.id });
+    if (rpcError) { toast.error(rpcError.message); setPendingTemplateId(null); return; }
+    if (!success) { toast.error('Not enough credits! You need at least 5 credits.'); setPendingTemplateId(null); return; }
+
+    const { error } = await supabase
+      .from('schools')
+      .update({ result_template: pendingTemplateId })
+      .eq('id', school.id);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      setSchool({ ...school, result_template: pendingTemplateId, template_changes_count: school.template_changes_count + 1 });
+      toast.success('Design changed (5 credits deducted)');
+      const { data: credData } = await supabase.from('school_credits').select('balance').eq('school_id', school.id).single();
+      if (credData) setCreditBalance(credData.balance);
+    }
+    setPendingTemplateId(null);
+  }
+
   async function fetchCredits(schoolId: string) {
     const { data: creditData } = await supabase.from('school_credits').select('balance').eq('school_id', schoolId).single();
     if (creditData) setCreditBalance(creditData.balance);
