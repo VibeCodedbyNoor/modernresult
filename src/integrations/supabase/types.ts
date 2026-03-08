@@ -404,6 +404,7 @@ export type Database = {
             }
             Returns: number
           }
+      admin_delete_school: { Args: { p_school_id: string }; Returns: undefined }
       apply_referral_code: {
         Args: { p_referral_code: string; p_referred_user_id: string }
         Returns: boolean
