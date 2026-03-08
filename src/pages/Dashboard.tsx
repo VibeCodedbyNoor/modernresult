@@ -1140,7 +1140,7 @@ export default function Dashboard() {
             {activeSheet && sheetMappings[activeSheet] && (() => {
               const mapping = sheetMappings[activeSheet];
               const sheetData = parsedSheets.find(s => s.sheetName === activeSheet)?.data || [];
-              const subjectHeaders = mapping.headers.filter(h => h !== mapping.rollKey && h !== mapping.nameKey && !isNonSubjectColumn(h));
+              const subjectHeaders = mapping.headers.filter(h => h !== mapping.rollKey && h !== mapping.nameKey && h !== mapping.fatherKey && !isNonSubjectColumn(h));
 
               return (
                 <>
@@ -1167,6 +1167,18 @@ export default function Dashboard() {
                         </SelectContent>
                       </Select>
                     </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Father Name Column <span className="text-muted-foreground">(optional)</span></Label>
+                    <Select value={mapping.fatherKey || '__none__'} onValueChange={val => setSheetMappings(prev => ({ ...prev, [activeSheet]: { ...prev[activeSheet], fatherKey: val === '__none__' ? '' : val } }))}>
+                      <SelectTrigger className="h-8 text-xs min-w-0"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">— None —</SelectItem>
+                        {mapping.headers.map(h => (
+                          <SelectItem key={h} value={h}>{h}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-1.5">
