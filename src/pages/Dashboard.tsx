@@ -29,6 +29,7 @@ interface SchoolData {
   accent_color: string;
   result_template: string;
   search_fields: string[];
+  template_changes_count: number;
 }
 
 interface Exam {
