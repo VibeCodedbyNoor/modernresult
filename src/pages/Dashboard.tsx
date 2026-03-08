@@ -1276,6 +1276,12 @@ export default function Dashboard() {
                           <span className="text-muted-foreground">{mapping.nameKey}:</span>
                           <span className="font-medium truncate ml-2">{String(sheetData[0]?.[mapping.nameKey] ?? '—')}</span>
                         </div>
+                        {mapping.fatherKey && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">{mapping.fatherKey}:</span>
+                            <span className="font-medium truncate ml-2">{String(sheetData[0]?.[mapping.fatherKey] ?? '—')}</span>
+                          </div>
+                        )}
                         {Object.entries(mapping.subjects)
                           .filter(([, v]) => v.selected)
                           .map(([k, v]) => (
