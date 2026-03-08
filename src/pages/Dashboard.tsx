@@ -561,7 +561,7 @@ export default function Dashboard() {
                               </div>
                               <p className="text-xs text-muted-foreground mt-0.5">
                                 {status === 'live' && 'Results are visible on the portal'}
-                                {status === 'countdown' && `Results will show at ${format(new Date(exam.display_at!), 'PPp')}`}
+                                {status === 'countdown' && <CountdownDisplay targetDate={exam.display_at!} />}
                                 {status === 'stopped' && 'Results are hidden from the portal'}
                               </p>
                             </div>
