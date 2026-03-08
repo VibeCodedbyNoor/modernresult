@@ -1120,7 +1120,7 @@ export default function Dashboard() {
           <div className="space-y-4">
             {/* Sheet tabs */}
             {parsedSheets.length > 1 && (
-              <div className="flex gap-1.5 flex-wrap">
+              <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
                 {parsedSheets.map(({ sheetName }) => (
                   <Button
                     key={sheetName}
