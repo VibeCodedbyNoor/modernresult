@@ -906,6 +906,17 @@ export default function Dashboard() {
                     <a href={`https://resultportal.online/results/${school.slug}`} target="_blank" rel="noreferrer" className="text-sm text-primary underline bg-muted px-2 py-1 rounded">
                       resultportal.online/results/{school.slug}
                     </a>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`https://resultportal.online/results/${school.slug}`);
+                        toast.success('URL copied to clipboard!');
+                      }}
+                    >
+                      <Check className="h-3.5 w-3.5" /> Copy
+                    </Button>
                   </div>
                 </div>
                 <div className="space-y-2">
