@@ -1156,6 +1156,238 @@ export default function Dashboard() {
             )}
           </TabsContent>
 
+          <TabsContent value="referrals" className="mt-6 space-y-6">
+            {(() => {
+              const totalEarnings = referralEarnings.reduce((sum, e) => sum + e.commission_credits, 0);
+              const totalWithdrawn = withdrawals.filter(w => w.status !== 'rejected').reduce((sum, w) => sum + w.amount, 0);
+              const availableBalance = totalEarnings - totalWithdrawn;
+              const referralLink = referralCode ? `${window.location.origin}/signup?ref=${referralCode}` : '';
+
+              return (
+                <>
+                  {/* Stats Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl">
+                    <Card>
+                      <CardContent className="p-4 flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Users className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Total Referrals</p>
+                          <p className="text-2xl font-display font-bold text-foreground">{referrals.length}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4 flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                          <Coins className="h-5 w-5 text-green-500" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Total Earned</p>
+                          <p className="text-2xl font-display font-bold text-foreground">{totalEarnings}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4 flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+                          <Wallet className="h-5 w-5 text-amber-500" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Available Balance</p>
+                          <p className="text-2xl font-display font-bold text-foreground">{availableBalance}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Referral Link */}
+                  <Card className="max-w-3xl border-primary/20">
+                    <CardHeader>
+                      <CardTitle className="font-display flex items-center gap-2">
+                        <LinkIcon className="h-5 w-5 text-primary" /> Your Referral Link
+                      </CardTitle>
+                      <CardDescription>
+                        Share this link with other schools. When they sign up and buy credits, you earn <strong>10% commission</strong>!
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {referralCode ? (
+                        <div className="flex gap-2">
+                          <Input value={referralLink} readOnly className="flex-1 font-mono text-sm" />
+                          <Button
+                            variant="outline"
+                            className="gap-1.5"
+                            onClick={() => {
+                              navigator.clipboard.writeText(referralLink);
+                              toast.success('Referral link copied!');
+                            }}
+                          >
+                            <Copy className="h-4 w-4" /> Copy
+                          </Button>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Loading your referral code...</p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* How it works */}
+                  <Card className="max-w-3xl">
+                    <CardHeader>
+                      <CardTitle className="font-display text-lg">How It Works</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="text-center p-4 rounded-lg bg-muted/50">
+                          <div className="text-2xl mb-2">1️⃣</div>
+                          <p className="text-sm font-medium">Share Your Link</p>
+                          <p className="text-xs text-muted-foreground mt-1">Send your referral link to other schools</p>
+                        </div>
+                        <div className="text-center p-4 rounded-lg bg-muted/50">
+                          <div className="text-2xl mb-2">2️⃣</div>
+                          <p className="text-sm font-medium">They Buy Credits</p>
+                          <p className="text-xs text-muted-foreground mt-1">When they purchase credits for their portal</p>
+                        </div>
+                        <div className="text-center p-4 rounded-lg bg-muted/50">
+                          <div className="text-2xl mb-2">3️⃣</div>
+                          <p className="text-sm font-medium">You Earn 10%</p>
+                          <p className="text-xs text-muted-foreground mt-1">Withdraw anytime via JazzCash/Easypaisa</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Withdrawal Form */}
+                  <Card className="max-w-lg">
+                    <CardHeader>
+                      <CardTitle className="font-display flex items-center gap-2">
+                        <Banknote className="h-5 w-5 text-primary" /> Withdraw Earnings
+                      </CardTitle>
+                      <CardDescription>Minimum withdrawal: 50 credits (PKR 450)</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <form onSubmit={handleWithdrawal} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Amount (credits)</Label>
+                          <Input
+                            type="number"
+                            value={withdrawAmount}
+                            onChange={e => setWithdrawAmount(e.target.value)}
+                            placeholder="e.g. 100"
+                            min={50}
+                            max={availableBalance}
+                          />
+                          <p className="text-xs text-muted-foreground">Available: {availableBalance} credits</p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Payment Method</Label>
+                          <Select value={withdrawMethod} onValueChange={setWithdrawMethod}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="easypaisa">Easypaisa</SelectItem>
+                              <SelectItem value="jazzcash">JazzCash</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Account Number</Label>
+                          <Input
+                            value={withdrawAccount}
+                            onChange={e => setWithdrawAccount(e.target.value)}
+                            placeholder="03XXXXXXXXX"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Account Holder Name</Label>
+                          <Input
+                            value={withdrawName}
+                            onChange={e => setWithdrawName(e.target.value)}
+                            placeholder="Muhammad Ali"
+                          />
+                        </div>
+                        <Button type="submit" className="w-full" disabled={withdrawing || availableBalance < 50}>
+                          {withdrawing ? 'Submitting...' : 'Request Withdrawal'}
+                        </Button>
+                      </form>
+                    </CardContent>
+                  </Card>
+
+                  {/* Withdrawal History */}
+                  {withdrawals.length > 0 && (
+                    <Card className="max-w-3xl">
+                      <CardHeader>
+                        <CardTitle className="font-display text-lg">Withdrawal History</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Date</TableHead>
+                              <TableHead>Amount</TableHead>
+                              <TableHead>Method</TableHead>
+                              <TableHead>Account</TableHead>
+                              <TableHead>Status</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {withdrawals.map(w => (
+                              <TableRow key={w.id}>
+                                <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                                  {format(new Date(w.created_at), 'dd MMM yyyy')}
+                                </TableCell>
+                                <TableCell className="font-mono font-semibold">{w.amount}</TableCell>
+                                <TableCell className="capitalize">{w.payment_method}</TableCell>
+                                <TableCell className="font-mono text-sm">{w.account_number}</TableCell>
+                                <TableCell>
+                                  <Badge variant={w.status === 'sent' ? 'default' : w.status === 'rejected' ? 'destructive' : 'secondary'}>
+                                    {w.status}
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Earnings History */}
+                  {referralEarnings.length > 0 && (
+                    <Card className="max-w-3xl">
+                      <CardHeader>
+                        <CardTitle className="font-display text-lg">Commission History</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Date</TableHead>
+                              <TableHead>Credits Purchased</TableHead>
+                              <TableHead>Your Commission (10%)</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {referralEarnings.map(e => (
+                              <TableRow key={e.id}>
+                                <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                                  {format(new Date(e.created_at), 'dd MMM yyyy')}
+                                </TableCell>
+                                <TableCell className="font-mono">{e.credits_purchased}</TableCell>
+                                <TableCell className="font-mono font-semibold text-green-500">+{e.commission_credits}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  )}
+                </>
+              );
+            })()}
+          </TabsContent>
+
           <TabsContent value="settings" className="mt-6 space-y-6">
             <Card className="max-w-lg">
               <CardHeader>
