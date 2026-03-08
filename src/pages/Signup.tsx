@@ -81,7 +81,8 @@ export default function Signup() {
     }
 
     setLoading(false);
-    setSignupSuccess(true);
+    toast.success('Account created successfully!');
+    navigate('/dashboard');
   };
 
   if (signupSuccess) {
