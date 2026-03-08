@@ -713,8 +713,8 @@ export default function Dashboard() {
           <TabsList>
             <TabsTrigger value="exams">Exams & Results</TabsTrigger>
             <TabsTrigger value="credits">Credits</TabsTrigger>
-            <TabsTrigger value="referrals">Referrals</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="referrals">Referrals</TabsTrigger>
           </TabsList>
 
           <TabsContent value="exams" className="space-y-6 mt-6">
