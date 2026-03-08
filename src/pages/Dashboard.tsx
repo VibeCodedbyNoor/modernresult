@@ -1211,37 +1211,27 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  {/* Preview */}
+                  {/* Preview - vertical card layout */}
                   {sheetData.length > 0 && (
                     <div className="space-y-1.5">
-                      <Label className="text-xs">Preview ({activeSheet})</Label>
-                      <div className="border rounded-md overflow-auto max-h-32 text-xs">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="text-xs py-1">{mapping.rollKey}</TableHead>
-                              <TableHead className="text-xs py-1">{mapping.nameKey}</TableHead>
-                              {Object.entries(mapping.subjects)
-                                .filter(([, v]) => v.selected)
-                                .map(([k]) => (
-                                  <TableHead key={k} className="text-xs py-1">{k}</TableHead>
-                                ))}
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {sheetData.slice(0, 2).map((row, i) => (
-                              <TableRow key={i}>
-                                <TableCell className="font-mono py-1">{String(row[mapping.rollKey] ?? '')}</TableCell>
-                                <TableCell className="py-1">{String(row[mapping.nameKey] ?? '')}</TableCell>
-                                {Object.entries(mapping.subjects)
-                                  .filter(([, v]) => v.selected)
-                                  .map(([k]) => (
-                                    <TableCell key={k} className="py-1">{String(row[k] ?? '')}</TableCell>
-                                  ))}
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
+                      <Label className="text-xs">Sample Preview (1st Student)</Label>
+                      <div className="border rounded-md p-3 bg-muted/30 space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">{mapping.rollKey}:</span>
+                          <span className="font-mono font-medium truncate ml-2">{String(sheetData[0]?.[mapping.rollKey] ?? '—')}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">{mapping.nameKey}:</span>
+                          <span className="font-medium truncate ml-2">{String(sheetData[0]?.[mapping.nameKey] ?? '—')}</span>
+                        </div>
+                        {Object.entries(mapping.subjects)
+                          .filter(([, v]) => v.selected)
+                          .map(([k, v]) => (
+                            <div key={k} className="flex justify-between">
+                              <span className="text-muted-foreground truncate">{k}:</span>
+                              <span className="font-medium ml-2">{String(sheetData[0]?.[k] ?? '—')} / {v.totalMarks}</span>
+                            </div>
+                          ))}
                       </div>
                     </div>
                   )}
