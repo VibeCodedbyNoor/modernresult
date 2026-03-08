@@ -1077,15 +1077,16 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {[
-                  { id: 'roll_number', label: 'Roll Number' },
-                  { id: 'student_name', label: 'Student Name' },
-                  { id: 'father_name', label: 'Father Name' },
+                  { id: 'roll_number', label: 'Roll Number', hint: 'Students search by their roll/registration number' },
+                  { id: 'student_name', label: 'Student Name', hint: 'Students search by typing their name' },
+                  { id: 'father_name', label: 'Father Name', hint: 'Students search using their father\'s name' },
                 ].map(field => (
-                  <div key={field.id} className="flex items-center gap-3">
+                  <div key={field.id} className="flex items-start gap-3">
                     <Checkbox
-                      checked={(school.search_fields || ['roll_number', 'student_name']).includes(field.id)}
+                      className="mt-0.5"
+                      checked={(school.search_fields || ['student_name']).includes(field.id)}
                       onCheckedChange={async (checked) => {
-                        const current = school.search_fields || ['roll_number', 'student_name'];
+                        const current = school.search_fields || ['student_name'];
                         const updated = checked
                           ? [...current, field.id]
                           : current.filter(f => f !== field.id);
