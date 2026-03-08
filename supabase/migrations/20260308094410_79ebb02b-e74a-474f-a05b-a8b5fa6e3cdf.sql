@@ -1,0 +1,1 @@
+ALTER TABLE public.schools ALTER COLUMN search_fields SET DEFAULT ARRAY['student_name'];
