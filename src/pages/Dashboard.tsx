@@ -1239,9 +1239,9 @@ export default function Dashboard() {
               );
             })()}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setColumnMappingOpen(false)}>Cancel</Button>
-            <Button onClick={handleConfirmUpload} disabled={uploading}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setColumnMappingOpen(false)} className="w-full sm:w-auto">Cancel</Button>
+            <Button onClick={handleConfirmUpload} disabled={uploading} className="w-full sm:w-auto">
               {uploading ? 'Uploading...' : 'Upload Results'}
             </Button>
           </DialogFooter>
