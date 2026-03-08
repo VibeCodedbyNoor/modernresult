@@ -69,6 +69,7 @@ export default function AdminDashboard() {
   const [earnToggling, setEarnToggling] = useState(false);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
   const [updatingWithdrawal, setUpdatingWithdrawal] = useState<string | null>(null);
+  const [deletingSchool, setDeletingSchool] = useState<string | null>(null);
 
   // Check admin role
   useEffect(() => {
