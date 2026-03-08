@@ -1113,7 +1113,7 @@ export default function Dashboard() {
 
       {/* Column Mapping Dialog */}
       <Dialog open={columnMappingOpen} onOpenChange={setColumnMappingOpen}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] max-w-md sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display">Map Your Columns</DialogTitle>
           </DialogHeader>
