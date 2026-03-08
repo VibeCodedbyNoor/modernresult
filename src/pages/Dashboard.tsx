@@ -627,15 +627,24 @@ export default function Dashboard() {
                       </div>
                     </DialogContent>
                   </Dialog>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleTogglePublish(selectedExam, exams.find(e => e.id === selectedExam)?.is_published || false)}
-                    className="gap-1.5"
-                  >
-                    <Eye className="h-3.5 w-3.5" />
-                    {exams.find(e => e.id === selectedExam)?.is_published ? 'Unpublish' : 'Publish'}
-                  </Button>
+                  {exams.find(e => e.id === selectedExam)?.is_published ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleTogglePublish(selectedExam, true)}
+                      className="gap-1.5"
+                    >
+                      <Eye className="h-3.5 w-3.5" /> Unpublish
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      onClick={() => handleTogglePublish(selectedExam, false)}
+                      className="gap-1.5 bg-green-600 hover:bg-green-700 text-white shadow-md animate-pulse"
+                    >
+                      <Eye className="h-3.5 w-3.5" /> ✦ Publish Exam
+                    </Button>
+                  )}
 
                   {classNames.length > 0 && (
                     <Select value={classFilter} onValueChange={setClassFilter}>
@@ -897,6 +906,17 @@ export default function Dashboard() {
                     <a href={`https://resultportal.online/results/${school.slug}`} target="_blank" rel="noreferrer" className="text-sm text-primary underline bg-muted px-2 py-1 rounded">
                       resultportal.online/results/{school.slug}
                     </a>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`https://resultportal.online/results/${school.slug}`);
+                        toast.success('URL copied to clipboard!');
+                      }}
+                    >
+                      <Check className="h-3.5 w-3.5" /> Copy
+                    </Button>
                   </div>
                 </div>
                 <div className="space-y-2">
