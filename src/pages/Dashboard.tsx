@@ -1123,6 +1123,7 @@ export default function Dashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <WhatsAppHelpButton />
     </div>
   );
 }

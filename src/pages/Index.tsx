@@ -207,6 +207,7 @@ export default function Index() {
           &copy; {new Date().getFullYear()} OnlineResultPortal. All rights reserved.
         </p>
       </footer>
+      <WhatsAppHelpButton />
     </div>
   );
 }
