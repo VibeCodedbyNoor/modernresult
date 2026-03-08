@@ -49,7 +49,8 @@ const RoyalPurplePortal = ({ isDemo = true, schoolName = "Crown Academy", logoUr
               <div className="relative bg-purple-950/80 backdrop-blur-sm border sm:border-2 border-violet-400/30 rounded-xl sm:rounded-2xl p-3 sm:p-8 shadow-2xl">
                 <div className="text-center mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-violet-400/30"><h3 className="text-base sm:text-xl font-serif font-bold text-violet-300 mb-0.5 sm:mb-1">{schoolName}</h3><p className="text-purple-300/70 text-xs sm:text-sm italic font-serif">Royal Certificate of Achievement</p></div>
                 <div className="text-center mb-4 sm:mb-6">
-                  <p className="text-lg sm:text-2xl text-violet-100 font-serif font-bold mb-3 sm:mb-4">{result.name}</p>
+                  <p className="text-lg sm:text-2xl text-violet-100 font-serif font-bold mb-1">{result.name}</p>
+                  {result.father_name && <p className="text-sm sm:text-base text-purple-300/70 font-serif mb-3 sm:mb-4">Father: {result.father_name}</p>}
                   <div className="flex justify-center gap-2 sm:gap-4 flex-wrap">
                     <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-900/50 border border-violet-400/30 rounded-lg text-xs sm:text-base text-violet-200">Class: <strong className="text-violet-100">{result.class}</strong></span>
                     <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-900/50 border border-violet-400/30 rounded-lg text-xs sm:text-base text-violet-200">Position: <strong className="text-violet-100">{result.position}</strong></span>
