@@ -61,6 +61,7 @@ interface SchoolData {
   logo_url: string | null;
   accent_color: string;
   result_template: string;
+  search_fields: string[];
 }
 
 export default function ResultPortal() {
