@@ -19,6 +19,8 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
   const { signUp } = useAuth();
+  const [searchParams] = useSearchParams();
+  const refCode = searchParams.get('ref');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
