@@ -49,7 +49,8 @@ const SunsetPortal = ({ isDemo = true, schoolName = "Golden Horizon Academy", lo
               <div className="relative bg-white/20 backdrop-blur-md border sm:border-2 border-white/30 rounded-xl sm:rounded-2xl p-3 sm:p-8 shadow-2xl">
                 <div className="text-center mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-white/30"><h3 className="text-base sm:text-xl font-bold text-white mb-0.5 sm:mb-1">{schoolName}</h3><p className="text-yellow-200/80 text-xs sm:text-sm italic">Academic Excellence Report</p></div>
                 <div className="text-center mb-4 sm:mb-6">
-                  <p className="text-lg sm:text-2xl text-white font-bold mb-3 sm:mb-4">{result.name}</p>
+                  <p className="text-lg sm:text-2xl text-white font-bold mb-1">{result.name}</p>
+                  {result.father_name && <p className="text-sm sm:text-base text-yellow-200/80 mb-3 sm:mb-4">Father: {result.father_name}</p>}
                   <div className="flex justify-center gap-2 sm:gap-4 flex-wrap">
                     <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/20 border border-white/30 rounded-lg text-xs sm:text-base text-white">Class: <strong>{result.class}</strong></span>
                     <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/20 border border-white/30 rounded-lg text-xs sm:text-base text-white">Position: <strong>{result.position}</strong></span>
