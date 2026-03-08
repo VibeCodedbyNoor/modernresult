@@ -262,7 +262,8 @@ resultportal.online`;
   const filteredSchools = schools.filter(s =>
     s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (s.owner_name || '').toLowerCase().includes(searchQuery.toLowerCase())
+    (s.owner_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (s.invited_by || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const totalCredits = schools.reduce((sum, s) => sum + s.credit_balance, 0);
