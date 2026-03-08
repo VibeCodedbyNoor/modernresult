@@ -391,10 +391,15 @@ export default function Dashboard() {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success(`${validRows.length} results uploaded from ${parsedSheets.length} class(es)!`);
+        const uploadMsg = school.upload_count < 2
+          ? `${validRows.length} results uploaded (free upload used)`
+          : `${validRows.length} results uploaded (10 credits deducted)`;
+        toast.success(uploadMsg);
+        setSchool({ ...school, upload_count: school.upload_count + 1 });
         setColumnMappingOpen(false);
         setParsedSheets([]);
         fetchResults(selectedExam);
+        fetchCredits(school.id);
       }
     } catch (err: any) {
       toast.error('Upload failed: ' + err.message);
