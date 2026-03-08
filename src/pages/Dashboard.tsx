@@ -614,6 +614,7 @@ export default function Dashboard() {
                       <div className="space-y-2">
                         <Label>Exam Name</Label>
                         <Input value={newExamName} onChange={e => setNewExamName(e.target.value)} placeholder="e.g. Mid-Term 2026" />
+                        <p className="text-xs text-muted-foreground">Give your exam a clear name like "Annual Exam 2026" or "Mid-Term 2026"</p>
                       </div>
                       <Button onClick={handleCreateExam} className="w-full">Create Exam</Button>
                     </div>
@@ -660,6 +661,7 @@ export default function Dashboard() {
                               variant="outline"
                               size="sm"
                               className="gap-1.5"
+                              title="Schedule when results become visible to students"
                               onClick={() => {
                                 setTimerExamId(selectedExam);
                                 setTimerDays(0);
@@ -693,7 +695,7 @@ export default function Dashboard() {
                       <Button variant="outline" size="sm" className="gap-1.5">
                         <FileSpreadsheet className="h-3.5 w-3.5" /> Upload Excel / CSV
                         {school && (
-                          <Badge variant="secondary" className="ml-1 text-[10px]">
+                          <Badge variant="secondary" className="ml-1 text-[10px]" title="First 2 uploads are free, then 10 credits each">
                             {school.upload_count < 2
                               ? `${2 - school.upload_count} free`
                               : '10 credits'}
@@ -1075,15 +1077,16 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {[
-                  { id: 'roll_number', label: 'Roll Number' },
-                  { id: 'student_name', label: 'Student Name' },
-                  { id: 'father_name', label: 'Father Name' },
+                  { id: 'roll_number', label: 'Roll Number', hint: 'Students search by their roll/registration number' },
+                  { id: 'student_name', label: 'Student Name', hint: 'Students search by typing their name' },
+                  { id: 'father_name', label: 'Father Name', hint: 'Students search using their father\'s name' },
                 ].map(field => (
-                  <div key={field.id} className="flex items-center gap-3">
+                  <div key={field.id} className="flex items-start gap-3">
                     <Checkbox
-                      checked={(school.search_fields || ['roll_number', 'student_name']).includes(field.id)}
+                      className="mt-0.5"
+                      checked={(school.search_fields || ['student_name']).includes(field.id)}
                       onCheckedChange={async (checked) => {
-                        const current = school.search_fields || ['roll_number', 'student_name'];
+                        const current = school.search_fields || ['student_name'];
                         const updated = checked
                           ? [...current, field.id]
                           : current.filter(f => f !== field.id);
@@ -1096,7 +1099,10 @@ export default function Dashboard() {
                         else { setSchool({ ...school, search_fields: updated }); toast.success('Search fields updated'); }
                       }}
                     />
-                    <Label className="text-sm">{field.label}</Label>
+                    <div>
+                      <Label className="text-sm">{field.label}</Label>
+                      <p className="text-xs text-muted-foreground">{field.hint}</p>
+                    </div>
                   </div>
                 ))}
                 <p className="text-xs text-muted-foreground mt-2">Changes are applied instantly to your live portal at <strong>resultportal.online/results/{school.slug}</strong>. Design previews below show default fields.</p>
@@ -1111,10 +1117,10 @@ export default function Dashboard() {
                     <Palette className="h-5 w-5 text-primary" /> Choose Your Result Portal Design
                   </h2>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Pick a style below — this is exactly how students will see your result portal. Just click to apply!
+                    This design is what students see when they check results on your portal. Just click any design to apply it!
                   </p>
                 </div>
-                <Badge variant={school.template_changes_count < 3 ? 'default' : 'secondary'} className="text-xs shrink-0">
+                <Badge variant={school.template_changes_count < 3 ? 'default' : 'secondary'} className="text-xs shrink-0" title="First 3 design changes are free, then 5 credits each">
                   {school.template_changes_count < 3
                     ? `${3 - school.template_changes_count} free change${3 - school.template_changes_count !== 1 ? 's' : ''} remaining`
                     : '5 credits per change'}
