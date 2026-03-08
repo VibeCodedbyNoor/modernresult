@@ -53,6 +53,29 @@ interface Result {
   class_name: string;
 }
 
+interface ReferralData {
+  id: string;
+  referred_user_id: string;
+  created_at: string;
+}
+
+interface ReferralEarning {
+  id: string;
+  credits_purchased: number;
+  commission_credits: number;
+  created_at: string;
+}
+
+interface WithdrawalRequest {
+  id: string;
+  amount: number;
+  payment_method: string;
+  account_number: string;
+  account_name: string;
+  status: string;
+  created_at: string;
+}
+
 const NON_SUBJECT_PATTERNS = [
   'total', 'position', 'percentage', 'percent', '%age', 'rank', 'grade', 'result',
   'status', 'remarks', 'remark', 'division', 'gpa', 'cgpa', 'average',
