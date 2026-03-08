@@ -12,11 +12,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Plus, Upload, Link as LinkIcon, LogOut, Eye, Trash2, School, Settings, FileSpreadsheet, Check, Palette, Coins, Zap, Gift, Clock, MessageCircle, CreditCard } from 'lucide-react';
+import { Plus, Upload, Link as LinkIcon, LogOut, Eye, Trash2, School, Settings, FileSpreadsheet, Check, Palette, Coins, Zap, Gift, Clock, MessageCircle, CreditCard, Timer, Square, Play, StopCircle, CalendarClock, TrendingDown, BarChart3 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { resultTemplates, getTemplate } from '@/lib/resultTemplates';
 import { generateSlugSuggestions } from '@/lib/slugSuggestions';
 import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
 
 interface SchoolData {
   id: string;
@@ -32,6 +33,8 @@ interface Exam {
   name: string;
   created_at: string;
   is_published: boolean;
+  display_at: string | null;
+  is_stopped: boolean;
 }
 
 interface Result {
@@ -111,6 +114,13 @@ export default function Dashboard() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<number | null>(null);
 
+  // Timer dialog state
+  const [timerDialogOpen, setTimerDialogOpen] = useState(false);
+  const [timerExamId, setTimerExamId] = useState<string | null>(null);
+  const [timerDays, setTimerDays] = useState(0);
+  const [timerHours, setTimerHours] = useState(0);
+  const [timerMinutes, setTimerMinutes] = useState(0);
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/login');
@@ -139,7 +149,7 @@ export default function Dashboard() {
 
   async function fetchExams(schoolId: string) {
     const { data } = await supabase.from('exams').select('*').eq('school_id', schoolId).order('created_at', { ascending: false });
-    setExams(data || []);
+    setExams((data || []) as Exam[]);
   }
 
   async function fetchResults(examId: string) {
@@ -205,7 +215,6 @@ export default function Dashboard() {
         return;
       }
 
-      // Collect headers across all sheets so mapping is stable for merged uploads
       const headers = Array.from(
         new Set(
           sheets.flatMap(({ data }) => Object.keys(data[0] || {})).filter((header) => header.trim())
@@ -285,7 +294,6 @@ export default function Dashboard() {
         return;
       }
 
-      // Delete old results for this exam before inserting new ones
       await supabase.from('results').delete().eq('exam_id', selectedExam);
 
       const { error } = await supabase.from('results').insert(validRows);
@@ -323,6 +331,61 @@ export default function Dashboard() {
       toast.success(!currentStatus ? 'Exam published!' : 'Exam unpublished');
     }
   }
+
+  // Timer controls
+  async function handleSetTimer() {
+    if (!timerExamId) return;
+    const totalMs = (timerDays * 86400 + timerHours * 3600 + timerMinutes * 60) * 1000;
+    if (totalMs <= 0) {
+      toast.error('Please set a valid timer duration');
+      return;
+    }
+    const displayAt = new Date(Date.now() + totalMs).toISOString();
+    const { error } = await supabase.from('exams').update({ display_at: displayAt, is_stopped: false }).eq('id', timerExamId);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      setExams(prev => prev.map(ex => ex.id === timerExamId ? { ...ex, display_at: displayAt, is_stopped: false } : ex));
+      toast.success('Timer set! Results will show after countdown ends.');
+      setTimerDialogOpen(false);
+      setTimerDays(0);
+      setTimerHours(0);
+      setTimerMinutes(0);
+    }
+  }
+
+  async function handleStopShowing(examId: string) {
+    const { error } = await supabase.from('exams').update({ is_stopped: true }).eq('id', examId);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      setExams(prev => prev.map(ex => ex.id === examId ? { ...ex, is_stopped: true } : ex));
+      toast.success('Results hidden from portal');
+    }
+  }
+
+  async function handleStartShowing(examId: string) {
+    const { error } = await supabase.from('exams').update({ is_stopped: false, display_at: null }).eq('id', examId);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      setExams(prev => prev.map(ex => ex.id === examId ? { ...ex, is_stopped: false, display_at: null } : ex));
+      toast.success('Results are now visible');
+    }
+  }
+
+  function getExamTimerStatus(exam: Exam) {
+    if (exam.is_stopped) return 'stopped';
+    if (exam.display_at && new Date(exam.display_at) > new Date()) return 'countdown';
+    return 'live';
+  }
+
+  // Analytics helpers
+  const todayCredits = transactions.filter(tx => tx.type === 'result_check' && new Date(tx.created_at).toDateString() === new Date().toDateString()).reduce((s, tx) => s + Math.abs(tx.amount), 0);
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+  const weekCredits = transactions.filter(tx => tx.type === 'result_check' && new Date(tx.created_at) >= weekAgo).reduce((s, tx) => s + Math.abs(tx.amount), 0);
+  const monthAgo = new Date(); monthAgo.setDate(monthAgo.getDate() - 30);
+  const monthCredits = transactions.filter(tx => tx.type === 'result_check' && new Date(tx.created_at) >= monthAgo).reduce((s, tx) => s + Math.abs(tx.amount), 0);
 
   const classNames = [...new Set(results.map(r => r.class_name).filter(Boolean))];
   const filteredResults = classFilter === 'all' ? results : results.filter(r => r.class_name === classFilter);
@@ -465,6 +528,68 @@ export default function Dashboard() {
 
             {selectedExam && (
               <>
+                {/* Timer & Visibility Controls */}
+                {(() => {
+                  const exam = exams.find(e => e.id === selectedExam);
+                  if (!exam) return null;
+                  const status = getExamTimerStatus(exam);
+                  return (
+                    <Card className="border-primary/20">
+                      <CardContent className="p-4">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                              status === 'live' ? 'bg-green-500/10' : status === 'countdown' ? 'bg-amber-500/10' : 'bg-destructive/10'
+                            }`}>
+                              {status === 'live' && <Play className="h-5 w-5 text-green-500" />}
+                              {status === 'countdown' && <Timer className="h-5 w-5 text-amber-500" />}
+                              {status === 'stopped' && <StopCircle className="h-5 w-5 text-destructive" />}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-semibold text-foreground">Result Visibility</p>
+                                <Badge variant={status === 'live' ? 'default' : status === 'countdown' ? 'secondary' : 'destructive'} className="text-[10px]">
+                                  {status === 'live' ? 'LIVE' : status === 'countdown' ? 'COUNTDOWN' : 'STOPPED'}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {status === 'live' && 'Results are visible on the portal'}
+                                {status === 'countdown' && `Results will show at ${format(new Date(exam.display_at!), 'PPp')}`}
+                                {status === 'stopped' && 'Results are hidden from the portal'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 flex-wrap">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-1.5"
+                              onClick={() => {
+                                setTimerExamId(selectedExam);
+                                setTimerDays(0);
+                                setTimerHours(0);
+                                setTimerMinutes(0);
+                                setTimerDialogOpen(true);
+                              }}
+                            >
+                              <CalendarClock className="h-3.5 w-3.5" /> Set Timer
+                            </Button>
+                            {status !== 'stopped' ? (
+                              <Button variant="destructive" size="sm" className="gap-1.5" onClick={() => handleStopShowing(selectedExam)}>
+                                <Square className="h-3.5 w-3.5" /> Stop Showing
+                              </Button>
+                            ) : (
+                              <Button variant="default" size="sm" className="gap-1.5" onClick={() => handleStartShowing(selectedExam)}>
+                                <Play className="h-3.5 w-3.5" /> Start Showing
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })()}
+
                 {/* Actions bar */}
                 <div className="flex gap-2 flex-wrap items-center">
                   <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
@@ -595,6 +720,27 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
+            {/* Quick Analytics */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl">
+              {[
+                { label: 'Today', value: todayCredits, icon: BarChart3 },
+                { label: 'This Week', value: weekCredits, icon: TrendingDown },
+                { label: 'This Month', value: monthCredits, icon: CreditCard },
+              ].map(({ label, value, icon: Icon }) => (
+                <Card key={label}>
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center">
+                      <Icon className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">{label}</p>
+                      <p className="text-lg font-display font-bold text-foreground">{value}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
             {/* Buy Credits */}
             <Card className="max-w-2xl border-primary/20">
               <CardHeader>
@@ -684,48 +830,48 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            {/* Daily Credits Used */}
-            {transactions.length > 0 && (() => {
-              // Group result_check transactions by date
-              const dailyUsage: Record<string, number> = {};
-              transactions.forEach(tx => {
-                if (tx.type === 'result_check') {
-                  const date = new Date(tx.created_at).toLocaleDateString('en-PK', { year: 'numeric', month: 'short', day: 'numeric' });
-                  dailyUsage[date] = (dailyUsage[date] || 0) + Math.abs(tx.amount);
-                }
-              });
-              const dailyEntries = Object.entries(dailyUsage);
-              if (dailyEntries.length === 0) return null;
-              return (
-                <Card className="max-w-2xl">
-                  <CardHeader>
-                    <CardTitle className="font-display text-lg flex items-center gap-2">
-                      <CreditCard className="h-5 w-5 text-primary" /> Daily Credits Used
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Date</TableHead>
-                          <TableHead className="text-right">Credits Used</TableHead>
+            {/* Purchase / Transaction History */}
+            {transactions.length > 0 && (
+              <Card className="max-w-2xl">
+                <CardHeader>
+                  <CardTitle className="font-display text-lg flex items-center gap-2">
+                    <CreditCard className="h-5 w-5 text-primary" /> Transaction History
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {transactions.map(tx => (
+                        <TableRow key={tx.id}>
+                          <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                            {format(new Date(tx.created_at), 'dd MMM yyyy, hh:mm a')}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={tx.amount > 0 ? 'default' : 'secondary'} className="text-[10px]">
+                              {tx.type === 'signup_bonus' ? 'Bonus' : tx.type === 'admin_topup' ? 'Top-up' : tx.type === 'result_check' ? 'Result View' : tx.type === 'bulk_marksheet' ? 'Bulk Download' : tx.type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
+                            {tx.description || '—'}
+                          </TableCell>
+                          <TableCell className={`text-right font-mono text-sm font-semibold ${tx.amount > 0 ? 'text-green-500' : 'text-destructive'}`}>
+                            {tx.amount > 0 ? '+' : ''}{tx.amount}
+                          </TableCell>
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {dailyEntries.map(([date, count]) => (
-                          <TableRow key={date}>
-                            <TableCell className="text-sm text-foreground">{date}</TableCell>
-                            <TableCell className="text-right font-mono text-sm font-semibold text-muted-foreground">
-                              {count}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              );
-            })()}
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="settings" className="mt-6 space-y-6">
@@ -799,63 +945,20 @@ export default function Dashboard() {
                         className="aspect-[4/3] p-3 flex flex-col"
                         style={{ background: template.background }}
                       >
-                        {/* Mini header */}
                         <div className="flex items-center gap-1.5 mb-2">
-                          <div
-                            className="h-4 w-4 rounded-full"
-                            style={{ background: template.accentColor, opacity: 0.8 }}
-                          />
-                          <div
-                            className="h-1.5 w-16 rounded-full"
-                            style={{ background: template.textPrimary, opacity: 0.6 }}
-                          />
+                          <div className="h-4 w-4 rounded-full" style={{ background: template.accentColor, opacity: 0.8 }} />
+                          <div className="h-1.5 w-16 rounded-full" style={{ background: template.textPrimary, opacity: 0.6 }} />
                         </div>
-
-                        {/* Mini card */}
                         <div
                           className="flex-1 rounded-lg border p-2.5 flex flex-col gap-1.5"
-                          style={{
-                            background: template.cardBg,
-                            borderColor: template.cardBorder,
-                            borderRadius: template.borderRadius || '0.5rem',
-                            backdropFilter: template.id === 'glassmorphism' ? 'blur(8px)' : undefined,
-                          }}
+                          style={{ background: template.cardBg, borderColor: template.cardBorder, borderRadius: template.borderRadius || '0.5rem', backdropFilter: template.id === 'glassmorphism' ? 'blur(8px)' : undefined }}
                         >
-                          {/* Title line */}
-                          <div
-                            className="h-2 w-3/5 rounded-full"
-                            style={{ background: template.accentColor, opacity: 0.8 }}
-                          />
-                          {/* Input mock */}
-                          <div
-                            className="h-4 w-full rounded"
-                            style={{
-                              background: template.inputBg,
-                              border: `1px solid ${template.cardBorder}`,
-                              borderRadius: template.borderRadius || '0.25rem',
-                            }}
-                          />
-                          {/* Another input mock */}
-                          <div
-                            className="h-4 w-full rounded"
-                            style={{
-                              background: template.inputBg,
-                              border: `1px solid ${template.cardBorder}`,
-                              borderRadius: template.borderRadius || '0.25rem',
-                            }}
-                          />
-                          {/* Button mock */}
-                          <div
-                            className="h-4 w-full rounded mt-auto"
-                            style={{
-                              background: template.buttonGradient,
-                              borderRadius: template.borderRadius || '0.25rem',
-                            }}
-                          />
+                          <div className="h-2 w-3/5 rounded-full" style={{ background: template.accentColor, opacity: 0.8 }} />
+                          <div className="h-4 w-full rounded" style={{ background: template.inputBg, border: `1px solid ${template.cardBorder}`, borderRadius: template.borderRadius || '0.25rem' }} />
+                          <div className="h-4 w-full rounded" style={{ background: template.inputBg, border: `1px solid ${template.cardBorder}`, borderRadius: template.borderRadius || '0.25rem' }} />
+                          <div className="h-4 w-full rounded mt-auto" style={{ background: template.buttonGradient, borderRadius: template.borderRadius || '0.25rem' }} />
                         </div>
                       </div>
-
-                      {/* Label area */}
                       <div className="px-3 py-2.5 bg-card border-t border-border">
                         <div className="flex items-center justify-between">
                           <div>
@@ -869,13 +972,8 @@ export default function Dashboard() {
                           )}
                         </div>
                       </div>
-
-                      {/* Selected badge */}
                       {isSelected && (
-                        <div
-                          className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold"
-                          style={{ background: template.accentColor, color: template.textPrimary }}
-                        >
+                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: template.accentColor, color: template.textPrimary }}>
                           ACTIVE
                         </div>
                       )}
@@ -888,6 +986,40 @@ export default function Dashboard() {
         </Tabs>
       </div>
 
+      {/* Timer Dialog */}
+      <Dialog open={timerDialogOpen} onOpenChange={setTimerDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-display flex items-center gap-2">
+              <Timer className="h-5 w-5 text-primary" /> Set Result Timer
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Set a countdown. Results will be hidden until the timer ends, then automatically displayed.
+          </p>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Days</Label>
+              <Input type="number" min={0} max={365} value={timerDays} onChange={e => setTimerDays(Number(e.target.value))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Hours</Label>
+              <Input type="number" min={0} max={23} value={timerHours} onChange={e => setTimerHours(Number(e.target.value))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Minutes</Label>
+              <Input type="number" min={0} max={59} value={timerMinutes} onChange={e => setTimerMinutes(Number(e.target.value))} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTimerDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSetTimer} className="gap-1.5">
+              <CalendarClock className="h-3.5 w-3.5" /> Start Countdown
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Column Mapping Dialog */}
       <Dialog open={columnMappingOpen} onOpenChange={setColumnMappingOpen}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
@@ -895,7 +1027,6 @@ export default function Dashboard() {
             <DialogTitle className="font-display">Map Your Columns</DialogTitle>
           </DialogHeader>
           <div className="space-y-5">
-            {/* Roll Number & Name selectors */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Roll Number Column</Label>
@@ -921,7 +1052,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Subject checkboxes */}
             <div className="space-y-2">
               <Label>Select Subject Columns</Label>
               <p className="text-xs text-muted-foreground">Only subject columns are selectable. Metadata like Total, Position, Percentage, Rank, etc. is auto-separated.</p>
@@ -942,7 +1072,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Preview table */}
             {parsedSheets.length > 0 && (
               <div className="space-y-2 animate-fade-in">
                 <Label>Preview ({parsedSheets[0].sheetName})</Label>

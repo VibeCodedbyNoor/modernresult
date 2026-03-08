@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Download, RotateCcw, Award, TrendingUp, Trophy } from 'lucide-react';
+import { Search, Download, RotateCcw, Award, TrendingUp, Trophy, Clock, StopCircle } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { getTemplate, type ResultTemplate } from '@/lib/resultTemplates';
 
@@ -21,6 +21,8 @@ interface SchoolData {
 interface Exam {
   id: string;
   name: string;
+  display_at: string | null;
+  is_stopped: boolean;
 }
 
 interface Result {
@@ -95,6 +97,10 @@ export default function ResultPortal() {
   const [notFound, setNotFound] = useState(false);
   const [noCredits, setNoCredits] = useState(false);
 
+  // Countdown state
+  const [countdown, setCountdown] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+  const [isStopped, setIsStopped] = useState(false);
+
   const resultCardRef = useRef<HTMLDivElement>(null);
   const downloadCardRef = useRef<HTMLDivElement>(null);
 
@@ -105,17 +111,59 @@ export default function ResultPortal() {
         setSchool(schoolData);
         const { data: examData } = await supabase
           .from('exams')
-          .select('id, name')
+          .select('id, name, display_at, is_stopped')
           .eq('school_id', schoolData.id)
           .eq('is_published', true);
-        setExams(examData || []);
-        if (examData && examData.length > 0) setSelectedExam(examData[0].id);
+        const typedExams = (examData || []) as Exam[];
+        setExams(typedExams);
+        if (typedExams.length > 0) setSelectedExam(typedExams[0].id);
       }
       setLoading(false);
     }
 
     load();
   }, [slug]);
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (!selectedExam || exams.length === 0) return;
+
+    const exam = exams.find(e => e.id === selectedExam);
+    if (!exam) return;
+
+    if (exam.is_stopped) {
+      setIsStopped(true);
+      setCountdown(null);
+      return;
+    }
+
+    setIsStopped(false);
+
+    if (!exam.display_at) {
+      setCountdown(null);
+      return;
+    }
+
+    const target = new Date(exam.display_at).getTime();
+
+    function updateCountdown() {
+      const now = Date.now();
+      const diff = target - now;
+      if (diff <= 0) {
+        setCountdown(null);
+        return;
+      }
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const minutes = Math.floor((diff % 3600000) / 60000);
+      const seconds = Math.floor((diff % 60000) / 1000);
+      setCountdown({ days, hours, minutes, seconds });
+    }
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [selectedExam, exams]);
 
   useEffect(() => {
     if (!selectedExam) return;
@@ -147,7 +195,6 @@ export default function ResultPortal() {
     });
 
     if (data && data.length > 0) {
-      // Deduct credit before showing result
       const { data: creditOk } = await supabase.rpc('deduct_credit', { p_school_id: school!.id });
       if (!creditOk) {
         setNoCredits(true);
@@ -269,6 +316,9 @@ export default function ResultPortal() {
   const tpl = getTemplate(school.result_template || 'luxury-gold');
   const accent = tpl.accentColor;
 
+  // Check if results are blocked
+  const isBlocked = isStopped || countdown !== null;
+
   return (
     <div
       className="min-h-screen flex flex-col"
@@ -306,7 +356,52 @@ export default function ResultPortal() {
       </header>
 
       <main className="flex-1 container mx-auto px-4 pb-10 max-w-2xl">
-        {noCredits ? (
+        {/* Stopped state */}
+        {isStopped ? (
+          <Card className="animate-enter backdrop-blur-sm" style={{ background: tpl.cardBg, borderColor: tpl.cardBorder, borderRadius: tpl.borderRadius }}>
+            <CardContent className="p-8 text-center space-y-4">
+              <div className="h-14 w-14 rounded-full flex items-center justify-center mx-auto" style={{ background: `${accent}18` }}>
+                <StopCircle className="h-6 w-6" style={{ color: accent }} />
+              </div>
+              <div>
+                <h3 className="font-display text-lg font-semibold" style={{ color: tpl.textPrimary }}>Results Currently Unavailable</h3>
+                <p className="text-sm mt-2" style={{ color: tpl.textSecondary }}>
+                  The school administration has temporarily paused result display. Please check back later or contact your school.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : countdown ? (
+          /* Countdown state */
+          <Card className="animate-enter backdrop-blur-sm" style={{ background: tpl.cardBg, borderColor: tpl.cardBorder, borderRadius: tpl.borderRadius }}>
+            <CardContent className="p-8 text-center space-y-6">
+              <div className="h-14 w-14 rounded-full flex items-center justify-center mx-auto" style={{ background: `${accent}18` }}>
+                <Clock className="h-6 w-6" style={{ color: accent }} />
+              </div>
+              <div>
+                <h3 className="font-display text-xl font-semibold" style={{ color: tpl.textPrimary }}>Results Coming Soon!</h3>
+                <p className="text-sm mt-2" style={{ color: tpl.textSecondary }}>
+                  Results will be available when the countdown ends.
+                </p>
+              </div>
+              <div className="grid grid-cols-4 gap-3 max-w-xs mx-auto">
+                {[
+                  { value: countdown.days, label: 'Days' },
+                  { value: countdown.hours, label: 'Hours' },
+                  { value: countdown.minutes, label: 'Min' },
+                  { value: countdown.seconds, label: 'Sec' },
+                ].map(({ value, label }) => (
+                  <div key={label} className="rounded-lg p-3 text-center" style={{ border: `1px solid ${tpl.cardBorder}`, background: tpl.inputBg }}>
+                    <p className="font-display text-2xl md:text-3xl font-bold tabular-nums" style={{ color: accent }}>
+                      {String(value).padStart(2, '0')}
+                    </p>
+                    <p className="text-[10px] uppercase tracking-[0.15em] mt-1" style={{ color: tpl.textSecondary }}>{label}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ) : noCredits ? (
           <Card className="animate-enter backdrop-blur-sm" style={{ background: tpl.cardBg, borderColor: tpl.cardBorder, borderRadius: tpl.borderRadius }}>
             <CardContent className="p-8 text-center space-y-4">
               <div className="h-14 w-14 rounded-full flex items-center justify-center mx-auto" style={{ background: `${accent}18` }}>
