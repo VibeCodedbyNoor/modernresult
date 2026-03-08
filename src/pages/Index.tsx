@@ -12,6 +12,21 @@ import DoneForYouSection from '@/components/landing/DoneForYouSection';
 import CTASection from '@/components/landing/CTASection';
 
 export default function Index() {
+  const [showEarn, setShowEarn] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'earn_with_us')
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.value && typeof data.value === 'object' && 'enabled' in (data.value as any)) {
+          setShowEarn((data.value as any).enabled === true);
+        }
+      });
+  }, []);
+
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0a0b14 0%, #0f1021 50%, #0a0b14 100%)' }}>
       {/* Navbar */}
