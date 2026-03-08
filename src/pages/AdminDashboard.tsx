@@ -468,17 +468,43 @@ resultportal.online`;
                         {new Date(school.created_at).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedSchool(school);
-                            setActiveTab('credits');
-                            if (school.whatsapp_number) setWhatsappNumber(school.whatsapp_number);
-                          }}
-                        >
-                          <Plus className="h-3 w-3 mr-1" /> Add Credits
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedSchool(school);
+                              setActiveTab('credits');
+                              if (school.whatsapp_number) setWhatsappNumber(school.whatsapp_number);
+                            }}
+                          >
+                            <Plus className="h-3 w-3 mr-1" /> Credits
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="destructive" disabled={deletingSchool === school.id}>
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete "{school.name}"?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This will permanently delete <strong>{school.name}</strong> and ALL associated data including exams, results, credits, transactions, referrals, and withdrawal requests. This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteSchool(school.id, school.name)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete Everything
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
