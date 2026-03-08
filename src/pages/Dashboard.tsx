@@ -132,6 +132,10 @@ export default function Dashboard() {
   const [timerHours, setTimerHours] = useState(0);
   const [timerMinutes, setTimerMinutes] = useState(0);
 
+  // Template change confirmation dialog
+  const [templateConfirmOpen, setTemplateConfirmOpen] = useState(false);
+  const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(null);
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/login');
