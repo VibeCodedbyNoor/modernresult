@@ -53,10 +53,12 @@ const NON_SUBJECT_PATTERNS = [
   'total', 'position', 'percentage', 'percent', '%age', 'rank', 'grade', 'result',
   'status', 'remarks', 'remark', 'division', 'gpa', 'cgpa', 'average',
   'avg', 'pass', 'fail', 'obtained', 'max', 'minimum', 'maximum',
-  'sr', 'serial', 'class', 'section', 'father', 'mother', 'parent',
+  'sr', 'serial', 'class', 'section', 'mother', 'parent',
   'address', 'phone', 'mobile', 'email', 'dob', 'date', 'gender', 'age',
-  'no.', 'no', 's.no', 's.r', 'reg'
+  'no.', 'no', 's.no', 's.r', 'reg', 'father'
 ];
+
+const FATHER_NAME_PATTERNS = ['father', 'father name', 'father_name', 'fathername', 'walid', 'guardian'];
 
 const normalizeColumn = (value: string) =>
   value
