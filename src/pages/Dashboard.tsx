@@ -755,7 +755,7 @@ export default function Dashboard() {
                   <Zap className="h-5 w-5 text-primary" /> Buy Credits
                 </CardTitle>
                 <CardDescription className="text-base">
-                  A printed DMC costs over <strong>Rs. 50</strong> — go digital for just <strong>Rs. 9 per student</strong>. Save 80%+ compared to traditional result printing!
+                  Go digital and <strong>save over 80%</strong> compared to traditional printed DMCs!
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
