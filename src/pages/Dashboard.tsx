@@ -217,24 +217,13 @@ export default function Dashboard() {
       .single();
     if (profile?.referral_code) setReferralCode(profile.referral_code);
 
-    // Fetch referrals with joined profile data for school names
-    const { data: refs } = await supabase
-      .from('referrals')
-      .select(`
-        id,
-        referred_user_id,
-        created_at,
-        profiles!referrals_referred_user_id_fkey (school_name)
-      `)
-      .eq('referrer_id', user.id)
-      .order('created_at', { ascending: false });
-    
-    // Transform to match interface (handle the join result)
+    // Fetch referrals using security definer function (bypasses RLS on profiles)
+    const { data: refs } = await supabase.rpc('get_my_referrals');
     const transformedRefs = (refs || []).map((r: any) => ({
       id: r.id,
       referred_user_id: r.referred_user_id,
       created_at: r.created_at,
-      profiles: r.profiles ? { school_name: r.profiles.school_name || '' } : undefined,
+      profiles: { school_name: r.school_name || '' },
     }));
     setReferrals(transformedRefs);
 
