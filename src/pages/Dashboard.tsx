@@ -1099,7 +1099,10 @@ export default function Dashboard() {
                         else { setSchool({ ...school, search_fields: updated }); toast.success('Search fields updated'); }
                       }}
                     />
-                    <Label className="text-sm">{field.label}</Label>
+                    <div>
+                      <Label className="text-sm">{field.label}</Label>
+                      <p className="text-xs text-muted-foreground">{field.hint}</p>
+                    </div>
                   </div>
                 ))}
                 <p className="text-xs text-muted-foreground mt-2">Changes are applied instantly to your live portal at <strong>resultportal.online/results/{school.slug}</strong>. Design previews below show default fields.</p>
