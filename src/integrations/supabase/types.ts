@@ -449,6 +449,15 @@ export type Database = {
               isSetofReturn: true
             }
           }
+      get_my_referrals: {
+        Args: never
+        Returns: {
+          created_at: string
+          id: string
+          referred_user_id: string
+          school_name: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
