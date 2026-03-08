@@ -552,6 +552,20 @@ resultportal.online`;
                   />
                 </div>
 
+                <div className="space-y-2">
+                  <Label>Paid Credits (for commission calculation)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="Leave empty if all are paid (no bonus)"
+                    value={paidCredits}
+                    onChange={e => setPaidCredits(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Only enter if package includes bonus credits. E.g. for 500+50 bonus, enter 500.
+                  </p>
+                </div>
+
                 <Button
                   onClick={handleAddCredits}
                   disabled={!selectedSchool || !creditAmount || updating}
