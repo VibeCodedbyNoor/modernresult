@@ -1113,14 +1113,14 @@ export default function Dashboard() {
 
       {/* Column Mapping Dialog */}
       <Dialog open={columnMappingOpen} onOpenChange={setColumnMappingOpen}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] max-w-md sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display">Map Your Columns</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {/* Sheet tabs */}
             {parsedSheets.length > 1 && (
-              <div className="flex gap-1.5 flex-wrap">
+              <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
                 {parsedSheets.map(({ sheetName }) => (
                   <Button
                     key={sheetName}
@@ -1146,7 +1146,7 @@ export default function Dashboard() {
                     <div className="space-y-1.5">
                       <Label className="text-xs">Roll Number Column</Label>
                       <Select value={mapping.rollKey} onValueChange={val => setSheetMappings(prev => ({ ...prev, [activeSheet]: { ...prev[activeSheet], rollKey: val } }))}>
-                        <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-8 text-xs min-w-0"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {mapping.headers.map(h => (
                             <SelectItem key={h} value={h}>{h}</SelectItem>
@@ -1157,7 +1157,7 @@ export default function Dashboard() {
                     <div className="space-y-1.5">
                       <Label className="text-xs">Student Name Column</Label>
                       <Select value={mapping.nameKey} onValueChange={val => setSheetMappings(prev => ({ ...prev, [activeSheet]: { ...prev[activeSheet], nameKey: val } }))}>
-                        <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-8 text-xs min-w-0"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {mapping.headers.map(h => (
                             <SelectItem key={h} value={h}>{h}</SelectItem>
@@ -1211,37 +1211,27 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  {/* Preview */}
+                  {/* Preview - vertical card layout */}
                   {sheetData.length > 0 && (
                     <div className="space-y-1.5">
-                      <Label className="text-xs">Preview ({activeSheet})</Label>
-                      <div className="border rounded-md overflow-auto max-h-32 text-xs">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="text-xs py-1">{mapping.rollKey}</TableHead>
-                              <TableHead className="text-xs py-1">{mapping.nameKey}</TableHead>
-                              {Object.entries(mapping.subjects)
-                                .filter(([, v]) => v.selected)
-                                .map(([k]) => (
-                                  <TableHead key={k} className="text-xs py-1">{k}</TableHead>
-                                ))}
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {sheetData.slice(0, 2).map((row, i) => (
-                              <TableRow key={i}>
-                                <TableCell className="font-mono py-1">{String(row[mapping.rollKey] ?? '')}</TableCell>
-                                <TableCell className="py-1">{String(row[mapping.nameKey] ?? '')}</TableCell>
-                                {Object.entries(mapping.subjects)
-                                  .filter(([, v]) => v.selected)
-                                  .map(([k]) => (
-                                    <TableCell key={k} className="py-1">{String(row[k] ?? '')}</TableCell>
-                                  ))}
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
+                      <Label className="text-xs">Sample Preview (1st Student)</Label>
+                      <div className="border rounded-md p-3 bg-muted/30 space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">{mapping.rollKey}:</span>
+                          <span className="font-mono font-medium truncate ml-2">{String(sheetData[0]?.[mapping.rollKey] ?? '—')}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">{mapping.nameKey}:</span>
+                          <span className="font-medium truncate ml-2">{String(sheetData[0]?.[mapping.nameKey] ?? '—')}</span>
+                        </div>
+                        {Object.entries(mapping.subjects)
+                          .filter(([, v]) => v.selected)
+                          .map(([k, v]) => (
+                            <div key={k} className="flex justify-between">
+                              <span className="text-muted-foreground truncate">{k}:</span>
+                              <span className="font-medium ml-2">{String(sheetData[0]?.[k] ?? '—')} / {v.totalMarks}</span>
+                            </div>
+                          ))}
                       </div>
                     </div>
                   )}
@@ -1249,9 +1239,9 @@ export default function Dashboard() {
               );
             })()}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setColumnMappingOpen(false)}>Cancel</Button>
-            <Button onClick={handleConfirmUpload} disabled={uploading}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setColumnMappingOpen(false)} className="w-full sm:w-auto">Cancel</Button>
+            <Button onClick={handleConfirmUpload} disabled={uploading} className="w-full sm:w-auto">
               {uploading ? 'Uploading...' : 'Upload Results'}
             </Button>
           </DialogFooter>
