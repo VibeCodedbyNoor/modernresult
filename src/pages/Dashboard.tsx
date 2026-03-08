@@ -304,6 +304,7 @@ export default function Dashboard() {
             exam_id: selectedExam,
             roll_number: String(row[mapping.rollKey] || '').trim(),
             student_name: String(row[mapping.nameKey] || '').trim(),
+            father_name: mapping.fatherKey ? String(row[mapping.fatherKey] || '').trim() : '',
             subjects,
             total_marks: total,
             grade,
