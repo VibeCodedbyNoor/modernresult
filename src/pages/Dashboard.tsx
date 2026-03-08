@@ -894,7 +894,7 @@ export default function Dashboard() {
                   <div className="flex items-center gap-2">
                     <LinkIcon className="h-4 w-4 text-muted-foreground" />
                     <code className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded">
-                      {window.location.origin}/results/{school.slug}
+                      resultportal.online/results/{school.slug}
                     </code>
                   </div>
                 </div>
