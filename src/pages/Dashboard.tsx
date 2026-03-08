@@ -692,6 +692,13 @@ export default function Dashboard() {
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" className="gap-1.5">
                         <FileSpreadsheet className="h-3.5 w-3.5" /> Upload Excel / CSV
+                        {school && (
+                          <Badge variant="secondary" className="ml-1 text-[10px]">
+                            {school.upload_count < 2
+                              ? `${2 - school.upload_count} free`
+                              : '10 credits'}
+                          </Badge>
+                        )}
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
