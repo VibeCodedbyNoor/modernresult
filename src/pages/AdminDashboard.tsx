@@ -119,21 +119,36 @@ export default function AdminDashboard() {
     // Load profiles for owner info
     const { data: profilesData } = await supabase
       .from('profiles')
-      .select('user_id, owner_name, whatsapp_number');
+      .select('user_id, owner_name, whatsapp_number, school_name');
+
+    const { data: referralsData } = await supabase
+      .from('referrals')
+      .select('referrer_id, referred_user_id');
 
     if (schoolsData && creditsData) {
       const creditMap = new Map(creditsData.map(c => [c.school_id, c.balance]));
       const profileMap = new Map(
-        (profilesData || []).map(p => [p.user_id, { owner_name: p.owner_name, whatsapp_number: p.whatsapp_number }])
+        (profilesData || []).map(p => [
+          p.user_id,
+          { owner_name: p.owner_name, whatsapp_number: p.whatsapp_number, school_name: p.school_name },
+        ])
       );
-      
+      const referralMap = new Map((referralsData || []).map(r => [r.referred_user_id, r.referrer_id]));
+      const schoolByOwnerMap = new Map(schoolsData.map(s => [s.owner_id, s.name]));
+
       const merged: SchoolWithCredits[] = schoolsData.map(s => {
         const profile = profileMap.get(s.owner_id);
+        const referrerId = referralMap.get(s.owner_id);
+        const referrerProfile = referrerId ? profileMap.get(referrerId) : undefined;
+
         return {
           ...s,
           credit_balance: creditMap.get(s.id) ?? 0,
           owner_name: profile?.owner_name || '',
           whatsapp_number: profile?.whatsapp_number || '',
+          invited_by: referrerId
+            ? (referrerProfile?.school_name || referrerProfile?.owner_name || schoolByOwnerMap.get(referrerId) || '—')
+            : '—',
         };
       });
       merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
