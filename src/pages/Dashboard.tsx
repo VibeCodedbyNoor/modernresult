@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
@@ -131,14 +132,20 @@ export default function Dashboard() {
   const [timerHours, setTimerHours] = useState(0);
   const [timerMinutes, setTimerMinutes] = useState(0);
 
+  // Template change confirmation dialog
+  const [templateConfirmOpen, setTemplateConfirmOpen] = useState(false);
+  const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(null);
+
+  const fetchedRef = useRef(false);
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/login');
       return;
     }
-    if (user) {
+    if (user && !fetchedRef.current) {
+      fetchedRef.current = true;
       fetchSchool();
-      // Pre-fill school name from profile
       supabase.from('profiles').select('school_name').eq('user_id', user.id).single().then(({ data }) => {
         if (data?.school_name && !schoolName) setSchoolName(data.school_name);
       });
@@ -153,6 +160,30 @@ export default function Dashboard() {
       fetchCredits(data.id);
     }
     setLoading(false);
+  }
+
+  async function handleConfirmTemplateChange() {
+    if (!school || !pendingTemplateId) return;
+    setTemplateConfirmOpen(false);
+
+    const { data: success, error: rpcError } = await supabase
+      .rpc('deduct_template_change_credits', { p_school_id: school.id });
+    if (rpcError) { toast.error(rpcError.message); setPendingTemplateId(null); return; }
+    if (!success) { toast.error('Not enough credits! You need at least 5 credits.'); setPendingTemplateId(null); return; }
+
+    const { error } = await supabase
+      .from('schools')
+      .update({ result_template: pendingTemplateId })
+      .eq('id', school.id);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      setSchool({ ...school, result_template: pendingTemplateId, template_changes_count: school.template_changes_count + 1 });
+      toast.success('Design changed (5 credits deducted)');
+      const { data: credData } = await supabase.from('school_credits').select('balance').eq('school_id', school.id).single();
+      if (credData) setCreditBalance(credData.balance);
+    }
+    setPendingTemplateId(null);
   }
 
   async function fetchCredits(schoolId: string) {
@@ -1069,13 +1100,12 @@ export default function Dashboard() {
                         
                         // Check if this will cost credits and confirm
                         if (school.template_changes_count >= 3) {
-                          const confirmed = window.confirm(
-                            'This design change will cost 5 credits. Continue?'
-                          );
-                          if (!confirmed) return;
+                          setPendingTemplateId(template.id);
+                          setTemplateConfirmOpen(true);
+                          return;
                         }
 
-                        // Call the DB function to handle credit deduction + counter
+                        // Free change — proceed directly
                         const { data: success, error: rpcError } = await supabase
                           .rpc('deduct_template_change_credits', { p_school_id: school.id });
                         
@@ -1352,6 +1382,20 @@ export default function Dashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <AlertDialog open={templateConfirmOpen} onOpenChange={setTemplateConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Change Portal Design</AlertDialogTitle>
+            <AlertDialogDescription>
+              This design change will cost <span className="font-semibold text-foreground">5 credits</span>. Your current balance is <span className="font-semibold text-foreground">{creditBalance ?? 0} credits</span>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingTemplateId(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmTemplateChange}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <WhatsAppHelpButton />
     </div>
   );
