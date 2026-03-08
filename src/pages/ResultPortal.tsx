@@ -191,6 +191,7 @@ export default function ResultPortal() {
       schoolName={school.name}
       logoUrl={school.logo_url}
       onSearch={handleSearch}
+      searchFields={school.search_fields || ['roll_number', 'student_name']}
     />
   );
 }
