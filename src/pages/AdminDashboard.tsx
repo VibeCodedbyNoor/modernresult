@@ -343,7 +343,7 @@ resultportal.online`;
 
         {/* Tab Navigation */}
         <div className="flex gap-1 border-b">
-          {(['overview', 'credits', 'transactions'] as const).map(tab => (
+          {(['overview', 'credits', 'transactions', 'referrals'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
