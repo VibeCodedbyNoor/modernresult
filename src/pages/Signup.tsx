@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { User, Phone, School, Mail, CheckCircle2, ArrowRight } from 'lucide-react';
+import { User, Phone, School, Mail } from 'lucide-react';
 
 export default function Signup() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -17,7 +18,6 @@ export default function Signup() {
   const [schoolName, setSchoolName] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [loading, setLoading] = useState(false);
-  const [signupSuccess, setSignupSuccess] = useState(false);
   const { signUp } = useAuth();
   const [searchParams] = useSearchParams();
   const refCode = searchParams.get('ref');
@@ -81,49 +81,9 @@ export default function Signup() {
     }
 
     setLoading(false);
-    setSignupSuccess(true);
+    toast.success('Account created successfully!');
+    navigate('/dashboard');
   };
-
-  if (signupSuccess) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="w-full max-w-md animate-fade-in">
-          <div className="text-center mb-8">
-            <Link to="/" className="font-display text-2xl font-bold text-primary">ResultCheck</Link>
-          </div>
-          <Card>
-            <CardContent className="pt-8 pb-8 text-center space-y-5">
-              <div className="flex justify-center">
-                <div className="rounded-full bg-green-100 p-4">
-                  <CheckCircle2 className="h-12 w-12 text-green-600" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <h2 className="text-2xl font-bold font-display">Account Created Successfully!</h2>
-                <p className="text-muted-foreground">
-                  We've sent a confirmation email to <span className="font-semibold text-foreground">{email}</span>.
-                </p>
-                <p className="text-muted-foreground">
-                  Please check your inbox and click the link to verify your account.
-                </p>
-                <p className="text-sm text-amber-600 bg-amber-50 rounded-md px-3 py-2 mt-2">
-                  ⚠️ Don't see the email? Check your <strong>Spam</strong> or <strong>Junk</strong> folder.
-                </p>
-              </div>
-              <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
-                Once verified, you'll be redirected directly to your dashboard to get started.
-              </div>
-              <Link to="/login">
-                <Button variant="outline" className="mt-2 gap-2">
-                  Go to Login <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
