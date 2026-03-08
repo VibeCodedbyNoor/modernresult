@@ -1120,7 +1120,7 @@ export default function Dashboard() {
                     Pick a style below — this is exactly how students will see your result portal. Just click to apply!
                   </p>
                 </div>
-                <Badge variant={school.template_changes_count < 3 ? 'default' : 'secondary'} className="text-xs shrink-0">
+                <Badge variant={school.template_changes_count < 3 ? 'default' : 'secondary'} className="text-xs shrink-0" title="First 3 design changes are free, then 5 credits each">
                   {school.template_changes_count < 3
                     ? `${3 - school.template_changes_count} free change${3 - school.template_changes_count !== 1 ? 's' : ''} remaining`
                     : '5 credits per change'}
