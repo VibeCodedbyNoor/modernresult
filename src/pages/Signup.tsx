@@ -48,36 +48,34 @@ export default function Signup() {
 
     const { data: { user: newUser } } = await supabase.auth.getUser();
     if (newUser) {
-      // Update profile with owner info
-      const profileUpdate: any = {
-        owner_name: ownerName.trim(),
-        school_name: schoolName.trim(),
-        whatsapp_number: whatsappNumber.trim(),
-      };
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert(
+          {
+            user_id: newUser.id,
+            owner_name: ownerName.trim(),
+            school_name: schoolName.trim(),
+            whatsapp_number: whatsappNumber.trim(),
+          },
+          { onConflict: 'user_id' }
+        );
 
-      // If referred, store referrer's user_id
-      if (refCode) {
-        const { data: referrerProfile } = await supabase
-          .from('profiles')
-          .select('user_id')
-          .eq('referral_code', refCode)
-          .maybeSingle();
-        
-        if (referrerProfile) {
-          profileUpdate.referred_by = referrerProfile.user_id;
-
-          // Create referral record
-          await supabase.from('referrals').insert({
-            referrer_id: referrerProfile.user_id,
-            referred_user_id: newUser.id,
-          });
-        }
+      if (profileError) {
+        setLoading(false);
+        toast.error(profileError.message);
+        return;
       }
 
-      await supabase
-        .from('profiles')
-        .update(profileUpdate)
-        .eq('user_id', newUser.id);
+      if (refCode?.trim()) {
+        const { error: referralError } = await supabase.rpc('apply_referral_code', {
+          p_referral_code: refCode.trim(),
+          p_referred_user_id: newUser.id,
+        });
+
+        if (referralError) {
+          console.error('Referral apply error:', referralError);
+        }
+      }
     }
 
     setLoading(false);
