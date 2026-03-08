@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import ResultPortal from "./pages/ResultPortal";
 import DemoPortal from "./pages/DemoPortal";
 import AdminDashboard from "./pages/AdminDashboard";
+import EarnWithUs from "./pages/EarnWithUs";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
