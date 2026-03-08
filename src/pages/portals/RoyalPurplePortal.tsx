@@ -1,29 +1,13 @@
-import { useState, useRef } from 'react';
-import { toast } from 'sonner';
-import { CLASS_SUBJECTS } from '@/lib/classSubjects';
-import { generateDemoResult } from '@/lib/demoResults';
 import { Crown } from 'lucide-react';
-
+import { CLASS_SUBJECTS } from '@/lib/classSubjects';
+import { SEARCH_FIELD_LABELS, SEARCH_FIELD_PLACEHOLDERS } from '@/lib/portalTypes';
+import { usePortalSearch } from '@/hooks/usePortalSearch';
+import type { PortalProps } from '@/lib/portalTypes';
 import BackButton from '@/components/portal/BackButton';
 import ResultActions from '@/components/portal/ResultActions';
 
-interface PortalProps { isDemo?: boolean; schoolName?: string; logoUrl?: string | null; onSearch?: (className: string, studentName: string) => Promise<any>; demoResult?: any; }
-
-const RoyalPurplePortal = ({ isDemo = true, schoolName = "Crown Academy", logoUrl, onSearch, demoResult }: PortalProps) => {
-  const [selectedClass, setSelectedClass] = useState('');
-  const [studentName, setStudentName] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(demoResult || null);
-  const [error, setError] = useState('');
-  const resultRef = useRef<HTMLDivElement>(null);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedClass || !studentName) { toast.error('Please select a class and enter your name'); return; }
-    setLoading(true); setError(''); setResult(null);
-    if (isDemo) { setTimeout(() => { setResult(generateDemoResult(studentName, selectedClass)); setLoading(false); toast.success('Result loaded successfully!'); }, 1000); }
-    else if (onSearch) { try { const r = await onSearch(selectedClass, studentName); if (r) { setResult(r); toast.success('Result loaded successfully!'); } else { setError('No result found'); } } catch { setError('Search failed'); } finally { setLoading(false); } }
-  };
+const RoyalPurplePortal = ({ isDemo = true, schoolName = "Crown Academy", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult }: PortalProps) => {
+  const { selectedClass, setSelectedClass, formValues, setField, loading, result, error, resultRef, handleSubmit } = usePortalSearch({ isDemo, onSearch, demoResult });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-violet-900 to-purple-950 relative overflow-hidden">
