@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
-import { School, CreditCard, Users, BookOpen, Search, Plus, MessageCircle, LogOut, ArrowUpDown } from 'lucide-react';
+import { School, CreditCard, Users, BookOpen, Search, Plus, MessageCircle, LogOut, ArrowUpDown, Phone, User } from 'lucide-react';
 
 interface SchoolWithCredits {
   id: string;
@@ -18,6 +18,9 @@ interface SchoolWithCredits {
   owner_id: string;
   created_at: string;
   credit_balance: number;
+  owner_name?: string;
+  whatsapp_number?: string;
+  owner_email?: string;
 }
 
 interface TransactionRow {
@@ -74,7 +77,7 @@ export default function AdminDashboard() {
   }, [isAdmin]);
 
   const loadData = async () => {
-    // Load schools with credits
+    // Load schools
     const { data: schoolsData } = await supabase
       .from('schools')
       .select('id, name, slug, owner_id, created_at');
@@ -93,12 +96,26 @@ export default function AdminDashboard() {
       .order('created_at', { ascending: false })
       .limit(100);
 
+    // Load profiles for owner info
+    const { data: profilesData } = await supabase
+      .from('profiles')
+      .select('user_id, owner_name, whatsapp_number');
+
     if (schoolsData && creditsData) {
       const creditMap = new Map(creditsData.map(c => [c.school_id, c.balance]));
-      const merged: SchoolWithCredits[] = schoolsData.map(s => ({
-        ...s,
-        credit_balance: creditMap.get(s.id) ?? 0,
-      }));
+      const profileMap = new Map(
+        (profilesData || []).map(p => [p.user_id, { owner_name: p.owner_name, whatsapp_number: p.whatsapp_number }])
+      );
+      
+      const merged: SchoolWithCredits[] = schoolsData.map(s => {
+        const profile = profileMap.get(s.owner_id);
+        return {
+          ...s,
+          credit_balance: creditMap.get(s.id) ?? 0,
+          owner_name: profile?.owner_name || '',
+          whatsapp_number: profile?.whatsapp_number || '',
+        };
+      });
       merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       setSchools(merged);
     }
@@ -135,6 +152,11 @@ export default function AdminDashboard() {
         amount: parseInt(creditAmount),
         newBalance: newBalance as number,
       });
+
+      // Auto-fill WhatsApp number from profile
+      if (selectedSchool.whatsapp_number) {
+        setWhatsappNumber(selectedSchool.whatsapp_number);
+      }
 
       toast({ title: `✅ ${creditAmount} credits added to ${selectedSchool.name}!` });
       setCreditAmount('');
@@ -178,7 +200,8 @@ resultportal.online`;
 
   const filteredSchools = schools.filter(s =>
     s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.slug.toLowerCase().includes(searchQuery.toLowerCase())
+    s.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (s.owner_name || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const totalCredits = schools.reduce((sum, s) => sum + s.credit_balance, 0);
@@ -295,11 +318,11 @@ resultportal.online`;
           <Card>
             <CardHeader>
               <CardTitle>All Schools</CardTitle>
-              <CardDescription>Complete list of registered schools and their credit balances</CardDescription>
+              <CardDescription>Complete list of registered schools with owner details</CardDescription>
               <div className="relative mt-2">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by name or slug..."
+                  placeholder="Search by school, owner name, or slug..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="pl-9"
@@ -311,6 +334,8 @@ resultportal.online`;
                 <TableHeader>
                   <TableRow>
                     <TableHead>School Name</TableHead>
+                    <TableHead>Owner</TableHead>
+                    <TableHead>WhatsApp</TableHead>
                     <TableHead>Slug</TableHead>
                     <TableHead>Credits</TableHead>
                     <TableHead>Joined</TableHead>
@@ -321,6 +346,31 @@ resultportal.online`;
                   {filteredSchools.map(school => (
                     <TableRow key={school.id}>
                       <TableCell className="font-medium">{school.name}</TableCell>
+                      <TableCell>
+                        {school.owner_name ? (
+                          <span className="flex items-center gap-1.5 text-sm">
+                            <User className="h-3.5 w-3.5 text-muted-foreground" />
+                            {school.owner_name}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {school.whatsapp_number ? (
+                          <a
+                            href={`https://wa.me/${school.whatsapp_number.replace(/\D/g, '')}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-1.5 text-sm text-green-600 hover:underline"
+                          >
+                            <Phone className="h-3.5 w-3.5" />
+                            {school.whatsapp_number}
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">—</span>
+                        )}
+                      </TableCell>
                       <TableCell><Badge variant="secondary">{school.slug}</Badge></TableCell>
                       <TableCell>
                         <Badge variant={school.credit_balance > 0 ? 'default' : 'destructive'}>
@@ -337,6 +387,7 @@ resultportal.online`;
                           onClick={() => {
                             setSelectedSchool(school);
                             setActiveTab('credits');
+                            if (school.whatsapp_number) setWhatsappNumber(school.whatsapp_number);
                           }}
                         >
                           <Plus className="h-3 w-3 mr-1" /> Add Credits
@@ -346,7 +397,7 @@ resultportal.online`;
                   ))}
                   {filteredSchools.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                         No schools found
                       </TableCell>
                     </TableRow>
@@ -382,10 +433,17 @@ resultportal.online`;
                       {filteredSchools.map(s => (
                         <button
                           key={s.id}
-                          onClick={() => { setSelectedSchool(s); setSearchQuery(s.name); }}
+                          onClick={() => {
+                            setSelectedSchool(s);
+                            setSearchQuery(s.name);
+                            if (s.whatsapp_number) setWhatsappNumber(s.whatsapp_number);
+                          }}
                           className="w-full px-3 py-2 text-left hover:bg-muted text-sm flex justify-between items-center"
                         >
-                          <span className="font-medium">{s.name}</span>
+                          <div>
+                            <span className="font-medium">{s.name}</span>
+                            {s.owner_name && <span className="text-muted-foreground ml-2 text-xs">({s.owner_name})</span>}
+                          </div>
                           <Badge variant="secondary">{s.credit_balance} credits</Badge>
                         </button>
                       ))}
@@ -396,6 +454,16 @@ resultportal.online`;
                 {selectedSchool && (
                   <div className="p-3 bg-muted rounded-lg space-y-1">
                     <p className="font-medium text-foreground">{selectedSchool.name}</p>
+                    {selectedSchool.owner_name && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                        <User className="h-3.5 w-3.5" /> {selectedSchool.owner_name}
+                      </p>
+                    )}
+                    {selectedSchool.whatsapp_number && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                        <Phone className="h-3.5 w-3.5" /> {selectedSchool.whatsapp_number}
+                      </p>
+                    )}
                     <p className="text-sm text-muted-foreground">
                       Current balance: <span className="font-bold text-primary">{selectedSchool.credit_balance}</span> credits
                     </p>
@@ -449,6 +517,9 @@ resultportal.online`;
                         value={whatsappNumber}
                         onChange={e => setWhatsappNumber(e.target.value)}
                       />
+                      <p className="text-[11px] text-muted-foreground">
+                        {whatsappNumber ? '✓ Auto-filled from school profile' : 'Enter number manually'}
+                      </p>
                     </div>
                     <Button onClick={openWhatsApp} className="w-full bg-green-600 hover:bg-green-700 text-white">
                       <MessageCircle className="h-4 w-4 mr-2" />
