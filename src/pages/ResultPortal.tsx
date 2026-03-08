@@ -104,7 +104,7 @@ export default function ResultPortal() {
       if (!creditOk) return null;
 
       const row = data[0];
-      const subjects = Array.isArray(row.subjects) ? row.subjects : [];
+      const subjects = Array.isArray(row.subjects) ? (row.subjects as any[]) : [];
       const totalObtained = subjects.reduce((sum: number, s: any) => sum + (Number(s.obtained_marks) || 0), 0);
       const totalMax = subjects.reduce((sum: number, s: any) => sum + (Number(s.total_marks) || 0), 0);
       const percentage = totalMax > 0 ? ((totalObtained / totalMax) * 100).toFixed(1) + '%' : '0%';
