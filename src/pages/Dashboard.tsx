@@ -661,6 +661,7 @@ export default function Dashboard() {
                               variant="outline"
                               size="sm"
                               className="gap-1.5"
+                              title="Schedule when results become visible to students"
                               onClick={() => {
                                 setTimerExamId(selectedExam);
                                 setTimerDays(0);
