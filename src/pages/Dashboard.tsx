@@ -137,6 +137,10 @@ export default function Dashboard() {
   const [templateConfirmOpen, setTemplateConfirmOpen] = useState(false);
   const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(null);
 
+  // Upload confirmation dialog
+  const [uploadConfirmOpen, setUploadConfirmOpen] = useState(false);
+  const [uploadConfirmResolve, setUploadConfirmResolve] = useState<((val: boolean) => void) | null>(null);
+
   const fetchedRef = useRef(false);
 
   useEffect(() => {
