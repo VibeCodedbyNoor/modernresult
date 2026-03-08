@@ -259,13 +259,13 @@ export default function Dashboard() {
     e.preventDefault();
     if (!user) return;
     
-    const amount = parseInt(withdrawAmount);
-    if (!amount || amount < 50) {
-      toast.error('Minimum withdrawal is 50 credits');
+    const amount = parseFloat(withdrawAmount);
+    if (!amount || amount < 45) {
+      toast.error('Minimum withdrawal is ₨45');
       return;
     }
     
-    const totalEarned = referralEarnings.reduce((sum, earn) => sum + earn.commission_credits, 0);
+    const totalEarned = referralEarnings.reduce((sum, earn) => sum + (earn.commission_rupees || earn.commission_credits * 9), 0);
     const totalWithdrawnAmount = withdrawals.filter(w => w.status !== 'rejected').reduce((sum, w) => sum + w.amount, 0);
     const availableBalance = totalEarned - totalWithdrawnAmount;
     if (amount > availableBalance) {
