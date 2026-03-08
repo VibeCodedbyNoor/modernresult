@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
-import { School, CreditCard, Users, BookOpen, Search, Plus, MessageCircle, LogOut, ArrowUpDown, Phone, User } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { School, CreditCard, Users, BookOpen, Search, Plus, MessageCircle, LogOut, ArrowUpDown, Phone, User, Wallet, CheckCircle, Ban, Clock } from 'lucide-react';
 
 interface SchoolWithCredits {
   id: string;
@@ -33,6 +34,20 @@ interface TransactionRow {
   created_at: string;
 }
 
+interface WithdrawalRow {
+  id: string;
+  user_id: string;
+  amount: number;
+  payment_method: string;
+  account_name: string;
+  account_number: string;
+  status: string;
+  admin_note: string | null;
+  created_at: string;
+  owner_name?: string;
+  owner_email?: string;
+}
+
 export default function AdminDashboard() {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
@@ -46,7 +61,11 @@ export default function AdminDashboard() {
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [lastUpdate, setLastUpdate] = useState<{ school: string; amount: number; newBalance: number } | null>(null);
   const [updating, setUpdating] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'credits' | 'transactions'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'credits' | 'transactions' | 'referrals'>('overview');
+  const [earnEnabled, setEarnEnabled] = useState(false);
+  const [earnToggling, setEarnToggling] = useState(false);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
+  const [updatingWithdrawal, setUpdatingWithdrawal] = useState<string | null>(null);
 
   // Check admin role
   useEffect(() => {
@@ -127,6 +146,32 @@ export default function AdminDashboard() {
       setTransactions(txData.map(t => ({
         ...t,
         school_name: schoolMap.get(t.school_id) ?? 'Unknown',
+      })));
+    }
+
+    // Load earn_with_us setting
+    const { data: settingData } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'earn_with_us')
+      .maybeSingle();
+    if (settingData?.value && typeof settingData.value === 'object' && 'enabled' in (settingData.value as any)) {
+      setEarnEnabled((settingData.value as any).enabled === true);
+    }
+
+    // Load withdrawal requests
+    const { data: wdData } = await supabase
+      .from('withdrawal_requests')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (wdData && profilesData) {
+      const profileMap2 = new Map(
+        (profilesData || []).map(p => [p.user_id, { owner_name: p.owner_name }])
+      );
+      setWithdrawals(wdData.map(w => ({
+        ...w,
+        owner_name: profileMap2.get(w.user_id)?.owner_name || 'Unknown',
       })));
     }
   };
@@ -298,7 +343,7 @@ resultportal.online`;
 
         {/* Tab Navigation */}
         <div className="flex gap-1 border-b">
-          {(['overview', 'credits', 'transactions'] as const).map(tab => (
+          {(['overview', 'credits', 'transactions', 'referrals'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -577,6 +622,134 @@ resultportal.online`;
               </Table>
             </CardContent>
           </Card>
+        )}
+
+        {/* Referrals & Withdrawals Tab */}
+        {activeTab === 'referrals' && (
+          <div className="space-y-6">
+            {/* Earn With Us Toggle */}
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-foreground">Earn With Us Page</h3>
+                    <p className="text-sm text-muted-foreground">Show or hide the "Earn With Us" link on the landing page</p>
+                  </div>
+                  <Switch
+                    checked={earnEnabled}
+                    disabled={earnToggling}
+                    onCheckedChange={async (checked) => {
+                      setEarnToggling(true);
+                      const { error } = await supabase
+                        .from('site_settings')
+                        .update({ value: { enabled: checked } as any, updated_at: new Date().toISOString() })
+                        .eq('key', 'earn_with_us');
+                      if (error) {
+                        toast({ title: 'Failed to update setting', variant: 'destructive' });
+                      } else {
+                        setEarnEnabled(checked);
+                        toast({ title: `Earn With Us ${checked ? 'enabled' : 'disabled'}` });
+                      }
+                      setEarnToggling(false);
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Withdrawal Requests */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Wallet className="h-5 w-5" /> Withdrawal Requests
+                </CardTitle>
+                <CardDescription>Manage affiliate payout requests</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {withdrawals.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">No withdrawal requests yet</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>User</TableHead>
+                        <TableHead>Method</TableHead>
+                        <TableHead>Account</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {withdrawals.map(w => (
+                        <TableRow key={w.id}>
+                          <TableCell className="font-medium">{w.owner_name || 'Unknown'}</TableCell>
+                          <TableCell><Badge variant="secondary" className="capitalize">{w.payment_method}</Badge></TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="text-sm font-medium">{w.account_name}</p>
+                              <p className="text-xs text-muted-foreground">{w.account_number}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-bold">{w.amount}</TableCell>
+                          <TableCell>
+                            {w.status === 'pending' && <Badge variant="secondary" className="gap-1"><Clock className="h-3 w-3" /> Pending</Badge>}
+                            {w.status === 'processing' && <Badge className="gap-1 bg-yellow-500"><Clock className="h-3 w-3" /> Processing</Badge>}
+                            {(w.status === 'sent' || w.status === 'successful') && <Badge className="gap-1 bg-green-600"><CheckCircle className="h-3 w-3" /> Sent</Badge>}
+                            {w.status === 'rejected' && <Badge variant="destructive" className="gap-1"><Ban className="h-3 w-3" /> Rejected</Badge>}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground text-sm">{new Date(w.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            {(w.status === 'pending' || w.status === 'processing') && (
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-green-600 border-green-600 hover:bg-green-50"
+                                  disabled={updatingWithdrawal === w.id}
+                                  onClick={async () => {
+                                    setUpdatingWithdrawal(w.id);
+                                    await supabase
+                                      .from('withdrawal_requests')
+                                      .update({ status: 'sent', updated_at: new Date().toISOString() })
+                                      .eq('id', w.id);
+                                    toast({ title: 'Marked as sent ✅' });
+                                    loadData();
+                                    setUpdatingWithdrawal(null);
+                                  }}
+                                >
+                                  ✓ Sent
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-red-600 border-red-600 hover:bg-red-50"
+                                  disabled={updatingWithdrawal === w.id}
+                                  onClick={async () => {
+                                    setUpdatingWithdrawal(w.id);
+                                    await supabase
+                                      .from('withdrawal_requests')
+                                      .update({ status: 'rejected', updated_at: new Date().toISOString() })
+                                      .eq('id', w.id);
+                                    toast({ title: 'Marked as rejected' });
+                                    loadData();
+                                    setUpdatingWithdrawal(null);
+                                  }}
+                                >
+                                  ✗ Reject
+                                </Button>
+                              </div>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
     </div>

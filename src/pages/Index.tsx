@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import WhatsAppHelpButton from '@/components/WhatsAppHelpButton';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Sparkles, UserPlus, Building, FileSpreadsheet, CheckCircle, Share2, MessageCircle } from 'lucide-react';
 import { resultTemplates } from '@/lib/resultTemplates';
+import { supabase } from '@/integrations/supabase/client';
 import HeroSection from '@/components/landing/HeroSection';
 import HowItWorks from '@/components/landing/HowItWorks';
 import DesignGrid from '@/components/landing/DesignGrid';
@@ -10,6 +12,21 @@ import DoneForYouSection from '@/components/landing/DoneForYouSection';
 import CTASection from '@/components/landing/CTASection';
 
 export default function Index() {
+  const [showEarn, setShowEarn] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'earn_with_us')
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.value && typeof data.value === 'object' && 'enabled' in (data.value as any)) {
+          setShowEarn((data.value as any).enabled === true);
+        }
+      });
+  }, []);
+
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0a0b14 0%, #0f1021 50%, #0a0b14 100%)' }}>
       {/* Navbar */}
@@ -19,6 +36,13 @@ export default function Index() {
             OnlineResultPortal
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
+            {showEarn && (
+              <Link to="/earn">
+                <Button variant="ghost" size="sm" className="text-green-400 hover:text-green-300 hover:bg-green-500/10 text-xs sm:text-sm px-2 sm:px-3">
+                  💰 Earn With Us
+                </Button>
+              </Link>
+            )}
             <Link to="/login">
               <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white hover:bg-white/10 text-xs sm:text-sm px-2 sm:px-3">Log in</Button>
             </Link>
