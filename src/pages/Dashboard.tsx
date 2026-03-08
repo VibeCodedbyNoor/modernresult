@@ -1112,7 +1112,7 @@ export default function Dashboard() {
                             .select('balance')
                             .eq('school_id', school.id)
                             .single();
-                          if (credData) setCredits(credData.balance);
+                          if (credData) setCreditBalance(credData.balance);
                         }
                       }}
                       className={`group relative rounded-xl border-2 overflow-hidden transition-all duration-200 hover:scale-[1.02] hover:shadow-lg text-left ${
