@@ -244,7 +244,7 @@ export default function AdminDashboard() {
 
 Dear ${lastUpdate.school} Team,
 
-Great news! *${lastUpdate.amount} credits* have been successfully added to your ResultCheck account! ✅
+Great news! *${lastUpdate.amount} credits* have been successfully added to your OnlineResultPortal account! ✅
 
 📊 Your updated balance: *${lastUpdate.newBalance} credits*
 
@@ -252,7 +252,7 @@ Keep delivering instant, professional results to your students! Every result you
 
 Need more credits? Just reach out anytime!
 
-— ResultCheck Team
+— OnlineResultPortal Team
 resultportal.online`;
   };
 
@@ -313,7 +313,7 @@ resultportal.online`;
             </div>
             <div>
               <h1 className="text-lg font-bold text-foreground">Admin Dashboard</h1>
-              <p className="text-xs text-muted-foreground">ResultCheck Platform Management</p>
+              <p className="text-xs text-muted-foreground">OnlineResultPortal Platform Management</p>
             </div>
           </div>
           <Button variant="ghost" size="sm" onClick={() => { signOut(); navigate('/login'); }}>
