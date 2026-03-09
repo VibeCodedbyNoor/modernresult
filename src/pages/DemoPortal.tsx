@@ -76,7 +76,7 @@ export default function DemoPortal() {
         </div>
       </div>
 
-      <PortalComponent isDemo={true} />
+      <PortalComponent isDemo={true} searchFields={['student_name']} />
     </div>
   );
 }
