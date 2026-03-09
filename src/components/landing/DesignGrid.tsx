@@ -20,22 +20,15 @@ function DesignCard({ tmpl, index, onClick }: { tmpl: typeof resultTemplates[0];
         animationFillMode: 'both',
       }}
     >
-      <div className="relative aspect-[4/3] overflow-hidden" style={{ background: tmpl.previewBg }}>
-        {/* CSS Mockup Preview */}
-        <div className="w-full h-full flex flex-col items-center px-4 pt-3 pb-2">
-          {/* Header bar */}
-          <div className="w-10 h-10 rounded-full mb-1.5 opacity-30" style={{ background: tmpl.previewAccent }} />
-          <div className="w-3/5 h-2 rounded-full mb-1 opacity-40" style={{ background: tmpl.previewAccent }} />
-          <div className="w-2/5 h-1.5 rounded-full mb-3 opacity-20" style={{ background: tmpl.previewAccent }} />
-          {/* Card area */}
-          <div className="w-full flex-1 rounded-lg p-3 flex flex-col gap-2" style={{ background: tmpl.previewCard }}>
-            <div className="w-full h-3 rounded opacity-15" style={{ background: tmpl.previewAccent }} />
-            <div className="w-full h-5 rounded" style={{ background: tmpl.inputBg || 'rgba(255,255,255,0.08)' }} />
-            <div className="w-full h-5 rounded" style={{ background: tmpl.inputBg || 'rgba(255,255,255,0.08)' }} />
-            <div className="w-2/3 h-5 rounded-md mx-auto mt-1" style={{ background: tmpl.accentColor }} />
-          </div>
-        </div>
-        {/* Hover overlay */}
+      <div className="relative aspect-[4/3] overflow-hidden">
+        <iframe
+          src={`/demo/${tmpl.id}`}
+          title={tmpl.name}
+          className="absolute top-0 left-0 pointer-events-none border-0"
+          style={{ width: '400%', height: '400%', transform: 'scale(0.25)', transformOrigin: 'top left' }}
+          loading="lazy"
+          tabIndex={-1}
+        />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
           <span
             className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-4 py-2 rounded-full text-sm font-semibold"
