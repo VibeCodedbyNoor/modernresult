@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { CLASS_SUBJECTS } from '@/lib/classSubjects';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search } from 'lucide-react';
+import { PortalSkeleton } from '@/components/LoadingSkeletons';
+import LanguageToggle from '@/components/LanguageToggle';
 
 // Import all portal components
 import CorporatePortal from './portals/CorporatePortal';
@@ -83,7 +85,6 @@ export default function ResultPortal() {
 
     const { rollNumber = '', studentName = '', fatherName = '', className = '' } = searchParams;
 
-    // Get published exams for this school
     const { data: exams } = await supabase
       .from('exams')
       .select('id, name, display_at, is_stopped')
@@ -92,7 +93,6 @@ export default function ResultPortal() {
 
     if (!exams || exams.length === 0) return null;
 
-    // Use the first published exam
     const exam = exams[0];
     if (exam.is_stopped) return null;
     if (exam.display_at && new Date(exam.display_at).getTime() > Date.now()) return null;
@@ -119,7 +119,6 @@ export default function ResultPortal() {
       if (Array.isArray(rawSubjects)) {
         subjects = rawSubjects;
       } else if (typeof rawSubjects === 'object' && rawSubjects !== null) {
-        // Extract position if stored in subjects object
         if ('Position' in rawSubjects) {
           position = rawSubjects.Position;
         }
@@ -163,11 +162,7 @@ export default function ResultPortal() {
   }, [school]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-muted-foreground animate-pulse">Loading...</div>
-      </div>
-    );
+    return <PortalSkeleton />;
   }
 
   if (!school) {
@@ -188,12 +183,17 @@ export default function ResultPortal() {
   const PortalComponent = PORTAL_MAP[templateId] || LuxuryGoldPortal;
 
   return (
-    <PortalComponent
-      isDemo={false}
-      schoolName={school.name}
-      logoUrl={school.logo_url}
-      onSearch={handleSearch}
-      searchFields={school.search_fields || ['roll_number', 'student_name']}
-    />
+    <div className="relative">
+      <div className="fixed top-3 right-3 z-50">
+        <LanguageToggle className="bg-black/30 backdrop-blur-sm text-white hover:bg-black/50" />
+      </div>
+      <PortalComponent
+        isDemo={false}
+        schoolName={school.name}
+        logoUrl={school.logo_url}
+        onSearch={handleSearch}
+        searchFields={school.search_fields || ['roll_number', 'student_name']}
+      />
+    </div>
   );
 }

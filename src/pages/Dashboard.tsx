@@ -21,6 +21,10 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import WhatsAppHelpButton from '@/components/WhatsAppHelpButton';
 import CountdownDisplay from '@/components/CountdownDisplay';
+import { DashboardSkeleton } from '@/components/LoadingSkeletons';
+import QRCodeCard from '@/components/portal/QRCodeCard';
+import ThemeToggle from '@/components/ThemeToggle';
+import LanguageToggle from '@/components/LanguageToggle';
 
 interface SchoolData {
   id: string;
@@ -624,11 +628,7 @@ export default function Dashboard() {
   const filteredResults = classFilter === 'all' ? results : results.filter(r => r.class_name === classFilter);
 
   if (authLoading || loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   // Setup wizard if no school yet
@@ -701,6 +701,8 @@ export default function Dashboard() {
             <span className="font-medium text-foreground">{school.name}</span>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageToggle />
+            <ThemeToggle />
             <a href={`https://resultportal.online/results/${school.slug}`} target="_blank" rel="noreferrer">
               <Button variant="outline" size="sm" className="gap-1.5">
                 <Eye className="h-3.5 w-3.5" /> View Portal
@@ -1537,6 +1539,10 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
+
+
+            {/* QR Code Card */}
+            <QRCodeCard schoolName={school.name} slug={school.slug} />
 
             {/* Search Fields Config */}
             <Card className="max-w-lg">
