@@ -12,14 +12,14 @@ export const helpVideos: HelpVideo[] = [
     id: 'overview',
     titleKey: 'help.vid_overview',
     descriptionKey: 'help.vid_overview_desc',
-    youtubeId: 'rh5KMo02dTU',
+  youtubeId: '',
     category: 'getting-started',
   },
   {
     id: 'create-exam',
     titleKey: 'help.vid_create_exam',
     descriptionKey: 'help.vid_create_exam_desc',
-    youtubeId: 'rh5KMo02dTU',
+    youtubeId: '',
     category: 'exams',
   },
   {
@@ -33,14 +33,14 @@ export const helpVideos: HelpVideo[] = [
     id: 'buy-credits',
     titleKey: 'help.vid_credits',
     descriptionKey: 'help.vid_credits_desc',
-    youtubeId: 'rh5KMo02dTU',
+    youtubeId: '',
     category: 'credits',
   },
   {
     id: 'change-design',
     titleKey: 'help.vid_design',
     descriptionKey: 'help.vid_design_desc',
-    youtubeId: 'rh5KMo02dTU',
+    youtubeId: '',
     category: 'settings',
   },
 ];
