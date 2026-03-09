@@ -31,8 +31,8 @@ export default function HeroSection() {
           <Button
             size="lg"
             variant="outline"
-            className="border-white/10 hover:bg-white/5 w-full sm:w-auto"
-            style={{ color: '#c4c3d4' }}
+            className="border-white/20 hover:bg-white/10 w-full sm:w-auto text-white font-medium"
+            style={{ color: '#ffffff' }}
             onClick={() => document.getElementById('designs')?.scrollIntoView({ behavior: 'smooth' })}
           >
             View Designs
