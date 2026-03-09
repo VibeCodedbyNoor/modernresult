@@ -5,7 +5,7 @@ import { CLASS_SUBJECTS } from '@/lib/classSubjects';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search } from 'lucide-react';
 import { PortalSkeleton } from '@/components/LoadingSkeletons';
-import LanguageToggle from '@/components/LanguageToggle';
+
 
 // Import all portal components
 import CorporatePortal from './portals/CorporatePortal';
@@ -184,9 +184,6 @@ export default function ResultPortal() {
 
   return (
     <div className="relative">
-      <div className="fixed top-3 right-3 z-50">
-        <LanguageToggle className="bg-black/30 backdrop-blur-sm text-white hover:bg-black/50" />
-      </div>
       <PortalComponent
         isDemo={false}
         schoolName={school.name}

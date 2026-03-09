@@ -9,7 +9,6 @@ import DesignGrid from '@/components/landing/DesignGrid';
 import DoneForYouSection from '@/components/landing/DoneForYouSection';
 import CTASection from '@/components/landing/CTASection';
 import ThemeToggle from '@/components/ThemeToggle';
-import LanguageToggle from '@/components/LanguageToggle';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Index() {
@@ -38,7 +37,6 @@ export default function Index() {
             {t('nav.brand')}
           </Link>
           <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
-            <LanguageToggle className="text-gray-400 hover:text-white" />
             <ThemeToggle className="text-gray-400 hover:text-white" />
             {showEarn && (
               <Link to="/earn">
