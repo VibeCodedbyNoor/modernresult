@@ -64,6 +64,7 @@ export default function Index() {
       </nav>
 
       <HeroSection />
+      <VideoGuideSection />
       <DesignGrid />
       <HowItWorks />
       <DoneForYouSection />
