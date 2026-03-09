@@ -34,8 +34,8 @@ export default function VideoGuideSection() {
   if (availableVideos.length === 0) return null;
 
   return (
-    <section ref={ref} className="container mx-auto px-4 py-12 sm:py-16">
-      <div className="text-center mb-8">
+    <section ref={ref} className="mx-auto px-2 sm:px-4 py-10 sm:py-16 sm:container">
+      <div className="text-center mb-6 sm:mb-8">
         <h2 className="font-display text-2xl sm:text-3xl font-bold mb-2" style={{ color: '#f1f0f5' }}>
           📺 Video Guide
         </h2>
@@ -44,7 +44,7 @@ export default function VideoGuideSection() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         {videos.map(video => (
           <Card
             key={video.id}
