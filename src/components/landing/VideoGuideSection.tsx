@@ -15,13 +15,13 @@ const videos: VideoConfig[] = [
     id: 'urdu',
     title: 'اردو میں سیکھیں',
     language: 'Urdu Guide',
-    youtubeId: '', // Replace with real YouTube ID like 'dQw4w9WgXcQ'
+    youtubeId: 'rh5KMo02dTU',
   },
   {
     id: 'pashto',
     title: 'په پښتو کې زده کړئ',
     language: 'Pashto Guide',
-    youtubeId: '', // Replace with real YouTube ID
+    youtubeId: 'rh5KMo02dTU',
   },
 ];
 

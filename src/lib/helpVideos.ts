@@ -40,7 +40,7 @@ export const helpVideos: HelpVideo[] = [
     id: 'change-design',
     titleKey: 'help.vid_design',
     descriptionKey: 'help.vid_design_desc',
-    youtubeId: '',
+    youtubeId: 'rh5KMo02dTU',
     category: 'settings',
   },
 ];
