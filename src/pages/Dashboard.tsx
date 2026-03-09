@@ -1540,6 +1540,10 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
+
+            {/* QR Code Card */}
+            <QRCodeCard schoolName={school.name} slug={school.slug} />
+
             {/* Search Fields Config */}
             <Card className="max-w-lg">
               <CardHeader>
