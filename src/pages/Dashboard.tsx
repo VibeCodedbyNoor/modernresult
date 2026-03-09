@@ -696,24 +696,24 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       {/* Top bar */}
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="font-display font-bold text-primary">ResultCheck</span>
-            <span className="text-muted-foreground">/</span>
-            <span className="font-medium text-foreground">{school.name}</span>
+        <div className="container mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+            <span className="font-display font-bold text-primary text-sm sm:text-base shrink-0">ResultCheck</span>
+            <span className="text-muted-foreground hidden sm:inline">/</span>
+            <span className="font-medium text-foreground text-xs sm:text-sm truncate">{school.name}</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <ThemeToggle />
-            <Button variant="ghost" size="icon" onClick={() => setHelpDialogOpen(true)} title={t('dash.tab_help')}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setHelpDialogOpen(true)} title={t('dash.tab_help')}>
               <HelpCircle className="h-4 w-4" />
             </Button>
             <a href={`https://resultportal.online/results/${school.slug}`} target="_blank" rel="noreferrer">
-              <Button variant="outline" size="sm" className="gap-1.5">
-                <Eye className="h-3.5 w-3.5" /> {t('dash.view_portal')}
+              <Button variant="outline" size="sm" className="gap-1 text-xs sm:text-sm px-2 sm:px-3 h-8">
+                <Eye className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{t('dash.view_portal')}</span><span className="sm:hidden">Portal</span>
               </Button>
             </a>
-            <Button variant="ghost" size="sm" onClick={() => { signOut(); navigate('/'); }} className="gap-1.5">
-              <LogOut className="h-3.5 w-3.5" /> {t('dash.sign_out')}
+            <Button variant="ghost" size="sm" onClick={() => { signOut(); navigate('/'); }} className="gap-1 text-xs sm:text-sm px-1.5 sm:px-3 h-8">
+              <LogOut className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{t('dash.sign_out')}</span>
             </Button>
           </div>
         </div>
@@ -741,12 +741,12 @@ export default function Dashboard() {
         <GettingStartedCard hasExams={hasExams} hasResults={hasResults} hasPublished={hasPublished} />
 
         <Tabs defaultValue="exams">
-          <TabsList>
-            <TabsTrigger value="exams">{t('dash.tab_exams')}</TabsTrigger>
-            <TabsTrigger value="credits">{t('dash.tab_credits')}</TabsTrigger>
-            <TabsTrigger value="settings">{t('dash.tab_settings')}</TabsTrigger>
-            <TabsTrigger value="referrals">{t('dash.tab_referrals')}</TabsTrigger>
-            <TabsTrigger value="help">{t('dash.tab_help')}</TabsTrigger>
+          <TabsList className="flex-wrap h-auto gap-1 p-1">
+            <TabsTrigger value="exams" className="text-xs sm:text-sm">{t('dash.tab_exams')}</TabsTrigger>
+            <TabsTrigger value="credits" className="text-xs sm:text-sm">{t('dash.tab_credits')}</TabsTrigger>
+            <TabsTrigger value="settings" className="text-xs sm:text-sm">{t('dash.tab_settings')}</TabsTrigger>
+            <TabsTrigger value="referrals" className="text-xs sm:text-sm">{t('dash.tab_referrals')}</TabsTrigger>
+            <TabsTrigger value="help" className="text-xs sm:text-sm">{t('dash.tab_help')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="exams" className="space-y-6 mt-6">
