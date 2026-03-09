@@ -480,6 +480,7 @@ resultportal.online`;
                           >
                             <Plus className="h-3 w-3 mr-1" /> Credits
                           </Button>
+                          {school.owner_id !== user?.id && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button size="sm" variant="destructive" disabled={deletingSchool === school.id}>
@@ -504,6 +505,7 @@ resultportal.online`;
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
