@@ -32,7 +32,7 @@ export default function HeroSection() {
             size="lg"
             variant="outline"
             className="border-white/20 hover:bg-white/10 w-full sm:w-auto text-white font-medium"
-            style={{ color: '#c4c3d4' }}
+            style={{ color: '#ffffff' }}
             onClick={() => document.getElementById('designs')?.scrollIntoView({ behavior: 'smooth' })}
           >
             View Designs
