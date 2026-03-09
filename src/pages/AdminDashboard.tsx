@@ -252,7 +252,7 @@ Keep delivering instant, professional results to your students! Every result you
 
 Need more credits? Just reach out anytime!
 
-— ResultCheck Team
+— OnlineResultPortal Team
 resultportal.online`;
   };
 
