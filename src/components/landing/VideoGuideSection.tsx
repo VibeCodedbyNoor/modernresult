@@ -45,20 +45,17 @@ export default function VideoGuideSection() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
-        {availableVideos.map(video => (
+        {videos.map(video => (
           <Card
             key={video.id}
             className="overflow-hidden border-0"
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
           >
-            <div className="aspect-video">
-              <iframe
-                src={`https://www.youtube.com/embed/${video.youtubeId}`}
-                title={video.title}
-                className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+            <div className="aspect-video flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.02)' }}>
+              <div className="text-center space-y-2">
+                <PlayCircle className="h-10 w-10 mx-auto" style={{ color: '#6d28d9' }} />
+                <p className="text-sm font-medium" style={{ color: '#8b8a9e' }}>Coming Soon...</p>
+              </div>
             </div>
             <CardContent className="p-4 text-center">
               <p className="font-semibold text-lg" style={{ color: '#f1f0f5' }}>{video.title}</p>

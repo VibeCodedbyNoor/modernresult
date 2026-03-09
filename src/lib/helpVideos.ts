@@ -12,7 +12,7 @@ export const helpVideos: HelpVideo[] = [
     id: 'overview',
     titleKey: 'help.vid_overview',
     descriptionKey: 'help.vid_overview_desc',
-    youtubeId: 'rh5KMo02dTU',
+  youtubeId: '',
     category: 'getting-started',
   },
   {
