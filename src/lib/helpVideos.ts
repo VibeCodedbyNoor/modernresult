@@ -26,7 +26,7 @@ export const helpVideos: HelpVideo[] = [
     id: 'upload-results',
     titleKey: 'help.vid_upload',
     descriptionKey: 'help.vid_upload_desc',
-    youtubeId: '',
+    youtubeId: 'rh5KMo02dTU',
     category: 'exams',
   },
   {
