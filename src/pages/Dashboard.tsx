@@ -21,6 +21,10 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import WhatsAppHelpButton from '@/components/WhatsAppHelpButton';
 import CountdownDisplay from '@/components/CountdownDisplay';
+import { DashboardSkeleton } from '@/components/LoadingSkeletons';
+import QRCodeCard from '@/components/portal/QRCodeCard';
+import ThemeToggle from '@/components/ThemeToggle';
+import LanguageToggle from '@/components/LanguageToggle';
 
 interface SchoolData {
   id: string;
