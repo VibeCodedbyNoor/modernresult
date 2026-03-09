@@ -31,28 +31,28 @@ export default function Index() {
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0a0b14 0%, #0f1021 50%, #0a0b14 100%)' }}>
       {/* Navbar */}
       <nav className="sticky top-0 z-50 backdrop-blur-md" style={{ background: 'rgba(10,11,20,0.85)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
-          <Link to="/" className="font-display text-lg sm:text-xl font-bold" style={{ color: '#a78bfa' }}>
+        <div className="container mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-1">
+          <Link to="/" className="font-display text-sm sm:text-xl font-bold flex-shrink-0" style={{ color: '#a78bfa' }}>
             OnlineResultPortal
           </Link>
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
             {showEarn && (
               <Link to="/earn">
-                <Button variant="ghost" size="sm" className="text-green-400 hover:text-green-300 hover:bg-green-500/10 text-xs sm:text-sm px-2 sm:px-3">
-                  💰 Earn With Us
+                <Button variant="ghost" size="sm" className="text-green-400 hover:text-green-300 hover:bg-green-500/10 text-[10px] sm:text-sm px-1.5 sm:px-3 h-8">
+                  💰 <span className="hidden sm:inline">Earn With Us</span><span className="sm:hidden">Earn</span>
                 </Button>
               </Link>
             )}
-            <Link to="/terms">
-              <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-3" style={{ color: '#8b8a9e' }}>
+            <Link to="/terms" className="hidden sm:block">
+              <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-3 h-8" style={{ color: '#8b8a9e' }}>
                 Terms & Rules
               </Button>
             </Link>
             <Link to="/login">
-              <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white hover:bg-white/10 text-xs sm:text-sm px-2 sm:px-3">Log in</Button>
+              <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white hover:bg-white/10 text-[10px] sm:text-sm px-1.5 sm:px-3 h-8">Log in</Button>
             </Link>
             <Link to="/signup">
-              <Button size="sm" className="text-xs sm:text-sm px-3 sm:px-4" style={{ background: 'linear-gradient(90deg, #a78bfa, #6d28d9)', color: '#fff' }}>
+              <Button size="sm" className="text-[10px] sm:text-sm px-2 sm:px-4 h-8" style={{ background: 'linear-gradient(90deg, #a78bfa, #6d28d9)', color: '#fff' }}>
                 Get Started
               </Button>
             </Link>
