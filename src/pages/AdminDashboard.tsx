@@ -244,7 +244,7 @@ export default function AdminDashboard() {
 
 Dear ${lastUpdate.school} Team,
 
-Great news! *${lastUpdate.amount} credits* have been successfully added to your ResultCheck account! ✅
+Great news! *${lastUpdate.amount} credits* have been successfully added to your OnlineResultPortal account! ✅
 
 📊 Your updated balance: *${lastUpdate.newBalance} credits*
 
