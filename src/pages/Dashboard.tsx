@@ -24,7 +24,7 @@ import CountdownDisplay from '@/components/CountdownDisplay';
 import { DashboardSkeleton } from '@/components/LoadingSkeletons';
 import QRCodeCard from '@/components/portal/QRCodeCard';
 import ThemeToggle from '@/components/ThemeToggle';
-import LanguageToggle from '@/components/LanguageToggle';
+
 
 interface SchoolData {
   id: string;

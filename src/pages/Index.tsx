@@ -37,7 +37,6 @@ export default function Index() {
             {t('nav.brand')}
           </Link>
           <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
-            <LanguageToggle className="text-gray-400 hover:text-white" />
             <ThemeToggle className="text-gray-400 hover:text-white" />
             {showEarn && (
               <Link to="/earn">

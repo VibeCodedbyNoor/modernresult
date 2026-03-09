@@ -184,9 +184,6 @@ export default function ResultPortal() {
 
   return (
     <div className="relative">
-      <div className="fixed top-3 right-3 z-50">
-        <LanguageToggle className="bg-black/30 backdrop-blur-sm text-white hover:bg-black/50" />
-      </div>
       <PortalComponent
         isDemo={false}
         schoolName={school.name}
