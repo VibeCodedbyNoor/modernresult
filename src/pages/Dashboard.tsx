@@ -741,12 +741,12 @@ export default function Dashboard() {
         <GettingStartedCard hasExams={hasExams} hasResults={hasResults} hasPublished={hasPublished} />
 
         <Tabs defaultValue="exams">
-          <TabsList>
-            <TabsTrigger value="exams">{t('dash.tab_exams')}</TabsTrigger>
-            <TabsTrigger value="credits">{t('dash.tab_credits')}</TabsTrigger>
-            <TabsTrigger value="settings">{t('dash.tab_settings')}</TabsTrigger>
-            <TabsTrigger value="referrals">{t('dash.tab_referrals')}</TabsTrigger>
-            <TabsTrigger value="help">{t('dash.tab_help')}</TabsTrigger>
+          <TabsList className="flex-wrap h-auto gap-1 p-1">
+            <TabsTrigger value="exams" className="text-xs sm:text-sm">{t('dash.tab_exams')}</TabsTrigger>
+            <TabsTrigger value="credits" className="text-xs sm:text-sm">{t('dash.tab_credits')}</TabsTrigger>
+            <TabsTrigger value="settings" className="text-xs sm:text-sm">{t('dash.tab_settings')}</TabsTrigger>
+            <TabsTrigger value="referrals" className="text-xs sm:text-sm">{t('dash.tab_referrals')}</TabsTrigger>
+            <TabsTrigger value="help" className="text-xs sm:text-sm">{t('dash.tab_help')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="exams" className="space-y-6 mt-6">

@@ -21,6 +21,30 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+function AppContent() {
+  const location = window.location.pathname;
+  const isResultPortal = location.startsWith('/results/') || location.startsWith('/demo/');
+
+  return (
+    <>
+      {!isResultPortal && <GlobalLanguageToggle />}
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/results/:slug" element={<ResultPortal />} />
+        <Route path="/demo/:templateId" element={<DemoPortal />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/earn" element={<EarnWithUs />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
@@ -30,20 +54,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <AuthProvider>
-              <GlobalLanguageToggle />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/results/:slug" element={<ResultPortal />} />
-                <Route path="/demo/:templateId" element={<DemoPortal />} />
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/earn" element={<EarnWithUs />} />
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/help" element={<Help />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <AppContent />
             </AuthProvider>
           </BrowserRouter>
         </TooltipProvider>
