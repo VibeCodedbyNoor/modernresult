@@ -5,7 +5,7 @@ import { CLASS_SUBJECTS } from '@/lib/classSubjects';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search } from 'lucide-react';
 import { PortalSkeleton } from '@/components/LoadingSkeletons';
-import LanguageToggle from '@/components/LanguageToggle';
+
 
 // Import all portal components
 import CorporatePortal from './portals/CorporatePortal';
