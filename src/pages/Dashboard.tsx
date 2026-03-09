@@ -701,7 +701,7 @@ export default function Dashboard() {
             <span className="font-medium text-foreground">{school.name}</span>
           </div>
           <div className="flex items-center gap-2">
-            <LanguageToggle />
+            <ThemeToggle />
             <ThemeToggle />
             <a href={`https://resultportal.online/results/${school.slug}`} target="_blank" rel="noreferrer">
               <Button variant="outline" size="sm" className="gap-1.5">
