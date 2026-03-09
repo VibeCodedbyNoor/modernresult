@@ -698,7 +698,7 @@ export default function Dashboard() {
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
-            <span className="font-display font-bold text-primary text-sm sm:text-base shrink-0">ResultCheck</span>
+            <span className="font-display font-bold text-primary text-sm sm:text-base shrink-0">OnlineResultPortal</span>
             <span className="text-muted-foreground hidden sm:inline">/</span>
             <span className="font-medium text-foreground text-xs sm:text-sm truncate">{school.name}</span>
           </div>

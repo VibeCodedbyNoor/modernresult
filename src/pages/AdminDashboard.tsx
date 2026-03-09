@@ -313,7 +313,7 @@ resultportal.online`;
             </div>
             <div>
               <h1 className="text-lg font-bold text-foreground">Admin Dashboard</h1>
-              <p className="text-xs text-muted-foreground">ResultCheck Platform Management</p>
+              <p className="text-xs text-muted-foreground">OnlineResultPortal Platform Management</p>
             </div>
           </div>
           <Button variant="ghost" size="sm" onClick={() => { signOut(); navigate('/login'); }}>
