@@ -628,11 +628,7 @@ export default function Dashboard() {
   const filteredResults = classFilter === 'all' ? results : results.filter(r => r.class_name === classFilter);
 
   if (authLoading || loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   // Setup wizard if no school yet
