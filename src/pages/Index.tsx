@@ -9,7 +9,7 @@ import DesignGrid from '@/components/landing/DesignGrid';
 import DoneForYouSection from '@/components/landing/DoneForYouSection';
 import CTASection from '@/components/landing/CTASection';
 import VideoGuideSection from '@/components/landing/VideoGuideSection';
-import ThemeToggle from '@/components/ThemeToggle';
+
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Index() {
