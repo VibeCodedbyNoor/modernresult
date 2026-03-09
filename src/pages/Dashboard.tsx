@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Plus, Upload, Link as LinkIcon, LogOut, Eye, Trash2, School, Settings, FileSpreadsheet, Check, Palette, Coins, Zap, Gift, Clock, MessageCircle, CreditCard, Timer, Square, Play, StopCircle, CalendarClock, TrendingDown, BarChart3, Search, Users, Wallet, Copy, Banknote } from 'lucide-react';
+import { Plus, Upload, Link as LinkIcon, LogOut, Eye, Trash2, School, Settings, FileSpreadsheet, Check, Palette, Coins, Zap, Gift, Clock, MessageCircle, CreditCard, Timer, Square, Play, StopCircle, CalendarClock, TrendingDown, BarChart3, Search, Users, Wallet, Copy, Banknote, HelpCircle } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { resultTemplates, getTemplate } from '@/lib/resultTemplates';
 import { generateSlugSuggestions } from '@/lib/slugSuggestions';
@@ -24,6 +25,9 @@ import CountdownDisplay from '@/components/CountdownDisplay';
 import { DashboardSkeleton } from '@/components/LoadingSkeletons';
 import QRCodeCard from '@/components/portal/QRCodeCard';
 import ThemeToggle from '@/components/ThemeToggle';
+import GettingStartedCard from '@/components/dashboard/GettingStartedCard';
+import HelpTab from '@/components/dashboard/HelpTab';
+import HelpDialog from '@/components/dashboard/HelpDialog';
 
 
 interface SchoolData {
@@ -117,6 +121,7 @@ const parseMarksValue = (value: unknown) => {
 
 export default function Dashboard() {
   const { user, signOut, loading: authLoading } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [school, setSchool] = useState<SchoolData | null>(null);
   const [exams, setExams] = useState<Exam[]>([]);
@@ -183,6 +188,9 @@ export default function Dashboard() {
   const [withdrawName, setWithdrawName] = useState('');
   const [withdrawing, setWithdrawing] = useState(false);
 
+  // Help dialog
+  const [helpDialogOpen, setHelpDialogOpen] = useState(false);
+
   const fetchedRef = useRef(false);
 
   useEffect(() => {
@@ -213,7 +221,6 @@ export default function Dashboard() {
   async function fetchReferralData() {
     if (!user) return;
     
-    // Fetch profile for referral code
     const { data: profile } = await supabase
       .from('profiles')
       .select('referral_code')
@@ -221,7 +228,6 @@ export default function Dashboard() {
       .single();
     if (profile?.referral_code) setReferralCode(profile.referral_code);
 
-    // Fetch referrals using security definer function (bypasses RLS on profiles)
     const { data: refs, error: refsError } = await supabase.rpc('get_my_referrals');
 
     if (refsError) {
@@ -247,7 +253,6 @@ export default function Dashboard() {
       setReferrals(transformedRefs);
     }
 
-    // Fetch earnings with commission_rupees
     const { data: earnings } = await supabase
       .from('referral_earnings')
       .select('id, credits_purchased, commission_credits, commission_rupees, created_at')
@@ -255,7 +260,6 @@ export default function Dashboard() {
       .order('created_at', { ascending: false });
     setReferralEarnings((earnings || []) as ReferralEarning[]);
 
-    // Fetch withdrawals
     const { data: wds } = await supabase
       .from('withdrawal_requests')
       .select('*')
@@ -408,7 +412,6 @@ export default function Dashboard() {
         return;
       }
 
-      // Build per-sheet mappings
       const mappings: typeof sheetMappings = {};
       for (const { sheetName, data: sheetData } of sheets) {
         const headers = Object.keys(sheetData[0] || {}).filter(h => {
@@ -442,7 +445,6 @@ export default function Dashboard() {
   async function handleConfirmUpload() {
     if (!selectedExam || !school) return;
 
-    // Validate each sheet has roll + name selected
     for (const { sheetName } of parsedSheets) {
       const mapping = sheetMappings[sheetName];
       if (!mapping) continue;
@@ -457,7 +459,6 @@ export default function Dashboard() {
       }
     }
 
-    // Check upload credits (2 free, then 10 credits each)
     if (school.upload_count >= 2) {
       const confirmed = await new Promise<boolean>(resolve => {
         setUploadConfirmResolve(() => resolve);
@@ -466,7 +467,6 @@ export default function Dashboard() {
       if (!confirmed) return;
     }
 
-    // Deduct upload credits
     const { data: uploadOk, error: uploadErr } = await supabase.rpc('deduct_upload_credits', { p_school_id: school.id });
     if (uploadErr) { toast.error(uploadErr.message); return; }
     if (!uploadOk) { toast.error('Not enough credits! You need at least 10 credits to upload results.'); return; }
@@ -513,7 +513,6 @@ export default function Dashboard() {
         return;
       }
 
-      // Compute position per class (sorted by total_marks descending)
       const byClass: Record<string, typeof validRows> = {};
       for (const row of validRows) {
         if (!byClass[row.class_name]) byClass[row.class_name] = [];
@@ -569,7 +568,6 @@ export default function Dashboard() {
     }
   }
 
-  // Timer controls
   async function handleSetTimer() {
     if (!timerExamId) return;
     const totalMs = (timerDays * 86400 + timerHours * 3600 + timerMinutes * 60) * 1000;
@@ -617,7 +615,6 @@ export default function Dashboard() {
     return 'live';
   }
 
-  // Analytics helpers
   const todayCredits = transactions.filter(tx => tx.type === 'result_check' && new Date(tx.created_at).toDateString() === new Date().toDateString()).reduce((s, tx) => s + Math.abs(tx.amount), 0);
   const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
   const weekCredits = transactions.filter(tx => tx.type === 'result_check' && new Date(tx.created_at) >= weekAgo).reduce((s, tx) => s + Math.abs(tx.amount), 0);
@@ -626,6 +623,11 @@ export default function Dashboard() {
 
   const classNames = [...new Set(results.map(r => r.class_name).filter(Boolean))];
   const filteredResults = classFilter === 'all' ? results : results.filter(r => r.class_name === classFilter);
+
+  // Check progress for getting started card
+  const hasExams = exams.length > 0;
+  const hasResults = results.length > 0;
+  const hasPublished = exams.some(e => e.is_published);
 
   if (authLoading || loading) {
     return <DashboardSkeleton />;
@@ -641,24 +643,24 @@ export default function Dashboard() {
               <div className="mx-auto h-12 w-12 rounded-full bg-secondary flex items-center justify-center mb-2">
                 <School className="h-6 w-6 text-primary" />
               </div>
-              <CardTitle className="font-display text-2xl">Set up your school</CardTitle>
-              <CardDescription>Tell us about your institution to create your result portal</CardDescription>
+              <CardTitle className="font-display text-2xl">{t('dash.setup_title')}</CardTitle>
+              <CardDescription>{t('dash.setup_desc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSetupSchool} className="space-y-4">
                 <div className="space-y-2">
-                  <Label>School Name</Label>
+                  <Label>{t('dash.school_name')}</Label>
                   <Input value={schoolName} onChange={e => { setSchoolName(e.target.value); setSchoolSlug(e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')); }} placeholder="Greenfield Academy" required />
                 </div>
                 <div className="space-y-2">
-                  <Label>URL Slug</Label>
+                  <Label>{t('dash.url_slug')}</Label>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <span className="whitespace-nowrap">resultportal.online/results/</span>
                     <Input value={schoolSlug} onChange={e => setSchoolSlug(e.target.value)} placeholder="greenfield-academy" required />
                   </div>
                   {schoolName && generateSlugSuggestions(schoolName).length > 0 && (
                     <div className="space-y-1.5">
-                      <Label className="text-xs text-muted-foreground">Suggestions — click to use</Label>
+                      <Label className="text-xs text-muted-foreground">{t('dash.slug_suggestions')}</Label>
                       <div className="flex flex-wrap gap-1.5">
                         {generateSlugSuggestions(schoolName).map(slug => (
                           <Badge
@@ -675,13 +677,13 @@ export default function Dashboard() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label>Accent Color</Label>
+                  <Label>{t('dash.accent_color')}</Label>
                   <div className="flex items-center gap-3">
                     <input type="color" value={accentColor} onChange={e => setAccentColor(e.target.value)} className="h-10 w-14 rounded cursor-pointer border border-input" />
                     <Input value={accentColor} onChange={e => setAccentColor(e.target.value)} className="flex-1" />
                   </div>
                 </div>
-                <Button type="submit" className="w-full">Create School Portal</Button>
+                <Button type="submit" className="w-full">{t('dash.create_portal')}</Button>
               </form>
             </CardContent>
           </Card>
@@ -702,14 +704,16 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <ThemeToggle />
+            <Button variant="ghost" size="icon" onClick={() => setHelpDialogOpen(true)} title={t('dash.tab_help')}>
+              <HelpCircle className="h-4 w-4" />
+            </Button>
             <a href={`https://resultportal.online/results/${school.slug}`} target="_blank" rel="noreferrer">
               <Button variant="outline" size="sm" className="gap-1.5">
-                <Eye className="h-3.5 w-3.5" /> View Portal
+                <Eye className="h-3.5 w-3.5" /> {t('dash.view_portal')}
               </Button>
             </a>
             <Button variant="ghost" size="sm" onClick={() => { signOut(); navigate('/'); }} className="gap-1.5">
-              <LogOut className="h-3.5 w-3.5" /> Sign out
+              <LogOut className="h-3.5 w-3.5" /> {t('dash.sign_out')}
             </Button>
           </div>
         </div>
@@ -727,18 +731,22 @@ export default function Dashboard() {
             <MessageCircle className="h-4 w-4 text-green-500" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground">Need help setting up?</p>
-            <p className="text-xs text-muted-foreground">Send us your school name & Google Sheet — we'll configure everything for you.</p>
+            <p className="text-sm font-medium text-foreground">{t('dash.help_banner_title')}</p>
+            <p className="text-xs text-muted-foreground">{t('dash.help_banner_desc')}</p>
           </div>
-          <span className="text-xs font-medium text-green-500 shrink-0 group-hover:underline">WhatsApp Us →</span>
+          <span className="text-xs font-medium text-green-500 shrink-0 group-hover:underline">{t('dash.help_banner_cta')}</span>
         </a>
+
+        {/* Getting Started Card */}
+        <GettingStartedCard hasExams={hasExams} hasResults={hasResults} hasPublished={hasPublished} />
 
         <Tabs defaultValue="exams">
           <TabsList>
-            <TabsTrigger value="exams">Exams & Results</TabsTrigger>
-            <TabsTrigger value="credits">Credits</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-            <TabsTrigger value="referrals">Referrals</TabsTrigger>
+            <TabsTrigger value="exams">{t('dash.tab_exams')}</TabsTrigger>
+            <TabsTrigger value="credits">{t('dash.tab_credits')}</TabsTrigger>
+            <TabsTrigger value="settings">{t('dash.tab_settings')}</TabsTrigger>
+            <TabsTrigger value="referrals">{t('dash.tab_referrals')}</TabsTrigger>
+            <TabsTrigger value="help">{t('dash.tab_help')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="exams" className="space-y-6 mt-6">
@@ -747,12 +755,12 @@ export default function Dashboard() {
               <div className="flex items-center gap-3 flex-1">
                 <Select value={selectedExam || ''} onValueChange={val => fetchResults(val)}>
                   <SelectTrigger className="w-64">
-                    <SelectValue placeholder="Select an exam" />
+                    <SelectValue placeholder={t('dash.select_exam')} />
                   </SelectTrigger>
                   <SelectContent>
                     {exams.map(ex => (
                       <SelectItem key={ex.id} value={ex.id}>
-                        {ex.name} {ex.is_published ? '✓' : '(draft)'}
+                        {ex.name} {ex.is_published ? '✓' : t('dash.draft')}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -761,19 +769,19 @@ export default function Dashboard() {
               <div className="flex gap-2">
                 <Dialog open={examDialogOpen} onOpenChange={setExamDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button size="sm" className="gap-1.5"><Plus className="h-3.5 w-3.5" /> New Exam</Button>
+                    <Button size="sm" className="gap-1.5"><Plus className="h-3.5 w-3.5" /> {t('dash.new_exam')}</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle className="font-display">Create New Exam</DialogTitle>
+                      <DialogTitle className="font-display">{t('dash.create_exam')}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label>Exam Name</Label>
+                        <Label>{t('dash.exam_name')}</Label>
                         <Input value={newExamName} onChange={e => setNewExamName(e.target.value)} placeholder="e.g. Mid-Term 2026" />
-                        <p className="text-xs text-muted-foreground">Give your exam a clear name like "Annual Exam 2026" or "Mid-Term 2026"</p>
+                        <p className="text-xs text-muted-foreground">{t('dash.exam_name_hint')}</p>
                       </div>
-                      <Button onClick={handleCreateExam} className="w-full">Create Exam</Button>
+                      <Button onClick={handleCreateExam} className="w-full">{t('dash.create_exam_btn')}</Button>
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -801,15 +809,15 @@ export default function Dashboard() {
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
-                                <p className="text-sm font-semibold text-foreground">Result Visibility</p>
+                                <p className="text-sm font-semibold text-foreground">{t('dash.result_visibility')}</p>
                                 <Badge variant={status === 'live' ? 'default' : status === 'countdown' ? 'secondary' : 'destructive'} className="text-[10px]">
-                                  {status === 'live' ? 'LIVE' : status === 'countdown' ? 'COUNTDOWN' : 'STOPPED'}
+                                  {status === 'live' ? t('dash.status_live') : status === 'countdown' ? t('dash.status_countdown') : t('dash.status_stopped')}
                                 </Badge>
                               </div>
                               <p className="text-xs text-muted-foreground mt-0.5">
-                                {status === 'live' && 'Results are visible on the portal'}
+                                {status === 'live' && t('dash.live_desc')}
                                 {status === 'countdown' && <CountdownDisplay targetDate={exam.display_at!} />}
-                                {status === 'stopped' && 'Results are hidden from the portal'}
+                                {status === 'stopped' && t('dash.stopped_desc')}
                               </p>
                             </div>
                           </div>
@@ -818,7 +826,6 @@ export default function Dashboard() {
                               variant="outline"
                               size="sm"
                               className="gap-1.5"
-                              title="Schedule when results become visible to students"
                               onClick={() => {
                                 setTimerExamId(selectedExam);
                                 setTimerDays(0);
@@ -827,15 +834,15 @@ export default function Dashboard() {
                                 setTimerDialogOpen(true);
                               }}
                             >
-                              <CalendarClock className="h-3.5 w-3.5" /> Set Timer
+                              <CalendarClock className="h-3.5 w-3.5" /> {t('dash.set_timer')}
                             </Button>
                             {status !== 'stopped' ? (
                               <Button variant="destructive" size="sm" className="gap-1.5" onClick={() => handleStopShowing(selectedExam)}>
-                                <Square className="h-3.5 w-3.5" /> Stop Showing
+                                <Square className="h-3.5 w-3.5" /> {t('dash.stop_showing')}
                               </Button>
                             ) : (
                               <Button variant="default" size="sm" className="gap-1.5" onClick={() => handleStartShowing(selectedExam)}>
-                                <Play className="h-3.5 w-3.5" /> Start Showing
+                                <Play className="h-3.5 w-3.5" /> {t('dash.start_showing')}
                               </Button>
                             )}
                           </div>
@@ -850,34 +857,30 @@ export default function Dashboard() {
                   <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" className="gap-1.5">
-                        <FileSpreadsheet className="h-3.5 w-3.5" /> Upload Excel / CSV
+                        <FileSpreadsheet className="h-3.5 w-3.5" /> {t('dash.upload_excel')}
                         {school && (
-                          <Badge variant="secondary" className="ml-1 text-[10px]" title="First 2 uploads are free, then 10 credits each">
+                          <Badge variant="secondary" className="ml-1 text-[10px]">
                             {school.upload_count < 2
-                              ? `${2 - school.upload_count} free`
-                              : '10 credits'}
+                              ? `${2 - school.upload_count} ${t('dash.free')}`
+                              : `10 ${t('dash.credits_each')}`}
                           </Badge>
                         )}
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle className="font-display">Upload Results</DialogTitle>
+                        <DialogTitle className="font-display">{t('dash.upload_results')}</DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4">
-                        <p className="text-sm text-muted-foreground">
-                          Upload an <strong>Excel (.xlsx)</strong> or <strong>CSV</strong> file. Each sheet in Excel will be treated as a separate <strong>class</strong>.
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Each sheet must have columns: <strong>Roll Number</strong>, <strong>Name</strong>, and subject columns with marks.
-                        </p>
+                        <p className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('dash.upload_desc_1') }} />
+                        <p className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('dash.upload_desc_2') }} />
                         <Input
                           type="file"
                           accept=".xlsx,.xls,.csv"
                           onChange={handleFileUpload}
                           disabled={uploading}
                         />
-                        {uploading && <p className="text-sm text-muted-foreground">Uploading...</p>}
+                        {uploading && <p className="text-sm text-muted-foreground">{t('dash.uploading')}</p>}
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -888,7 +891,7 @@ export default function Dashboard() {
                       onClick={() => handleTogglePublish(selectedExam, true)}
                       className="gap-1.5"
                     >
-                      <Eye className="h-3.5 w-3.5" /> Unpublish
+                      <Eye className="h-3.5 w-3.5" /> {t('dash.unpublish')}
                     </Button>
                   ) : (
                     <Button
@@ -896,7 +899,7 @@ export default function Dashboard() {
                       onClick={() => handleTogglePublish(selectedExam, false)}
                       className="gap-1.5 bg-green-600 hover:bg-green-700 text-white shadow-md animate-pulse"
                     >
-                      <Eye className="h-3.5 w-3.5" /> ✦ Publish Exam
+                      <Eye className="h-3.5 w-3.5" /> {t('dash.publish_exam')}
                     </Button>
                   )}
 
@@ -908,7 +911,7 @@ export default function Dashboard() {
                         onClick={() => setClassFilter('all')}
                         className="text-xs h-7 px-2.5"
                       >
-                        All ({results.length})
+                        {t('dash.all')} ({results.length})
                       </Button>
                       {classNames.map(cn => (
                         <Button
@@ -927,7 +930,6 @@ export default function Dashboard() {
 
                 {/* Results table */}
                 {filteredResults.length > 0 ? (() => {
-                  // Extract unique subject keys (exclude Position and non-subject metadata)
                   const subjectKeys = [...new Set(
                     filteredResults.flatMap(r => {
                       if (typeof r.subjects !== 'object' || !r.subjects) return [];
@@ -944,47 +946,39 @@ export default function Dashboard() {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Roll No.</TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Class</TableHead>
-                            {subjectKeys.map(subj => (
-                              <TableHead key={subj} className="text-center whitespace-nowrap">{subj}</TableHead>
-                            ))}
-                            <TableHead className="text-center">Total</TableHead>
-                            <TableHead className="text-center">Pos</TableHead>
-                            <TableHead>Grade</TableHead>
-                            <TableHead className="w-12"></TableHead>
+                            <TableHead>{t('dash.roll')}</TableHead>
+                            <TableHead>{t('dash.name')}</TableHead>
+                            <TableHead>{t('dash.father')}</TableHead>
+                            <TableHead>{t('dash.class')}</TableHead>
+                            {subjectKeys.map(s => <TableHead key={s} className="text-center">{s}</TableHead>)}
+                            <TableHead className="text-center">{t('dash.total')}</TableHead>
+                            <TableHead className="text-center">{t('dash.grade')}</TableHead>
+                            <TableHead className="text-right">{t('dash.actions')}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {filteredResults.map(r => {
-                            const subjects = (typeof r.subjects === 'object' && r.subjects) ? r.subjects : {};
-                            const position = subjects.Position;
-                            return (
+                          {filteredResults.map(r => (
                             <TableRow key={r.id}>
                               <TableCell className="font-mono">{r.roll_number}</TableCell>
                               <TableCell>{r.student_name}</TableCell>
-                              <TableCell>{r.class_name}</TableCell>
-                              {subjectKeys.map(subj => {
-                                const val = subjects[subj];
-                                const obtained = typeof val === 'object' && val !== null ? val.obtained : (typeof val === 'number' ? val : '—');
-                                return <TableCell key={subj} className="text-center font-mono">{obtained}</TableCell>;
-                              })}
+                              <TableCell className="text-muted-foreground">{(r as any).father_name || '—'}</TableCell>
+                              <TableCell className="text-muted-foreground">{r.class_name || '—'}</TableCell>
+                              {subjectKeys.map(s => (
+                                <TableCell key={s} className="text-center font-mono text-muted-foreground">
+                                  {r.subjects?.[s]?.obtained ?? '—'}
+                                </TableCell>
+                              ))}
                               <TableCell className="text-center font-semibold">{r.total_marks}</TableCell>
-                              <TableCell className="text-center font-mono">{position ?? '—'}</TableCell>
-                              <TableCell>
-                                <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${r.grade === 'F' ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'}`}>
-                                  {r.grade}
-                                </span>
+                              <TableCell className="text-center">
+                                <Badge variant="outline">{r.grade}</Badge>
                               </TableCell>
-                              <TableCell>
-                                <Button variant="ghost" size="icon" onClick={() => handleDeleteResult(r.id)} className="h-8 w-8">
-                                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                              <TableCell className="text-right">
+                                <Button variant="ghost" size="icon" onClick={() => handleDeleteResult(r.id)}>
+                                  <Trash2 className="h-4 w-4 text-destructive" />
                                 </Button>
                               </TableCell>
                             </TableRow>
-                            );
-                          })}
+                          ))}
                         </TableBody>
                       </Table>
                     </CardContent>
@@ -994,7 +988,7 @@ export default function Dashboard() {
                   <Card className="border-dashed">
                     <CardContent className="p-12 text-center">
                       <FileSpreadsheet className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                      <p className="text-muted-foreground">No results yet. Upload an Excel or CSV file to get started.</p>
+                      <p className="text-muted-foreground">{t('dash.no_results')}</p>
                     </CardContent>
                   </Card>
                 )}
@@ -1005,7 +999,7 @@ export default function Dashboard() {
               <Card className="border-dashed">
                 <CardContent className="p-12 text-center">
                   <Plus className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground">Create your first exam to start uploading results.</p>
+                  <p className="text-muted-foreground">{t('dash.create_first_exam')}</p>
                 </CardContent>
               </Card>
             )}
@@ -1020,9 +1014,9 @@ export default function Dashboard() {
                     <Coins className="h-7 w-7 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Available Credits</p>
+                    <p className="text-sm text-muted-foreground">{t('dash.available_credits')}</p>
                     <p className="text-4xl font-display font-bold text-foreground">{creditBalance ?? '—'}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">1 credit = 1 student result check</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{t('dash.credit_desc')}</p>
                   </div>
                 </div>
               </CardContent>
@@ -1031,9 +1025,9 @@ export default function Dashboard() {
             {/* Quick Analytics */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl">
               {[
-                { label: 'Today', value: todayCredits, icon: BarChart3 },
-                { label: 'This Week', value: weekCredits, icon: TrendingDown },
-                { label: 'This Month', value: monthCredits, icon: CreditCard },
+                { label: t('dash.today'), value: todayCredits, icon: BarChart3 },
+                { label: t('dash.this_week'), value: weekCredits, icon: TrendingDown },
+                { label: t('dash.this_month'), value: monthCredits, icon: CreditCard },
               ].map(({ label, value, icon: Icon }) => (
                 <Card key={label}>
                   <CardContent className="p-4 flex items-center gap-3">
@@ -1053,11 +1047,9 @@ export default function Dashboard() {
             <Card className="max-w-2xl border-primary/20">
               <CardHeader>
                 <CardTitle className="font-display flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-primary" /> Buy Credits
+                  <Zap className="h-5 w-5 text-primary" /> {t('dash.buy_credits')}
                 </CardTitle>
-                <CardDescription className="text-base">
-                  Go digital and <strong>save over 80%</strong> compared to traditional printed DMCs!
-                </CardDescription>
+                <CardDescription className="text-base" dangerouslySetInnerHTML={{ __html: t('dash.buy_credits_desc') }} />
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1078,17 +1070,17 @@ export default function Dashboard() {
                     >
                       {plan.bonus > 0 && (
                         <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[9px] font-bold px-2 py-0.5 rounded-bl-lg flex items-center gap-1">
-                          <Gift className="h-2.5 w-2.5" /> BEST VALUE
+                          <Gift className="h-2.5 w-2.5" /> {t('dash.best_value')}
                         </div>
                       )}
                       <p className="text-2xl font-display font-bold text-foreground">{plan.credits}</p>
-                      {plan.bonus > 0 && <p className="text-xs text-primary font-semibold">+ {plan.bonus} FREE bonus!</p>}
-                      {plan.bonus === 0 && <p className="text-xs text-muted-foreground">credits</p>}
+                      {plan.bonus > 0 && <p className="text-xs text-primary font-semibold">+ {plan.bonus} {t('dash.free_bonus')}</p>}
+                      {plan.bonus === 0 && <p className="text-xs text-muted-foreground">{t('dash.credits')}</p>}
                       <p className="text-lg font-semibold text-primary">PKR {plan.price.toLocaleString()}</p>
                       <p className="text-[10px] text-muted-foreground">Rs. {plan.perCredit}/credit</p>
                       {selectedPlan === plan.credits && (
                         <div className="flex items-center justify-center gap-1 text-xs text-primary font-medium pt-1">
-                          <Check className="h-3 w-3" /> Selected
+                          <Check className="h-3 w-3" /> {t('dash.selected')}
                         </div>
                       )}
                     </button>
@@ -1096,17 +1088,17 @@ export default function Dashboard() {
                 </div>
 
                 {!selectedPlan && (
-                  <p className="text-sm text-muted-foreground text-center animate-pulse">👆 Select a plan above to continue</p>
+                  <p className="text-sm text-muted-foreground text-center animate-pulse">{t('dash.select_plan')}</p>
                 )}
 
                 {selectedPlan && (
                   <div className="rounded-xl bg-muted/50 border border-border p-4 space-y-3 animate-in fade-in slide-in-from-bottom-2">
-                    <p className="text-sm font-semibold text-foreground">Payment Details</p>
+                    <p className="text-sm font-semibold text-foreground">{t('dash.payment_details')}</p>
                     <div className="space-y-1.5 text-sm text-muted-foreground">
                       <p><strong className="text-foreground">Easypaisa:</strong> 03479104843</p>
                       <p><strong className="text-foreground">JazzCash:</strong> 03479104843</p>
-                      <p><strong className="text-foreground">Account Name:</strong> Muhammad Irfan</p>
-                      <p className="pt-1"><strong className="text-foreground">Amount:</strong>{' '}
+                      <p><strong className="text-foreground">{t('dash.account_name_label')}</strong> Muhammad Irfan</p>
+                      <p className="pt-1"><strong className="text-foreground">{t('dash.amount')}</strong>{' '}
                         <span className="text-primary font-semibold">
                           PKR {selectedPlan === 50 ? '450' : selectedPlan === 100 ? '900' : '4,500'}
                         </span>
@@ -1115,7 +1107,7 @@ export default function Dashboard() {
                     <div className="pt-3 border-t border-border space-y-3">
                       <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                         <Clock className="h-3 w-3" />
-                        Send payment & screenshot via WhatsApp — credits added within 1 hour
+                        {t('dash.payment_instruction')}
                       </p>
                       <a
                         href={`https://wa.me/923479104843?text=${encodeURIComponent(
@@ -1126,11 +1118,11 @@ export default function Dashboard() {
                       >
                         <Button className="w-full gap-2 bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.9)] text-primary-foreground">
                           <MessageCircle className="h-4 w-4" />
-                          Send Payment Screenshot via WhatsApp
+                          {t('dash.send_screenshot')}
                         </Button>
                       </a>
                       <p className="text-[11px] text-muted-foreground text-center">
-                        Click above after payment — your email, school & package are auto-filled. Just attach the screenshot!
+                        {t('dash.screenshot_hint')}
                       </p>
                     </div>
                   </div>
@@ -1138,22 +1130,22 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            {/* Purchase / Transaction History */}
+            {/* Transaction History */}
             {transactions.length > 0 && (
               <Card className="max-w-2xl">
                 <CardHeader>
                   <CardTitle className="font-display text-lg flex items-center gap-2">
-                    <CreditCard className="h-5 w-5 text-primary" /> Transaction History
+                    <CreditCard className="h-5 w-5 text-primary" /> {t('dash.transaction_history')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Description</TableHead>
-                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead>{t('dash.tx_date')}</TableHead>
+                        <TableHead>{t('dash.tx_type')}</TableHead>
+                        <TableHead>{t('dash.tx_description')}</TableHead>
+                        <TableHead className="text-right">{t('dash.tx_amount')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1164,7 +1156,7 @@ export default function Dashboard() {
                           </TableCell>
                           <TableCell>
                             <Badge variant={tx.amount > 0 ? 'default' : 'secondary'} className="text-[10px]">
-                              {tx.type === 'signup_bonus' ? 'Bonus' : tx.type === 'admin_topup' ? 'Top-up' : tx.type === 'result_check' ? 'Result View' : tx.type === 'bulk_marksheet' ? 'Bulk Download' : tx.type}
+                              {tx.type === 'signup_bonus' ? t('dash.tx_bonus') : tx.type === 'admin_topup' ? t('dash.tx_topup') : tx.type === 'result_check' ? t('dash.tx_result_view') : tx.type === 'bulk_marksheet' ? t('dash.tx_bulk_download') : tx.type}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
@@ -1184,13 +1176,11 @@ export default function Dashboard() {
 
           <TabsContent value="referrals" className="mt-6 space-y-6">
             {(() => {
-              // Calculate earnings in PKR
               const totalEarningsRupees = referralEarnings.reduce((sum, e) => sum + (e.commission_rupees || e.commission_credits * 9), 0);
               const totalWithdrawn = withdrawals.filter(w => w.status !== 'rejected').reduce((sum, w) => sum + w.amount, 0);
               const availableBalance = totalEarningsRupees - totalWithdrawn;
               const referralLink = referralCode ? `https://resultportal.online/signup?ref=${referralCode}` : '';
 
-              // Helper to mask school name
               const maskSchoolName = (name: string) => {
                 if (!name || name.length < 4) return '***';
                 return name.substring(0, 3) + '***';
@@ -1206,7 +1196,7 @@ export default function Dashboard() {
                           <Users className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">Total Referrals</p>
+                          <p className="text-xs text-muted-foreground">{t('dash.total_referrals')}</p>
                           <p className="text-2xl font-display font-bold text-foreground">{referrals.length}</p>
                         </div>
                       </CardContent>
@@ -1217,7 +1207,7 @@ export default function Dashboard() {
                           <Coins className="h-5 w-5 text-green-500" />
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">Total Earned</p>
+                          <p className="text-xs text-muted-foreground">{t('dash.total_earned')}</p>
                           <p className="text-2xl font-display font-bold text-foreground">₨{totalEarningsRupees.toFixed(0)}</p>
                         </div>
                       </CardContent>
@@ -1228,7 +1218,7 @@ export default function Dashboard() {
                           <Wallet className="h-5 w-5 text-amber-500" />
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">Available Balance</p>
+                          <p className="text-xs text-muted-foreground">{t('dash.available_balance')}</p>
                           <p className="text-2xl font-display font-bold text-foreground">₨{availableBalance.toFixed(0)}</p>
                         </div>
                       </CardContent>
@@ -1239,11 +1229,9 @@ export default function Dashboard() {
                   <Card className="max-w-3xl border-primary/20">
                     <CardHeader>
                       <CardTitle className="font-display flex items-center gap-2">
-                        <LinkIcon className="h-5 w-5 text-primary" /> Your Referral Link
+                        <LinkIcon className="h-5 w-5 text-primary" /> {t('dash.referral_link')}
                       </CardTitle>
-                      <CardDescription>
-                        Share this link with other schools. When they sign up and buy credits, you earn <strong>10% commission in PKR</strong>!
-                      </CardDescription>
+                      <CardDescription dangerouslySetInnerHTML={{ __html: t('dash.referral_desc') }} />
                     </CardHeader>
                     <CardContent>
                       {referralCode ? (
@@ -1257,11 +1245,11 @@ export default function Dashboard() {
                               toast.success('Referral link copied!');
                             }}
                           >
-                            <Copy className="h-4 w-4" /> Copy
+                            <Copy className="h-4 w-4" /> {t('dash.copy')}
                           </Button>
                         </div>
                       ) : (
-                        <p className="text-sm text-muted-foreground">Loading your referral code...</p>
+                        <p className="text-sm text-muted-foreground">{t('dash.loading_referral')}</p>
                       )}
                     </CardContent>
                   </Card>
@@ -1271,16 +1259,16 @@ export default function Dashboard() {
                     <Card className="max-w-3xl">
                       <CardHeader>
                         <CardTitle className="font-display text-lg flex items-center gap-2">
-                          <Users className="h-5 w-5 text-primary" /> Your Referrals
+                          <Users className="h-5 w-5 text-primary" /> {t('dash.your_referrals')}
                         </CardTitle>
-                        <CardDescription>Schools that signed up using your referral link</CardDescription>
+                        <CardDescription>{t('dash.referrals_desc')}</CardDescription>
                       </CardHeader>
                       <CardContent className="p-0">
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>School</TableHead>
-                              <TableHead>Joined</TableHead>
+                              <TableHead>{t('dash.school')}</TableHead>
+                              <TableHead>{t('dash.joined')}</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -1303,96 +1291,53 @@ export default function Dashboard() {
                   {/* How it works */}
                   <Card className="max-w-3xl">
                     <CardHeader>
-                      <CardTitle className="font-display text-lg">How It Works</CardTitle>
+                      <CardTitle className="font-display text-lg">{t('dash.how_it_works')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="text-center p-4 rounded-lg bg-muted/50">
                           <div className="text-2xl mb-2">1️⃣</div>
-                          <p className="text-sm font-medium">Share Your Link</p>
-                          <p className="text-xs text-muted-foreground mt-1">Send your referral link to other schools</p>
+                          <p className="text-sm font-medium">{t('dash.step1_share')}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{t('dash.step1_share_desc')}</p>
                         </div>
                         <div className="text-center p-4 rounded-lg bg-muted/50">
                           <div className="text-2xl mb-2">2️⃣</div>
-                          <p className="text-sm font-medium">They Buy Credits</p>
-                          <p className="text-xs text-muted-foreground mt-1">When they purchase credits for their portal</p>
+                          <p className="text-sm font-medium">{t('dash.step2_buy')}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{t('dash.step2_buy_desc')}</p>
                         </div>
                         <div className="text-center p-4 rounded-lg bg-muted/50">
                           <div className="text-2xl mb-2">3️⃣</div>
-                          <p className="text-sm font-medium">You Earn 10%</p>
-                          <p className="text-xs text-muted-foreground mt-1">Withdraw via JazzCash/Easypaisa or exchange for credits</p>
+                          <p className="text-sm font-medium">{t('dash.step3_earn')}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{t('dash.step3_earn_desc')}</p>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  {/* Exchange for Credits Card */}
-                  <Card className="max-w-lg border-primary/20">
+                  {/* Withdraw */}
+                  <Card className="max-w-3xl">
                     <CardHeader>
-                      <CardTitle className="font-display flex items-center gap-2">
-                        <Zap className="h-5 w-5 text-primary" /> Exchange for Credits
+                      <CardTitle className="font-display text-lg flex items-center gap-2">
+                        <Banknote className="h-5 w-5 text-primary" /> {t('dash.withdraw')}
                       </CardTitle>
-                      <CardDescription>Convert your rupee earnings to credits for your portal</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="p-3 bg-muted/50 rounded-lg space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Exchange Rate:</span>
-                          <span className="font-semibold">₨9 = 1 Credit</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Your Balance:</span>
-                          <span className="font-semibold">₨{availableBalance.toFixed(0)}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Can Get:</span>
-                          <span className="font-semibold text-primary">{Math.floor(availableBalance / 9)} Credits</span>
-                        </div>
-                      </div>
-                      <a
-                        href={`https://wa.me/923479104843?text=${encodeURIComponent(
-                          `Assalam o Alaikum!\n\nI want to exchange my referral earnings for credits.\n\n` +
-                          `My available balance: ₨${availableBalance.toFixed(0)}\n` +
-                          `Credits I want: ${Math.floor(availableBalance / 9)} credits\n\n` +
-                          `Please add these credits to my account.\n\nMy email: ${user?.email || '___'}`
-                        )}`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        <Button className="w-full gap-2" disabled={availableBalance < 9}>
-                          <MessageCircle className="h-4 w-4" /> Request Credit Exchange via WhatsApp
-                        </Button>
-                      </a>
-                      <p className="text-xs text-muted-foreground text-center">
-                        We'll add credits to your account after verifying your balance
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  {/* Withdrawal Form */}
-                  <Card className="max-w-lg">
-                    <CardHeader>
-                      <CardTitle className="font-display flex items-center gap-2">
-                        <Banknote className="h-5 w-5 text-primary" /> Withdraw Earnings
-                      </CardTitle>
-                      <CardDescription>Minimum withdrawal: ₨400</CardDescription>
+                      <CardDescription>{t('dash.withdraw_desc')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <form onSubmit={handleWithdrawal} className="space-y-4">
+                        <p className="text-xs text-muted-foreground">{t('dash.min_withdrawal')}</p>
                         <div className="space-y-2">
-                          <Label>Amount (PKR)</Label>
+                          <Label>{t('dash.withdrawal_amount')}</Label>
                           <Input
                             type="number"
                             value={withdrawAmount}
                             onChange={e => setWithdrawAmount(e.target.value)}
-                            placeholder="e.g. 500"
+                            placeholder="400"
                             min={400}
                             max={availableBalance}
                           />
-                          <p className="text-xs text-muted-foreground">Available: ₨{availableBalance.toFixed(0)}</p>
                         </div>
                         <div className="space-y-2">
-                          <Label>Payment Method</Label>
+                          <Label>{t('dash.payment_method')}</Label>
                           <Select value={withdrawMethod} onValueChange={setWithdrawMethod}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
@@ -1402,7 +1347,7 @@ export default function Dashboard() {
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label>Account Number</Label>
+                          <Label>{t('dash.account_number')}</Label>
                           <Input
                             value={withdrawAccount}
                             onChange={e => setWithdrawAccount(e.target.value)}
@@ -1410,7 +1355,7 @@ export default function Dashboard() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label>Account Holder Name</Label>
+                          <Label>{t('dash.account_holder')}</Label>
                           <Input
                             value={withdrawName}
                             onChange={e => setWithdrawName(e.target.value)}
@@ -1418,7 +1363,7 @@ export default function Dashboard() {
                           />
                         </div>
                         <Button type="submit" className="w-full" disabled={withdrawing || availableBalance < 45}>
-                          {withdrawing ? 'Submitting...' : 'Request Withdrawal'}
+                          {withdrawing ? t('dash.submitting') : t('dash.request_withdrawal')}
                         </Button>
                       </form>
                     </CardContent>
@@ -1428,17 +1373,17 @@ export default function Dashboard() {
                   {withdrawals.length > 0 && (
                     <Card className="max-w-3xl">
                       <CardHeader>
-                        <CardTitle className="font-display text-lg">Withdrawal History</CardTitle>
+                        <CardTitle className="font-display text-lg">{t('dash.withdrawal_history')}</CardTitle>
                       </CardHeader>
                       <CardContent className="p-0">
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>Date</TableHead>
-                              <TableHead>Amount</TableHead>
-                              <TableHead>Method</TableHead>
-                              <TableHead>Account</TableHead>
-                              <TableHead>Status</TableHead>
+                              <TableHead>{t('dash.wd_date')}</TableHead>
+                              <TableHead>{t('dash.wd_amount')}</TableHead>
+                              <TableHead>{t('dash.wd_method')}</TableHead>
+                              <TableHead>{t('dash.wd_account')}</TableHead>
+                              <TableHead>{t('dash.wd_status')}</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -1467,15 +1412,15 @@ export default function Dashboard() {
                   {referralEarnings.length > 0 && (
                     <Card className="max-w-3xl">
                       <CardHeader>
-                        <CardTitle className="font-display text-lg">Commission History</CardTitle>
+                        <CardTitle className="font-display text-lg">{t('dash.commission_history')}</CardTitle>
                       </CardHeader>
                       <CardContent className="p-0">
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>Date</TableHead>
-                              <TableHead>Credits Purchased</TableHead>
-                              <TableHead>Your Commission (10%)</TableHead>
+                              <TableHead>{t('dash.tx_date')}</TableHead>
+                              <TableHead>{t('dash.credits_purchased')}</TableHead>
+                              <TableHead>{t('dash.your_commission')}</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -1502,12 +1447,12 @@ export default function Dashboard() {
             <Card className="max-w-lg">
               <CardHeader>
                 <CardTitle className="font-display flex items-center gap-2">
-                  <Settings className="h-5 w-5" /> School Settings
+                  <Settings className="h-5 w-5" /> {t('dash.school_settings')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Public URL</Label>
+                  <Label>{t('dash.public_url')}</Label>
                   <div className="flex items-center gap-2">
                     <LinkIcon className="h-4 w-4 text-muted-foreground" />
                     <a href={`https://resultportal.online/results/${school.slug}`} target="_blank" rel="noreferrer" className="text-sm text-primary underline bg-muted px-2 py-1 rounded">
@@ -1522,16 +1467,16 @@ export default function Dashboard() {
                         toast.success('URL copied to clipboard!');
                       }}
                     >
-                      <Check className="h-3.5 w-3.5" /> Copy
+                      <Check className="h-3.5 w-3.5" /> {t('dash.copy')}
                     </Button>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>School Name</Label>
+                  <Label>{t('dash.school_name')}</Label>
                   <Input value={school.name} disabled />
                 </div>
                 <div className="space-y-2">
-                  <Label>Accent Color</Label>
+                  <Label>{t('dash.accent_color')}</Label>
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded" style={{ backgroundColor: school.accent_color }} />
                     <span className="text-sm text-muted-foreground">{school.accent_color}</span>
@@ -1540,7 +1485,6 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-
             {/* QR Code Card */}
             <QRCodeCard schoolName={school.name} slug={school.slug} />
 
@@ -1548,15 +1492,15 @@ export default function Dashboard() {
             <Card className="max-w-lg">
               <CardHeader>
                 <CardTitle className="font-display text-lg flex items-center gap-2">
-                  <Search className="h-5 w-5 text-primary" /> Portal Search Fields
+                  <Search className="h-5 w-5 text-primary" /> {t('dash.search_fields')}
                 </CardTitle>
-                <CardDescription>Choose which fields students use to search their results on your portal.</CardDescription>
+                <CardDescription>{t('dash.search_fields_desc')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {[
-                  { id: 'roll_number', label: 'Roll Number', hint: 'Students search by their roll/registration number' },
-                  { id: 'student_name', label: 'Student Name', hint: 'Students search by typing their name' },
-                  { id: 'father_name', label: 'Father Name', hint: 'Students search using their father\'s name' },
+                  { id: 'roll_number', label: t('dash.roll_number_field'), hint: t('dash.roll_number_hint') },
+                  { id: 'student_name', label: t('dash.student_name_field'), hint: t('dash.student_name_hint') },
+                  { id: 'father_name', label: t('dash.father_name_field'), hint: t('dash.father_name_hint') },
                 ].map(field => (
                   <div key={field.id} className="flex items-start gap-3">
                     <Checkbox
@@ -1568,12 +1512,12 @@ export default function Dashboard() {
                           ? [...current, field.id]
                           : current.filter(f => f !== field.id);
                         if (updated.length === 0) {
-                          toast.error('You must keep at least one search field');
+                          toast.error(t('dash.keep_one_field'));
                           return;
                         }
                         const { error } = await supabase.from('schools').update({ search_fields: updated } as any).eq('id', school.id);
                         if (error) { toast.error(error.message); }
-                        else { setSchool({ ...school, search_fields: updated }); toast.success('Search fields updated'); }
+                        else { setSchool({ ...school, search_fields: updated }); toast.success(t('dash.search_fields_updated')); }
                       }}
                     />
                     <div>
@@ -1582,7 +1526,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 ))}
-                <p className="text-xs text-muted-foreground mt-2">Changes are applied instantly to your live portal at <strong>resultportal.online/results/{school.slug}</strong>. Design previews below show default fields.</p>
+                <p className="text-xs text-muted-foreground mt-2">{t('dash.search_fields_note')}</p>
               </CardContent>
             </Card>
 
@@ -1591,16 +1535,16 @@ export default function Dashboard() {
               <div className="flex items-start justify-between flex-wrap gap-2">
                 <div>
                   <h2 className="font-display text-xl font-bold flex items-center gap-2">
-                    <Palette className="h-5 w-5 text-primary" /> Choose Your Result Portal Design
+                    <Palette className="h-5 w-5 text-primary" /> {t('dash.choose_design')}
                   </h2>
                   <p className="text-sm text-muted-foreground mt-1">
-                    This design is what students see when they check results on your portal. Just click any design to apply it!
+                    {t('dash.design_desc')}
                   </p>
                 </div>
-                <Badge variant={school.template_changes_count < 3 ? 'default' : 'secondary'} className="text-xs shrink-0" title="First 3 design changes are free, then 5 credits each">
+                <Badge variant={school.template_changes_count < 3 ? 'default' : 'secondary'} className="text-xs shrink-0">
                   {school.template_changes_count < 3
-                    ? `${3 - school.template_changes_count} free change${3 - school.template_changes_count !== 1 ? 's' : ''} remaining`
-                    : '5 credits per change'}
+                    ? `${3 - school.template_changes_count} ${t('dash.free_changes_remaining')}`
+                    : t('dash.credits_per_change')}
                 </Badge>
               </div>
 
@@ -1613,14 +1557,12 @@ export default function Dashboard() {
                     onClick={async () => {
                         if (isSelected) return;
                         
-                        // Check if this will cost credits and confirm
                         if (school.template_changes_count >= 3) {
                           setPendingTemplateId(template.id);
                           setTemplateConfirmOpen(true);
                           return;
                         }
 
-                        // Free change — proceed directly
                         const { data: success, error: rpcError } = await supabase
                           .rpc('deduct_template_change_credits', { p_school_id: school.id });
                         
@@ -1633,7 +1575,6 @@ export default function Dashboard() {
                           return;
                         }
 
-                        // Now update the template
                         const { error } = await supabase
                           .from('schools')
                           .update({ result_template: template.id })
@@ -1651,7 +1592,6 @@ export default function Dashboard() {
                           } else {
                             toast.success(`Design changed to "${template.name}" (5 credits deducted)`);
                           }
-                          // Refresh credits display
                           const { data: credData } = await supabase
                             .from('school_credits')
                             .select('balance')
@@ -1666,7 +1606,6 @@ export default function Dashboard() {
                           : 'border-border hover:border-muted-foreground/40'
                       }`}
                     >
-                      {/* Live iframe preview */}
                       <div className="aspect-[4/3] relative overflow-hidden rounded-t-xl">
                         <iframe
                           src={`/demo/${template.id}`}
@@ -1697,7 +1636,7 @@ export default function Dashboard() {
                       </div>
                       {isSelected && (
                         <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: template.accentColor, color: template.textPrimary }}>
-                          ACTIVE
+                          {t('dash.active')}
                         </div>
                       )}
                     </button>
@@ -1705,6 +1644,10 @@ export default function Dashboard() {
                 })}
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="help" className="mt-6">
+            <HelpTab />
           </TabsContent>
         </Tabs>
       </div>
@@ -1714,30 +1657,30 @@ export default function Dashboard() {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="font-display flex items-center gap-2">
-              <Timer className="h-5 w-5 text-primary" /> Set Result Timer
+              <Timer className="h-5 w-5 text-primary" /> {t('dash.set_result_timer')}
             </DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Set a countdown. Results will be hidden until the timer ends, then automatically displayed.
+            {t('dash.timer_desc')}
           </p>
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Days</Label>
+              <Label className="text-xs">{t('dash.days')}</Label>
               <Input type="number" min={0} max={365} value={timerDays} onChange={e => setTimerDays(Number(e.target.value))} />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Hours</Label>
+              <Label className="text-xs">{t('dash.hours')}</Label>
               <Input type="number" min={0} max={23} value={timerHours} onChange={e => setTimerHours(Number(e.target.value))} />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Minutes</Label>
+              <Label className="text-xs">{t('dash.minutes')}</Label>
               <Input type="number" min={0} max={59} value={timerMinutes} onChange={e => setTimerMinutes(Number(e.target.value))} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setTimerDialogOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setTimerDialogOpen(false)}>{t('dash.cancel')}</Button>
             <Button onClick={handleSetTimer} className="gap-1.5">
-              <CalendarClock className="h-3.5 w-3.5" /> Start Countdown
+              <CalendarClock className="h-3.5 w-3.5" /> {t('dash.start_countdown')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1747,10 +1690,9 @@ export default function Dashboard() {
       <Dialog open={columnMappingOpen} onOpenChange={setColumnMappingOpen}>
         <DialogContent className="w-[95vw] max-w-md sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-display">Map Your Columns</DialogTitle>
+            <DialogTitle className="font-display">{t('dash.map_columns')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            {/* Sheet tabs */}
             {parsedSheets.length > 1 && (
               <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
                 {parsedSheets.map(({ sheetName }) => (
@@ -1776,7 +1718,7 @@ export default function Dashboard() {
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <Label className="text-xs">Roll Number Column</Label>
+                      <Label className="text-xs">{t('dash.roll_column')}</Label>
                       <Select value={mapping.rollKey} onValueChange={val => setSheetMappings(prev => ({ ...prev, [activeSheet]: { ...prev[activeSheet], rollKey: val } }))}>
                         <SelectTrigger className="h-8 text-xs min-w-0"><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -1787,7 +1729,7 @@ export default function Dashboard() {
                       </Select>
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs">Student Name Column</Label>
+                      <Label className="text-xs">{t('dash.name_column')}</Label>
                       <Select value={mapping.nameKey} onValueChange={val => setSheetMappings(prev => ({ ...prev, [activeSheet]: { ...prev[activeSheet], nameKey: val } }))}>
                         <SelectTrigger className="h-8 text-xs min-w-0"><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -1799,11 +1741,11 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Father Name Column <span className="text-muted-foreground">(optional)</span></Label>
+                    <Label className="text-xs">{t('dash.father_column')} <span className="text-muted-foreground">{t('dash.father_optional')}</span></Label>
                     <Select value={mapping.fatherKey || '__none__'} onValueChange={val => setSheetMappings(prev => ({ ...prev, [activeSheet]: { ...prev[activeSheet], fatherKey: val === '__none__' ? '' : val } }))}>
                       <SelectTrigger className="h-8 text-xs min-w-0"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="__none__">— None —</SelectItem>
+                        <SelectItem value="__none__">{t('dash.none')}</SelectItem>
                         {mapping.headers.map(h => (
                           <SelectItem key={h} value={h}>{h}</SelectItem>
                         ))}
@@ -1812,8 +1754,8 @@ export default function Dashboard() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Subjects & Total Marks</Label>
-                    <p className="text-[11px] text-muted-foreground">Check subjects to include. Set total marks for each.</p>
+                    <Label className="text-xs">{t('dash.subjects_total')}</Label>
+                    <p className="text-[11px] text-muted-foreground">{t('dash.subjects_hint')}</p>
                     <div className="space-y-1 mt-1.5 max-h-48 overflow-y-auto">
                       {subjectHeaders.map(h => {
                         const subj = mapping.subjects[h];
@@ -1855,10 +1797,9 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  {/* Preview - vertical card layout */}
                   {sheetData.length > 0 && (
                     <div className="space-y-1.5">
-                      <Label className="text-xs">Sample Preview (1st Student)</Label>
+                      <Label className="text-xs">{t('dash.sample_preview')}</Label>
                       <div className="border rounded-md p-3 bg-muted/30 space-y-1 text-xs">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">{mapping.rollKey}:</span>
@@ -1890,9 +1831,9 @@ export default function Dashboard() {
             })()}
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => setColumnMappingOpen(false)} className="w-full sm:w-auto">Cancel</Button>
+            <Button variant="outline" onClick={() => setColumnMappingOpen(false)} className="w-full sm:w-auto">{t('dash.cancel')}</Button>
             <Button onClick={handleConfirmUpload} disabled={uploading} className="w-full sm:w-auto">
-              {uploading ? 'Uploading...' : 'Upload Results'}
+              {uploading ? t('dash.uploading') : t('dash.upload_results_btn')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1900,14 +1841,14 @@ export default function Dashboard() {
       <AlertDialog open={templateConfirmOpen} onOpenChange={setTemplateConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Change Portal Design</AlertDialogTitle>
+            <AlertDialogTitle>{t('dash.change_design')}</AlertDialogTitle>
             <AlertDialogDescription>
               This design change will cost <span className="font-semibold text-foreground">5 credits</span>. Your current balance is <span className="font-semibold text-foreground">{creditBalance ?? 0} credits</span>.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPendingTemplateId(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmTemplateChange}>Continue</AlertDialogAction>
+            <AlertDialogCancel onClick={() => setPendingTemplateId(null)}>{t('dash.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmTemplateChange}>{t('dash.continue')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -1917,17 +1858,18 @@ export default function Dashboard() {
       }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Upload Results</AlertDialogTitle>
+            <AlertDialogTitle>{t('dash.upload_confirm_title')}</AlertDialogTitle>
             <AlertDialogDescription>
               This upload will cost <span className="font-semibold text-foreground">10 credits</span>. Your current balance is <span className="font-semibold text-foreground">{creditBalance ?? 0} credits</span>.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => { if (uploadConfirmResolve) { uploadConfirmResolve(false); setUploadConfirmResolve(null); } }}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { if (uploadConfirmResolve) { uploadConfirmResolve(true); setUploadConfirmResolve(null); } setUploadConfirmOpen(false); }}>Continue</AlertDialogAction>
+            <AlertDialogCancel onClick={() => { if (uploadConfirmResolve) { uploadConfirmResolve(false); setUploadConfirmResolve(null); } }}>{t('dash.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { if (uploadConfirmResolve) { uploadConfirmResolve(true); setUploadConfirmResolve(null); } setUploadConfirmOpen(false); }}>{t('dash.continue')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <HelpDialog open={helpDialogOpen} onOpenChange={setHelpDialogOpen} />
       <WhatsAppHelpButton />
     </div>
   );
