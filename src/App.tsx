@@ -16,6 +16,7 @@ import DemoPortal from "./pages/DemoPortal";
 import AdminDashboard from "./pages/AdminDashboard";
 import EarnWithUs from "./pages/EarnWithUs";
 import Terms from "./pages/Terms";
+import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/earn" element={<EarnWithUs />} />
                 <Route path="/terms" element={<Terms />} />
+                <Route path="/help" element={<Help />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </AuthProvider>

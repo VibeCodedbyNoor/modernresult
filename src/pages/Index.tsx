@@ -73,9 +73,15 @@ export default function Index() {
         <p className="text-xs sm:text-sm" style={{ color: '#6b6a80' }}>
           &copy; {new Date().getFullYear()} OnlineResultPortal. {t('footer.rights')}
         </p>
-        <Link to="/terms" className="text-[10px] hover:underline" style={{ color: '#3a3950' }}>
-          {t('nav.terms')}
-        </Link>
+        <div className="flex items-center justify-center gap-3">
+          <Link to="/terms" className="text-[10px] hover:underline" style={{ color: '#3a3950' }}>
+            {t('nav.terms')}
+          </Link>
+          <span style={{ color: '#3a3950' }}>•</span>
+          <Link to="/help" className="text-[10px] hover:underline" style={{ color: '#3a3950' }}>
+            {t('nav.help')}
+          </Link>
+        </div>
       </footer>
       <WhatsAppHelpButton />
     </div>
