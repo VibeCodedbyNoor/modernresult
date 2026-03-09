@@ -1,4 +1,5 @@
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
+import { Sparkles } from 'lucide-react';
 import CorporatePortal from './portals/CorporatePortal';
 import CyberPunkPortal from './portals/CyberPunkPortal';
 import DarkModePortal from './portals/DarkModePortal';
@@ -51,5 +52,31 @@ export default function DemoPortal() {
   const { templateId } = useParams<{ templateId: string }>();
   const PortalComponent = PORTAL_MAP[templateId || 'luxury-gold'] || LuxuryGoldPortal;
   
-  return <PortalComponent isDemo={true} />;
+  return (
+    <div className="relative">
+      {/* Floating Get This Design Banner */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 animate-fade-in">
+        <div
+          className="mx-auto max-w-xl mb-4 sm:mb-6 mx-4"
+          style={{
+            background: 'linear-gradient(135deg, rgba(109,40,217,0.95), rgba(167,139,250,0.95))',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '16px',
+            boxShadow: '0 8px 32px rgba(109,40,217,0.4)',
+            border: '1px solid rgba(255,255,255,0.15)',
+          }}
+        >
+          <Link
+            to="/signup"
+            className="flex items-center justify-center gap-2 px-6 py-3.5 sm:py-4 text-white font-semibold text-sm sm:text-base no-underline hover:opacity-90 transition-opacity"
+          >
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+            Get This Design — Sign Up Free
+          </Link>
+        </div>
+      </div>
+
+      <PortalComponent isDemo={true} />
+    </div>
+  );
 }
