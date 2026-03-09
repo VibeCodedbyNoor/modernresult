@@ -19,7 +19,7 @@ export const helpVideos: HelpVideo[] = [
     id: 'create-exam',
     titleKey: 'help.vid_create_exam',
     descriptionKey: 'help.vid_create_exam_desc',
-    youtubeId: '',
+    youtubeId: 'rh5KMo02dTU',
     category: 'exams',
   },
   {
