@@ -33,7 +33,7 @@ export const helpVideos: HelpVideo[] = [
     id: 'buy-credits',
     titleKey: 'help.vid_credits',
     descriptionKey: 'help.vid_credits_desc',
-    youtubeId: 'rh5KMo02dTU',
+    youtubeId: '',
     category: 'credits',
   },
   {
