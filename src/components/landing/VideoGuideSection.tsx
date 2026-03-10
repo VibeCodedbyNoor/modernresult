@@ -12,15 +12,9 @@ interface VideoConfig {
 // Add your real YouTube video IDs here
 const videos: VideoConfig[] = [
   {
-    id: 'urdu',
-    title: 'اردو میں سیکھیں',
-    language: 'Urdu Guide',
-    youtubeId: 'rh5KMo02dTU',
-  },
-  {
-    id: 'pashto',
-    title: 'په پښتو کې زده کړئ',
-    language: 'Pashto Guide',
+    id: 'tutorial',
+    title: 'How to Use OnlineResultPortal',
+    language: 'Complete Tutorial',
     youtubeId: 'rh5KMo02dTU',
   },
 ];
