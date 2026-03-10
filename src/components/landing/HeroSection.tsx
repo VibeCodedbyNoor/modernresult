@@ -19,7 +19,7 @@ export default function HeroSection() {
           <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
           {resultTemplates.length} {t('hero.badge')}
         </div>
-        <h1 className="font-display text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight leading-tight" style={{ color: '#f1f0f5' }}>
+        <h1 className="font-display text-3xl sm:text-4xl md:text-6xl font-extrabold tracking-tight leading-tight" style={{ color: '#f1f0f5' }}>
           {t('hero.title_1')}
           <span style={{ color: '#a78bfa' }}>{t('hero.title_highlight')}</span>
           {t('hero.title_2')}
