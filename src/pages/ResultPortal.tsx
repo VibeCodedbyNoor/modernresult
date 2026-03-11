@@ -5,7 +5,7 @@ import { CLASS_SUBJECTS } from '@/lib/classSubjects';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search } from 'lucide-react';
 import { PortalSkeleton } from '@/components/LoadingSkeletons';
-
+import type { ExamState } from '@/lib/portalTypes';
 
 // Import all portal components
 import CorporatePortal from './portals/CorporatePortal';
@@ -66,39 +66,124 @@ interface SchoolData {
   search_fields: string[];
 }
 
+function computeExamState(exam: { display_at: string | null; is_stopped: boolean; name: string } | null): ExamState {
+  if (!exam) return { status: 'no_exam' };
+  if (exam.is_stopped) return { status: 'stopped', examName: exam.name };
+  if (exam.display_at && new Date(exam.display_at).getTime() > Date.now()) {
+    return { status: 'countdown', displayAt: exam.display_at, examName: exam.name };
+  }
+  return { status: 'active', examName: exam.name };
+}
+
 export default function ResultPortal() {
   const { slug } = useParams<{ slug: string }>();
   const [school, setSchool] = useState<SchoolData | null>(null);
+  const [examState, setExamState] = useState<ExamState>({ status: 'no_exam' });
+  const [activeExam, setActiveExam] = useState<{ id: string; name: string; display_at: string | null; is_stopped: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Load school + exam data
   useEffect(() => {
     async function load() {
       const { data: schoolData } = await supabase.from('schools').select('*').eq('slug', slug).single();
-      if (schoolData) setSchool(schoolData);
+      if (schoolData) {
+        setSchool(schoolData);
+        // Fetch published exam
+        const { data: exams } = await supabase
+          .from('exams')
+          .select('id, name, display_at, is_stopped')
+          .eq('school_id', schoolData.id)
+          .eq('is_published', true)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        const exam = exams?.[0] || null;
+        setActiveExam(exam);
+        setExamState(computeExamState(exam));
+      }
       setLoading(false);
     }
     load();
   }, [slug]);
 
+  // Realtime: listen for school changes (template, name, logo, search_fields)
+  useEffect(() => {
+    if (!school) return;
+
+    const schoolChannel = supabase
+      .channel(`school-${school.id}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'schools',
+        filter: `id=eq.${school.id}`,
+      }, (payload) => {
+        const updated = payload.new as any;
+        setSchool(prev => prev ? { ...prev, ...updated } : prev);
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(schoolChannel); };
+  }, [school?.id]);
+
+  // Realtime: listen for exam changes (start/stop/schedule)
+  useEffect(() => {
+    if (!school) return;
+
+    const examChannel = supabase
+      .channel(`exams-${school.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'exams',
+        filter: `school_id=eq.${school.id}`,
+      }, async () => {
+        // Re-fetch the active published exam
+        const { data: exams } = await supabase
+          .from('exams')
+          .select('id, name, display_at, is_stopped')
+          .eq('school_id', school.id)
+          .eq('is_published', true)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        const exam = exams?.[0] || null;
+        setActiveExam(exam);
+        setExamState(computeExamState(exam));
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(examChannel); };
+  }, [school?.id]);
+
+  // Re-check countdown expiry every second (for countdown → active transition)
+  useEffect(() => {
+    if (examState.status !== 'countdown') return;
+    const interval = setInterval(() => {
+      setExamState(computeExamState(activeExam));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [examState.status, activeExam]);
+
   const handleSearch = useCallback(async (searchParams: { rollNumber?: string; studentName?: string; fatherName?: string; className?: string }) => {
-    if (!school) return null;
+    if (!school || !activeExam) return null;
+
+    // Re-check exam state at search time
+    const currentState = computeExamState(activeExam);
+    if (currentState.status === 'stopped') {
+      throw new Error('Result checking is currently paused by the school.');
+    }
+    if (currentState.status === 'countdown') {
+      throw new Error('Results are not available yet. Please wait for the countdown to finish.');
+    }
+    if (currentState.status === 'no_exam') {
+      throw new Error('No results have been published yet.');
+    }
 
     const { rollNumber = '', studentName = '', fatherName = '', className = '' } = searchParams;
 
-    const { data: exams } = await supabase
-      .from('exams')
-      .select('id, name, display_at, is_stopped')
-      .eq('school_id', school.id)
-      .eq('is_published', true);
-
-    if (!exams || exams.length === 0) return null;
-
-    const exam = exams[0];
-    if (exam.is_stopped) return null;
-    if (exam.display_at && new Date(exam.display_at).getTime() > Date.now()) return null;
-
     const { data } = await supabase.rpc('fuzzy_search_results', {
-      p_exam_id: exam.id,
+      p_exam_id: activeExam.id,
       p_class_name: className,
       p_query: studentName.trim(),
       p_roll_number: rollNumber.trim(),
@@ -159,7 +244,7 @@ export default function ResultPortal() {
     }
 
     return null;
-  }, [school]);
+  }, [school, activeExam]);
 
   if (loading) {
     return <PortalSkeleton />;
@@ -190,6 +275,7 @@ export default function ResultPortal() {
         logoUrl={school.logo_url}
         onSearch={handleSearch}
         searchFields={school.search_fields || ['roll_number', 'student_name']}
+        examState={examState}
       />
     </div>
   );
