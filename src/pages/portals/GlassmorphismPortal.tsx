@@ -25,7 +25,7 @@ const GlassmorphismPortal = ({ isDemo = true, schoolName = "Peshawar Grammar Sch
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-purple-400 via-pink-500 to-red-500">
-      <BackButton variant="dark" />
+      <BackButton isDemo={isDemo} variant="dark" />
       <div className="absolute inset-0 opacity-40 pointer-events-none"><div className="absolute top-20 left-10 sm:left-20 w-40 sm:w-72 h-40 sm:h-72 bg-white rounded-full mix-blend-multiply filter blur-xl"></div><div className="absolute top-40 right-10 sm:right-20 w-40 sm:w-72 h-40 sm:h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl"></div><div className="absolute bottom-20 left-20 sm:left-40 w-40 sm:w-72 h-40 sm:h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl"></div></div>
       <main className="relative z-10 container mx-auto px-3 sm:px-4 pt-14 sm:pt-12 pb-20 max-w-3xl">
         <header className="text-center mb-6 sm:mb-12"><div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-2xl">{logoUrl && <img src={logoUrl} alt={schoolName} className="h-20 w-20 mx-auto mb-4 rounded-full object-cover shadow-lg border-2 border-white/30" />}<h1 className="text-xl sm:text-5xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">{schoolName}</h1><p className="text-sm sm:text-xl text-white/90">Result Portal</p></div></header>

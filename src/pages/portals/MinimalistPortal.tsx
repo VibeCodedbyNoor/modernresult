@@ -10,7 +10,7 @@ const MinimalistPortal = ({ isDemo = true, schoolName = "Al-Huda Model School", 
 
   return (
     <div className="min-h-screen bg-white">
-      <BackButton variant="light" />
+      <BackButton isDemo={isDemo} variant="light" />
       <main className="container mx-auto px-3 sm:px-4 pt-14 sm:pt-16 pb-20 max-w-2xl">
         <header className="mb-6 sm:mb-16 border-b border-black pb-4 sm:pb-8">
           {logoUrl && <img src={logoUrl} alt={schoolName} className="h-14 w-14 mb-3 rounded-full object-cover border border-gray-300" />}
