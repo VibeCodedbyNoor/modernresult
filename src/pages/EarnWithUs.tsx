@@ -310,7 +310,7 @@ export default function EarnWithUs() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Credits Purchased</TableHead>
+                <TableHead>Amount Recharged (PKR)</TableHead>
                 <TableHead>Your Commission (10%)</TableHead>
                 <TableHead>Date</TableHead>
               </TableRow>
