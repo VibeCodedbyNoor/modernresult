@@ -26,7 +26,7 @@ const KawaiiPortal = ({ isDemo = true, schoolName = "Little Stars Academy", logo
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 relative overflow-hidden">
-      <BackButton variant="kawaii" />
+      <BackButton isDemo={isDemo} variant="kawaii" />
       <div className="absolute top-20 left-10 w-40 h-20 bg-white rounded-full opacity-70 shadow-lg hidden sm:block"></div>
       <div className="absolute top-40 right-20 w-32 h-16 bg-white rounded-full opacity-70 shadow-lg hidden sm:block"></div>
       <main className="relative z-10 container mx-auto px-3 sm:px-4 pt-14 sm:pt-12 pb-20 max-w-3xl">

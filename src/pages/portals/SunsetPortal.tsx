@@ -13,7 +13,7 @@ const SunsetPortal = ({ isDemo = true, schoolName = "Golden Horizon Academy", lo
     <div className="min-h-screen bg-gradient-to-br from-orange-500 via-pink-500 to-purple-600 relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none"><div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-yellow-400 rounded-full blur-3xl opacity-30"></div><div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-purple-900/50 to-transparent"></div></div>
       
-      <BackButton variant="sunset" />
+      <BackButton isDemo={isDemo} variant="sunset" />
       <main className="relative z-10 container mx-auto px-3 sm:px-4 pt-14 sm:pt-6 pb-20 max-w-3xl">
         <header className="text-center mb-6 sm:mb-12">
           <div className="relative inline-block mb-3 sm:mb-6">

@@ -14,7 +14,7 @@ const OceanPortal = ({ isDemo = true, schoolName = "Blue Pearl Academy", logoUrl
     <div className="min-h-screen bg-gradient-to-br from-cyan-900 via-blue-800 to-teal-900 relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none"><div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-cyan-400/20 to-transparent"></div><div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-teal-900/50 to-transparent"></div></div>
       
-      <BackButton variant="ocean" />
+      <BackButton isDemo={isDemo} variant="ocean" />
       <main className="relative z-10 container mx-auto px-3 sm:px-4 pt-14 sm:pt-6 pb-20 max-w-3xl">
         <header className="text-center mb-6 sm:mb-12">
           <div className="relative inline-block mb-3 sm:mb-6">
