@@ -28,7 +28,7 @@ const ElegantPortal = ({ isDemo = true, schoolName = "The Cambridge School", log
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-100 via-rose-50 to-stone-100 relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none"><div className="absolute top-20 right-20 w-64 h-64 bg-rose-200 rounded-full blur-3xl opacity-30"></div><div className="absolute bottom-20 left-20 w-64 h-64 bg-stone-200 rounded-full blur-3xl opacity-30"></div></div>
-      <BackButton variant="elegant" />
+      <BackButton isDemo={isDemo} variant="elegant" />
       <main className="relative z-10 container mx-auto px-3 sm:px-4 pt-14 sm:pt-6 pb-20 max-w-3xl">
         <header className="text-center mb-6 sm:mb-12">
           {logoUrl ? (<img src={logoUrl} alt={schoolName} className="h-20 w-20 mx-auto mb-4 rounded-full object-cover shadow-lg border-2 border-stone-200" />) : (<div className="relative inline-block mb-3 sm:mb-6"><Gem className="absolute -top-1 sm:-top-4 -left-1 sm:-left-4 w-4 h-4 sm:w-8 sm:h-8 text-rose-400" /><Gem className="absolute -top-1 sm:-top-4 -right-1 sm:-right-4 w-4 h-4 sm:w-8 sm:h-8 text-rose-400" /><h1 className="relative text-xl sm:text-5xl md:text-6xl font-serif font-bold text-stone-800 px-6 sm:px-0">{schoolName}</h1></div>)}

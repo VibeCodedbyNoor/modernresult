@@ -27,7 +27,7 @@ const PastelPortal = ({ isDemo = true, schoolName = "Rainbow Dreams School", log
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none"><div className="absolute top-20 left-20 w-64 h-64 bg-pink-200 rounded-full blur-3xl opacity-40"></div><div className="absolute bottom-20 right-20 w-64 h-64 bg-purple-200 rounded-full blur-3xl opacity-40"></div><div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-200 rounded-full blur-3xl opacity-30"></div></div>
-      <BackButton variant="pastel" />
+      <BackButton isDemo={isDemo} variant="pastel" />
       <main className="relative z-10 container mx-auto px-3 sm:px-4 pt-14 sm:pt-6 pb-20 max-w-3xl">
         <header className="text-center mb-6 sm:mb-12">
           <div className="relative inline-block mb-3 sm:mb-6"><Flower2 className="absolute -top-1 sm:-top-4 -left-1 sm:-left-4 w-4 h-4 sm:w-8 sm:h-8 text-pink-400" /><Flower2 className="absolute -top-1 sm:-top-4 -right-1 sm:-right-4 w-4 h-4 sm:w-8 sm:h-8 text-purple-400" />{logoUrl && <img src={logoUrl} alt={schoolName} className="h-16 w-16 mx-auto mb-3 rounded-full object-cover border-2 border-purple-200" />}<h1 className="relative text-xl sm:text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 px-6 sm:px-0">{schoolName}</h1></div>

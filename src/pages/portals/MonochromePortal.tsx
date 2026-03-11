@@ -27,7 +27,7 @@ const MonochromePortal = ({ isDemo = true, schoolName = "Elite School", logoUrl,
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none"><div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-white/5 to-transparent"></div></div>
-      <BackButton variant="monochrome" />
+      <BackButton isDemo={isDemo} variant="monochrome" />
       <main className="relative z-10 container mx-auto px-3 sm:px-4 pt-14 sm:pt-6 pb-20 max-w-3xl">
         <header className="text-center mb-6 sm:mb-12">
           <div className="relative inline-block mb-3 sm:mb-6"><Contrast className="absolute -top-1 sm:-top-4 -left-1 sm:-left-4 w-4 h-4 sm:w-8 sm:h-8 text-white" /><Contrast className="absolute -top-1 sm:-top-4 -right-1 sm:-right-4 w-4 h-4 sm:w-8 sm:h-8 text-white" />{logoUrl && <img src={logoUrl} alt={schoolName} className="h-16 w-16 mx-auto mb-3 rounded-full object-cover border-2 border-gray-700" />}<h1 className="relative text-xl sm:text-5xl md:text-6xl font-bold text-white px-6 sm:px-0 tracking-tight">{schoolName}</h1></div>

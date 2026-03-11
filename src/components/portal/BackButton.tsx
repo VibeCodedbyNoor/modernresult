@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 
 interface BackButtonProps {
   variant?: 'light' | 'dark' | 'neon' | 'glass' | 'material' | 'gradient' | 'brutalist' | 'retro' | 'cyberpunk' | 'kawaii' | 'futuristic' | 'luxury' | 'neumorphism' | 'ocean' | 'nature' | 'islamic' | 'sunset' | 'corporate' | 'pastel' | 'galaxy' | 'royal' | 'monochrome' | 'elegant';
+  isDemo?: boolean;
 }
 
-const BackButton = ({ variant = 'dark' }: BackButtonProps) => {
+const BackButton = ({ variant = 'dark', isDemo = true }: BackButtonProps) => {
+  if (!isDemo) return null;
   const styles: Record<string, string> = {
     light: 'bg-gray-100 hover:bg-gray-200 text-gray-800 border-gray-200',
     dark: 'bg-white/10 hover:bg-white/20 text-white border-white/20',

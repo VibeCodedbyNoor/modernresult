@@ -6,7 +6,7 @@ const GradientModernPortal = ({ isDemo = true, schoolName = "Abbottabad Public S
   const r = result; const sn = r?.name || r?.student_name; const cn = r?.class || r?.class_name;
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-600 via-fuchsia-500 to-pink-500 relative overflow-hidden">
-      <BackButton variant="dark" />
+      <BackButton isDemo={isDemo} variant="dark" />
       <main className="container mx-auto px-3 sm:px-4 pt-14 sm:pt-12 pb-20 max-w-3xl relative z-10">
         <header className="text-center mb-6 sm:mb-12"><div className="bg-gradient-to-r from-white/90 to-white/70 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-2xl">{logoUrl && <img src={logoUrl} alt={schoolName} className="h-20 w-20 mx-auto mb-4 rounded-full object-cover shadow-lg" />}<div className="flex items-center justify-center gap-2 sm:gap-3 mb-2 sm:mb-4"><Sparkles className="w-5 h-5 sm:w-8 sm:h-8 text-fuchsia-600" /><h1 className="text-xl sm:text-5xl font-extrabold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">{schoolName}</h1></div><p className="text-sm sm:text-xl text-gray-700">Result Portal</p></div></header>
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-2xl mb-4 sm:mb-8">

@@ -39,7 +39,7 @@ const LuxuryGoldPortal = ({ isDemo = true, schoolName = "Royal Cambridge School"
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-amber-950 to-slate-900 relative overflow-hidden">
       
-      <BackButton variant="luxury" />
+      <BackButton isDemo={isDemo} variant="luxury" />
       <main className="relative z-10 container mx-auto px-3 sm:px-4 pt-14 sm:pt-6 pb-20 max-w-3xl">
         <header className="text-center mb-6 sm:mb-12">
           <div className="relative inline-block mb-3 sm:mb-6">

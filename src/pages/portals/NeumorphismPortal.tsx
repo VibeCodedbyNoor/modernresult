@@ -28,7 +28,7 @@ const NeumorphismPortal = ({ isDemo = true, schoolName = "Army Burn Hall College
 
   return (
     <div className="min-h-screen bg-[#e0e5ec]">
-      <BackButton variant="light" />
+      <BackButton isDemo={isDemo} variant="light" />
       <main className="container mx-auto px-3 sm:px-4 pt-14 sm:pt-12 pb-20 max-w-3xl">
         <header className="text-center mb-6 sm:mb-12">
           <div className={`${neuStyle} rounded-2xl sm:rounded-3xl p-4 sm:p-8 bg-[#e0e5ec]`}>

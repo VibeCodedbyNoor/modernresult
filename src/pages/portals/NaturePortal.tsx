@@ -12,7 +12,7 @@ const NaturePortal = ({ isDemo = true, schoolName = "Green Valley School", logoU
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-800 to-lime-900 relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none"><div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-green-400/10 to-transparent"></div><div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-emerald-950/50 to-transparent"></div></div>
-      <BackButton variant="nature" />
+      <BackButton isDemo={isDemo} variant="nature" />
       <main className="relative z-10 container mx-auto px-3 sm:px-4 pt-14 sm:pt-6 pb-20 max-w-3xl">
         <header className="text-center mb-6 sm:mb-12">
           <div className="relative inline-block mb-3 sm:mb-6">

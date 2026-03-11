@@ -26,7 +26,7 @@ const MaterialDesignPortal = ({ isDemo = true, schoolName = "Swat Public School"
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <BackButton variant="light" />
+      <BackButton isDemo={isDemo} variant="light" />
       <main className="container mx-auto px-3 sm:px-4 pt-14 sm:pt-8 pb-20 max-w-4xl">
         <header className="mb-4 sm:mb-8">
           <div className="bg-indigo-600 text-white rounded-lg shadow-lg p-4 sm:p-8 flex items-center gap-4">

@@ -36,7 +36,7 @@ const GalaxyPortal = ({ isDemo = true, schoolName = "Star Light Academy", logoUr
         <div className="absolute top-1/3 left-10 w-96 h-96 bg-purple-600 rounded-full blur-3xl opacity-20"></div>
         <div className="absolute bottom-1/3 right-10 w-96 h-96 bg-blue-600 rounded-full blur-3xl opacity-20"></div>
       </div>
-      <BackButton variant="galaxy" />
+      <BackButton isDemo={isDemo} variant="galaxy" />
       <main className="relative z-10 container mx-auto px-3 sm:px-4 pt-14 sm:pt-6 pb-20 max-w-3xl">
         <header className="text-center mb-6 sm:mb-12">
           {logoUrl && <img src={logoUrl} alt={schoolName} className="h-20 w-20 mx-auto mb-4 rounded-full object-cover shadow-lg border-2 border-purple-500/30" />}

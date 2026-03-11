@@ -29,7 +29,7 @@ const CyberPunkPortal = ({ isDemo = true, schoolName = "FRONTIER ACADEMY", logoU
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
-      <BackButton variant="neon" />
+      <BackButton isDemo={isDemo} variant="neon" />
       <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
       <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div>
