@@ -25,7 +25,7 @@ const RetroPortal = ({ isDemo = true, schoolName = "Government High School", log
 
   return (
     <div className="min-h-screen bg-[#f4e4c1]" style={{ fontFamily: 'Courier New, monospace' }}>
-      <BackButton variant="light" />
+      <BackButton isDemo={isDemo} variant="light" />
       <main className="container mx-auto px-3 sm:px-4 pt-14 sm:pt-12 pb-20 max-w-3xl">
         <header className="text-center mb-6 sm:mb-12">
           <div className="bg-[#d4a574] border-2 sm:border-4 border-[#8b6f47] rounded-lg p-4 sm:p-8 shadow-[4px_4px_0px_#8b6f47] sm:shadow-[8px_8px_0px_#8b6f47]">
