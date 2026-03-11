@@ -171,7 +171,7 @@ export default function EarnWithUs() {
         Share. Refer. <span style={{ color: '#22c55e' }}>Earn.</span>
       </h1>
       <p className="text-base sm:text-lg max-w-xl mx-auto" style={{ color: '#a5a4b8' }}>
-        Invite school owners to OnlineResultPortal and earn <span className="font-bold" style={{ color: '#22c55e' }}>10% commission</span> on every credit package they purchase. No limits. Forever.
+        Invite school owners to OnlineResultPortal and earn <span className="font-bold" style={{ color: '#22c55e' }}>10% commission in PKR</span> on every rupee they spend. No limits. Forever.
       </p>
 
       {/* How it works */}
