@@ -391,7 +391,7 @@ export default function EarnWithUs() {
                 {withdrawals.map(w => (
                   <div key={w.id} className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <div>
-                      <p className="font-medium text-sm" style={{ color: '#f1f0f5' }}>{w.amount} credits</p>
+                      <p className="font-medium text-sm" style={{ color: '#f1f0f5' }}>₨{w.amount}</p>
                       <p className="text-xs capitalize" style={{ color: '#8b8a9e' }}>{w.payment_method} • {w.account_number}</p>
                       <p className="text-xs" style={{ color: '#6b6a80' }}>{new Date(w.created_at).toLocaleDateString()}</p>
                     </div>
