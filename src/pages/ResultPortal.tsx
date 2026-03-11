@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Search } from 'lucide-react';
 import { PortalSkeleton } from '@/components/LoadingSkeletons';
 import type { ExamState } from '@/lib/portalTypes';
+import ExamStatusBanner from '@/components/portal/ExamStatusBanner';
 
 // Import all portal components
 import CorporatePortal from './portals/CorporatePortal';
