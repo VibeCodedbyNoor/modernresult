@@ -318,8 +318,8 @@ export default function EarnWithUs() {
             <TableBody>
               {earnings.map(e => (
                 <TableRow key={e.id}>
-                  <TableCell>{e.credits_purchased}</TableCell>
-                  <TableCell className="font-bold" style={{ color: '#22c55e' }}>+{e.commission_credits}</TableCell>
+                  <TableCell>₨{e.credits_purchased * 9}</TableCell>
+                  <TableCell className="font-bold" style={{ color: '#22c55e' }}>+₨{e.commission_rupees || e.commission_credits * 9}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">{new Date(e.created_at).toLocaleDateString()}</TableCell>
                 </TableRow>
               ))}
