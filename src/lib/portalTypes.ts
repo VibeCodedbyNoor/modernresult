@@ -1,3 +1,9 @@
+export interface ExamState {
+  status: 'active' | 'countdown' | 'stopped' | 'no_exam';
+  displayAt?: string | null;
+  examName?: string;
+}
+
 export interface PortalProps {
   isDemo?: boolean;
   schoolName?: string;
@@ -5,6 +11,7 @@ export interface PortalProps {
   onSearch?: (params: SearchParams) => Promise<any>;
   searchFields?: string[];
   demoResult?: any;
+  examState?: ExamState;
 }
 
 export interface SearchParams {
