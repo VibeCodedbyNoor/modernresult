@@ -84,7 +84,7 @@ export default function EarnWithUs() {
       .eq('referrer_id', user.id)
       .order('created_at', { ascending: false });
     setEarnings(earns || []);
-    const total = (earns || []).reduce((s, e) => s + e.commission_credits, 0);
+    const total = (earns || []).reduce((s, e) => s + (e.commission_rupees || e.commission_credits * 9), 0);
     setTotalEarnings(total);
 
     // Get withdrawals
