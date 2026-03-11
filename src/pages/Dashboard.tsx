@@ -1101,7 +1101,7 @@ export default function Dashboard() {
                       <p><strong className="text-foreground">{t('dash.account_name_label')}</strong> Muhammad Irfan</p>
                       <p className="pt-1"><strong className="text-foreground">{t('dash.amount')}</strong>{' '}
                         <span className="text-primary font-semibold">
-                          PKR {selectedPlan === 50 ? '450' : selectedPlan === 100 ? '900' : '4,500'}
+                          PKR {selectedPlan === 100 ? '300' : selectedPlan === 500 ? '1,350' : '2,500'}
                         </span>
                       </p>
                     </div>
