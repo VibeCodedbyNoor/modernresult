@@ -179,7 +179,7 @@ export default function EarnWithUs() {
         {[
           { icon: <UserPlus className="h-6 w-6" style={{ color: '#a78bfa' }} />, title: 'Sign Up Free', desc: 'Create your account and get a unique referral link automatically' },
           { icon: <Share2 className="h-6 w-6" style={{ color: '#22c55e' }} />, title: 'Share Your Link', desc: 'Send your link to school owners who need an online result portal' },
-          { icon: <Wallet className="h-6 w-6" style={{ color: '#f59e0b' }} />, title: 'Earn 10% Commission', desc: 'When they buy credits, you earn 10% — withdraw anytime via JazzCash / Easypaisa' },
+          { icon: <Wallet className="h-6 w-6" style={{ color: '#f59e0b' }} />, title: 'Earn 10% in PKR', desc: 'When they recharge, you earn 10% of the PKR amount — withdraw anytime via JazzCash / Easypaisa' },
         ].map(step => (
           <div key={step.title} className="rounded-xl p-6 text-center space-y-3"
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
