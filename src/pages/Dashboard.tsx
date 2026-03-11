@@ -1054,9 +1054,9 @@ export default function Dashboard() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
-                    { credits: 50, price: 450, perCredit: '9', bonus: 0, label: '50 Credits — PKR 450' },
-                    { credits: 100, price: 900, perCredit: '9', bonus: 0, label: '100 Credits — PKR 900' },
-                    { credits: 500, price: 4500, perCredit: '8.18', bonus: 50, label: '500+50 Credits — PKR 4,500' },
+                    { credits: 100, price: 300, perCredit: '3', name: '🟢 School Starter', popular: false, save: '' },
+                    { credits: 500, price: 1350, perCredit: '2.7', name: '🔵 School Growth', popular: true, save: 'Save PKR 150' },
+                    { credits: 1000, price: 2500, perCredit: '2.5', name: '🟣 School Premium', popular: false, save: 'Save PKR 500' },
                   ].map(plan => (
                     <button
                       key={plan.credits}
@@ -1068,16 +1068,17 @@ export default function Dashboard() {
                           : 'border-border hover:border-primary/40'
                       }`}
                     >
-                      {plan.bonus > 0 && (
+                      {plan.popular && (
                         <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[9px] font-bold px-2 py-0.5 rounded-bl-lg flex items-center gap-1">
-                          <Gift className="h-2.5 w-2.5" /> {t('dash.best_value')}
+                          ⭐ Most Popular
                         </div>
                       )}
-                      <p className="text-2xl font-display font-bold text-foreground">{plan.credits}</p>
-                      {plan.bonus > 0 && <p className="text-xs text-primary font-semibold">+ {plan.bonus} {t('dash.free_bonus')}</p>}
-                      {plan.bonus === 0 && <p className="text-xs text-muted-foreground">{t('dash.credits')}</p>}
+                      <p className="text-xs font-semibold text-muted-foreground">{plan.name}</p>
+                      <p className="text-2xl font-display font-bold text-foreground">{plan.credits.toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground">{t('dash.credits')}</p>
                       <p className="text-lg font-semibold text-primary">PKR {plan.price.toLocaleString()}</p>
                       <p className="text-[10px] text-muted-foreground">Rs. {plan.perCredit}/credit</p>
+                      {plan.save && <p className="text-[10px] font-semibold text-green-600">✔ {plan.save}</p>}
                       {selectedPlan === plan.credits && (
                         <div className="flex items-center justify-center gap-1 text-xs text-primary font-medium pt-1">
                           <Check className="h-3 w-3" /> {t('dash.selected')}
