@@ -84,7 +84,7 @@ export default function EarnWithUs() {
       .eq('referrer_id', user.id)
       .order('created_at', { ascending: false });
     setEarnings(earns || []);
-    const total = (earns || []).reduce((s, e) => s + e.commission_credits, 0);
+    const total = (earns || []).reduce((s, e) => s + (e.commission_rupees || e.commission_credits * 9), 0);
     setTotalEarnings(total);
 
     // Get withdrawals
@@ -171,7 +171,7 @@ export default function EarnWithUs() {
         Share. Refer. <span style={{ color: '#22c55e' }}>Earn.</span>
       </h1>
       <p className="text-base sm:text-lg max-w-xl mx-auto" style={{ color: '#a5a4b8' }}>
-        Invite school owners to OnlineResultPortal and earn <span className="font-bold" style={{ color: '#22c55e' }}>10% commission</span> on every credit package they purchase. No limits. Forever.
+        Invite school owners to OnlineResultPortal and earn <span className="font-bold" style={{ color: '#22c55e' }}>10% commission in PKR</span> on every rupee they spend. No limits. Forever.
       </p>
 
       {/* How it works */}
@@ -179,7 +179,7 @@ export default function EarnWithUs() {
         {[
           { icon: <UserPlus className="h-6 w-6" style={{ color: '#a78bfa' }} />, title: 'Sign Up Free', desc: 'Create your account and get a unique referral link automatically' },
           { icon: <Share2 className="h-6 w-6" style={{ color: '#22c55e' }} />, title: 'Share Your Link', desc: 'Send your link to school owners who need an online result portal' },
-          { icon: <Wallet className="h-6 w-6" style={{ color: '#f59e0b' }} />, title: 'Earn 10% Commission', desc: 'When they buy credits, you earn 10% — withdraw anytime via JazzCash / Easypaisa' },
+          { icon: <Wallet className="h-6 w-6" style={{ color: '#f59e0b' }} />, title: 'Earn 10% in PKR', desc: 'When they recharge, you earn 10% of the PKR amount — withdraw anytime via JazzCash / Easypaisa' },
         ].map(step => (
           <div key={step.title} className="rounded-xl p-6 text-center space-y-3"
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -232,15 +232,15 @@ export default function EarnWithUs() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Total Referrals', value: referrals.length, icon: <Users className="h-5 w-5 text-primary" /> },
-          { label: 'Total Earned', value: totalEarnings, icon: <Wallet className="h-5 w-5" style={{ color: '#22c55e' }} /> },
-          { label: 'Withdrawn', value: totalWithdrawn, icon: <CreditCard className="h-5 w-5" style={{ color: '#f59e0b' }} /> },
-          { label: 'Available', value: availableBalance, icon: <Wallet className="h-5 w-5" style={{ color: '#a78bfa' }} /> },
+          { label: 'Total Referrals', value: referrals.length, icon: <Users className="h-5 w-5 text-primary" />, prefix: '' },
+          { label: 'Total Earned', value: totalEarnings, icon: <Wallet className="h-5 w-5" style={{ color: '#22c55e' }} />, prefix: '₨' },
+          { label: 'Withdrawn', value: totalWithdrawn, icon: <CreditCard className="h-5 w-5" style={{ color: '#f59e0b' }} />, prefix: '₨' },
+          { label: 'Available', value: availableBalance, icon: <Wallet className="h-5 w-5" style={{ color: '#a78bfa' }} />, prefix: '₨' },
         ].map(s => (
           <div key={s.label} className="rounded-xl p-4 space-y-1"
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
             <div className="flex items-center gap-2">{s.icon}<span className="text-xs" style={{ color: '#8b8a9e' }}>{s.label}</span></div>
-            <p className="text-2xl font-bold" style={{ color: '#f1f0f5' }}>{s.value}</p>
+            <p className="text-2xl font-bold" style={{ color: '#f1f0f5' }}>{s.prefix}{s.value}</p>
           </div>
         ))}
       </div>
@@ -310,16 +310,16 @@ export default function EarnWithUs() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Credits Purchased</TableHead>
-                <TableHead>Your Commission (10%)</TableHead>
+                <TableHead>Amount Recharged (PKR)</TableHead>
+                <TableHead>Your Commission (10% PKR)</TableHead>
                 <TableHead>Date</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {earnings.map(e => (
                 <TableRow key={e.id}>
-                  <TableCell>{e.credits_purchased}</TableCell>
-                  <TableCell className="font-bold" style={{ color: '#22c55e' }}>+{e.commission_credits}</TableCell>
+                  <TableCell>₨{e.credits_purchased * 9}</TableCell>
+                  <TableCell className="font-bold" style={{ color: '#22c55e' }}>+₨{e.commission_rupees || e.commission_credits * 9}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">{new Date(e.created_at).toLocaleDateString()}</TableCell>
                 </TableRow>
               ))}
@@ -333,7 +333,7 @@ export default function EarnWithUs() {
         <Card className="bg-card/50">
           <CardHeader>
             <CardTitle className="text-lg">Withdraw Earnings</CardTitle>
-            <CardDescription>Available balance: <span className="font-bold text-primary">{availableBalance}</span> credits</CardDescription>
+            <CardDescription>Available balance: <span className="font-bold text-primary">₨{availableBalance}</span></CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {withdrawalSuccess && (
@@ -369,8 +369,8 @@ export default function EarnWithUs() {
               <Input value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder="03001234567" />
             </div>
             <div className="space-y-2">
-              <Label>Amount (Credits)</Label>
-              <Input type="number" min="1" max={availableBalance} value={withdrawAmount} onChange={e => setWithdrawAmount(e.target.value)} placeholder="Enter amount" />
+              <Label>Amount (PKR ₨)</Label>
+              <Input type="number" min="1" max={availableBalance} value={withdrawAmount} onChange={e => setWithdrawAmount(e.target.value)} placeholder="Enter PKR amount" />
             </div>
             <Button onClick={handleWithdraw} disabled={submitting || availableBalance <= 0} className="w-full">
               {submitting ? 'Submitting...' : 'Request Withdrawal'}
@@ -391,7 +391,7 @@ export default function EarnWithUs() {
                 {withdrawals.map(w => (
                   <div key={w.id} className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <div>
-                      <p className="font-medium text-sm" style={{ color: '#f1f0f5' }}>{w.amount} credits</p>
+                      <p className="font-medium text-sm" style={{ color: '#f1f0f5' }}>₨{w.amount}</p>
                       <p className="text-xs capitalize" style={{ color: '#8b8a9e' }}>{w.payment_method} • {w.account_number}</p>
                       <p className="text-xs" style={{ color: '#6b6a80' }}>{new Date(w.created_at).toLocaleDateString()}</p>
                     </div>
