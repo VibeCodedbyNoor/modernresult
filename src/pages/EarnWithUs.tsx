@@ -232,10 +232,10 @@ export default function EarnWithUs() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Total Referrals', value: referrals.length, icon: <Users className="h-5 w-5 text-primary" /> },
-          { label: 'Total Earned', value: totalEarnings, icon: <Wallet className="h-5 w-5" style={{ color: '#22c55e' }} /> },
-          { label: 'Withdrawn', value: totalWithdrawn, icon: <CreditCard className="h-5 w-5" style={{ color: '#f59e0b' }} /> },
-          { label: 'Available', value: availableBalance, icon: <Wallet className="h-5 w-5" style={{ color: '#a78bfa' }} /> },
+          { label: 'Total Referrals', value: referrals.length, icon: <Users className="h-5 w-5 text-primary" />, prefix: '' },
+          { label: 'Total Earned', value: totalEarnings, icon: <Wallet className="h-5 w-5" style={{ color: '#22c55e' }} />, prefix: '₨' },
+          { label: 'Withdrawn', value: totalWithdrawn, icon: <CreditCard className="h-5 w-5" style={{ color: '#f59e0b' }} />, prefix: '₨' },
+          { label: 'Available', value: availableBalance, icon: <Wallet className="h-5 w-5" style={{ color: '#a78bfa' }} />, prefix: '₨' },
         ].map(s => (
           <div key={s.label} className="rounded-xl p-4 space-y-1"
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
