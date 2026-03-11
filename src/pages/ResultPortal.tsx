@@ -272,21 +272,25 @@ export default function ResultPortal() {
   const darkTemplates = ['cyberpunk', 'dark-mode', 'futuristic', 'galaxy', 'glassmorphism', 'luxury-gold', 'monochrome', 'neon', 'ocean', 'nature', 'islamic', 'sunset', 'royal-purple'];
   const bannerVariant = darkTemplates.includes(templateId) ? 'dark' : 'light';
 
+  const isDisabled = examState.status !== 'active';
+
   return (
     <div className="relative">
-      {examState.status !== 'active' && (
-        <div className="fixed top-14 left-0 right-0 z-40 px-4">
+      <div className={isDisabled ? 'pointer-events-none opacity-50 select-none' : ''}>
+        <PortalComponent
+          isDemo={false}
+          schoolName={school.name}
+          logoUrl={school.logo_url}
+          onSearch={handleSearch}
+          searchFields={school.search_fields || ['roll_number', 'student_name']}
+          examState={examState}
+        />
+      </div>
+      {isDisabled && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <ExamStatusBanner examState={examState} variant={bannerVariant} />
         </div>
       )}
-      <PortalComponent
-        isDemo={false}
-        schoolName={school.name}
-        logoUrl={school.logo_url}
-        onSearch={handleSearch}
-        searchFields={school.search_fields || ['roll_number', 'student_name']}
-        examState={examState}
-      />
     </div>
   );
 }
