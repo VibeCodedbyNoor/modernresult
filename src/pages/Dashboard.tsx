@@ -1112,7 +1112,7 @@ export default function Dashboard() {
                       </p>
                       <a
                         href={`https://wa.me/923479104843?text=${encodeURIComponent(
-                          `Assalam o Alaikum! 🎓\n\nI have purchased credits on ResultPortal.\n\n📧 My Email: ${user?.email || ''}\n🏫 School: ${school?.name || ''}\n💰 Package: ${selectedPlan === 500 ? '500 + 50 bonus' : selectedPlan} credits\n💵 Amount: PKR ${selectedPlan === 50 ? '450' : selectedPlan === 100 ? '900' : '4,500'}\n\nPayment screenshot is attached. Please add my credits. JazakAllah! 🙏`
+                          `Assalam o Alaikum! 🎓\n\nI have purchased credits on ResultPortal.\n\n📧 My Email: ${user?.email || ''}\n🏫 School: ${school?.name || ''}\n💰 Package: ${selectedPlan === 100 ? 'School Starter (100)' : selectedPlan === 500 ? 'School Growth (500)' : 'School Premium (1,000)'} credits\n💵 Amount: PKR ${selectedPlan === 100 ? '300' : selectedPlan === 500 ? '1,350' : '2,500'}\n\nPayment screenshot is attached. Please add my credits. JazakAllah! 🙏`
                         )}`}
                         target="_blank"
                         rel="noreferrer"
