@@ -240,7 +240,7 @@ export default function EarnWithUs() {
           <div key={s.label} className="rounded-xl p-4 space-y-1"
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
             <div className="flex items-center gap-2">{s.icon}<span className="text-xs" style={{ color: '#8b8a9e' }}>{s.label}</span></div>
-            <p className="text-2xl font-bold" style={{ color: '#f1f0f5' }}>{s.value}</p>
+            <p className="text-2xl font-bold" style={{ color: '#f1f0f5' }}>{s.prefix}{s.value}</p>
           </div>
         ))}
       </div>
