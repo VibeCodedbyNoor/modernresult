@@ -311,7 +311,7 @@ export default function EarnWithUs() {
             <TableHeader>
               <TableRow>
                 <TableHead>Amount Recharged (PKR)</TableHead>
-                <TableHead>Your Commission (10%)</TableHead>
+                <TableHead>Your Commission (10% PKR)</TableHead>
                 <TableHead>Date</TableHead>
               </TableRow>
             </TableHeader>
