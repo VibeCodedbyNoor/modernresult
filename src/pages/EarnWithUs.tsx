@@ -369,8 +369,8 @@ export default function EarnWithUs() {
               <Input value={accountNumber} onChange={e => setAccountNumber(e.target.value)} placeholder="03001234567" />
             </div>
             <div className="space-y-2">
-              <Label>Amount (Credits)</Label>
-              <Input type="number" min="1" max={availableBalance} value={withdrawAmount} onChange={e => setWithdrawAmount(e.target.value)} placeholder="Enter amount" />
+              <Label>Amount (PKR ₨)</Label>
+              <Input type="number" min="1" max={availableBalance} value={withdrawAmount} onChange={e => setWithdrawAmount(e.target.value)} placeholder="Enter PKR amount" />
             </div>
             <Button onClick={handleWithdraw} disabled={submitting || availableBalance <= 0} className="w-full">
               {submitting ? 'Submitting...' : 'Request Withdrawal'}
