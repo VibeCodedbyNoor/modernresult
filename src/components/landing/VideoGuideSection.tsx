@@ -1,31 +1,9 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { PlayCircle } from 'lucide-react';
+import { Smartphone } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-
-interface VideoConfig {
-  id: string;
-  title: string;
-  language: string;
-  youtubeId: string;
-}
-
-// Add your real YouTube video IDs here
-const videos: VideoConfig[] = [
-  {
-    id: 'tutorial',
-    title: 'How to Use OnlineResultPortal',
-    language: 'Complete Tutorial',
-    youtubeId: 'rh5KMo02dTU',
-  },
-];
 
 export default function VideoGuideSection() {
   const ref = useScrollReveal();
-
-  const availableVideos = videos.filter(v => v.youtubeId);
-
-  // Hide section if no videos are configured
-  if (availableVideos.length === 0) return null;
 
   return (
     <section ref={ref} className="mx-auto px-2 sm:px-4 py-10 sm:py-16 sm:container">
@@ -34,29 +12,34 @@ export default function VideoGuideSection() {
           📺 Video Guide
         </h2>
         <p className="text-sm sm:text-base" style={{ color: '#8b8a9e' }}>
-          Watch step-by-step tutorial in your language
+          Watch the complete step-by-step tutorial
         </p>
       </div>
 
-      <div className="max-w-xl mx-auto">
-        {videos.map(video => (
-          <Card
-            key={video.id}
-            className="overflow-hidden border-0"
-            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-          >
-            <div className="aspect-video flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.02)' }}>
-              <div className="text-center space-y-2">
-                <PlayCircle className="h-10 w-10 mx-auto" style={{ color: '#6d28d9' }} />
-                <p className="text-sm font-medium" style={{ color: '#8b8a9e' }}>Coming Soon...</p>
-              </div>
-            </div>
-            <CardContent className="p-4 text-center">
-              <p className="font-semibold text-lg" style={{ color: '#f1f0f5' }}>{video.title}</p>
-              <p className="text-xs" style={{ color: '#8b8a9e' }}>{video.language}</p>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="max-w-2xl mx-auto">
+        <Card
+          className="overflow-hidden border-0"
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <div className="aspect-video">
+            <iframe
+              src="https://www.youtube.com/embed/mOJtmiu0ZiU"
+              title="Online Result Portal – Complete Tutorial"
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+          <CardContent className="p-4 text-center space-y-1">
+            <p className="font-semibold text-lg" style={{ color: '#f1f0f5' }}>
+              Online Result Portal – Complete Tutorial
+            </p>
+            <p className="text-xs flex items-center justify-center gap-1.5" style={{ color: '#8b8a9e' }}>
+              <Smartphone className="h-3.5 w-3.5" />
+              Recorded on PC — the method is the same on mobile
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </section>
   );
