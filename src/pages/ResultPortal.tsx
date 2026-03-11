@@ -268,8 +268,17 @@ export default function ResultPortal() {
   const templateId = school.result_template || 'luxury-gold';
   const PortalComponent = PORTAL_MAP[templateId] || LuxuryGoldPortal;
 
+  // Determine if this is a dark-themed template
+  const darkTemplates = ['cyberpunk', 'dark-mode', 'futuristic', 'galaxy', 'glassmorphism', 'luxury-gold', 'monochrome', 'neon', 'ocean', 'nature', 'islamic', 'sunset', 'royal-purple'];
+  const bannerVariant = darkTemplates.includes(templateId) ? 'dark' : 'light';
+
   return (
     <div className="relative">
+      {examState.status !== 'active' && (
+        <div className="fixed top-14 left-0 right-0 z-40 px-4">
+          <ExamStatusBanner examState={examState} variant={bannerVariant} />
+        </div>
+      )}
       <PortalComponent
         isDemo={false}
         schoolName={school.name}
