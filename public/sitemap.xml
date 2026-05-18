@@ -6,23 +6,50 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://resultportal.online/login</loc>
+    <loc>https://resultportal.online/signup</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://resultportal.online/signup</loc>
+    <loc>https://resultportal.online/login</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://resultportal.online/help</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://resultportal.online/terms</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
-  </url>
-  <url>
     <loc>https://resultportal.online/earn</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.6</priority>
   </url>
+  <url>
+    <loc>https://resultportal.online/terms</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url><loc>https://resultportal.online/demo/luxury-gold</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/neon</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/minimalist</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/glassmorphism</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/dark-mode</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/gradient-modern</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/retro</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/cyberpunk</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/kawaii</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/futuristic</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/neumorphism</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/ocean</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/nature</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/islamic</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/sunset</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/corporate</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/pastel</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/galaxy</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/royal-purple</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/monochrome</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/elegant</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/demo/material-design</loc><priority>0.6</priority></url>
 </urlset>
