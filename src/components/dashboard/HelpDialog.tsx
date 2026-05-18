@@ -51,7 +51,7 @@ export default function HelpDialog({ open, onOpenChange }: HelpDialogProps) {
           )}
           
           <a
-            href="https://wa.me/923479104843?text=Assalam o Alaikum! I need help with my result portal."
+            href="https://wa.me/923478312432?text=Assalam o Alaikum! I need help with my result portal."
             target="_blank"
             rel="noreferrer"
           >

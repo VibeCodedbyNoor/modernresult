@@ -84,7 +84,7 @@ export default function HelpTab() {
         <CardContent className="p-6 text-center space-y-3">
           <p className="font-semibold">{t('help.need_more_help')}</p>
           <a
-            href="https://wa.me/923479104843?text=Assalam o Alaikum! I need help with my result portal."
+            href="https://wa.me/923478312432?text=Assalam o Alaikum! I need help with my result portal."
             target="_blank"
             rel="noreferrer"
           >

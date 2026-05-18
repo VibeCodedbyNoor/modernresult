@@ -722,7 +722,7 @@ export default function Dashboard() {
       <div className="container mx-auto px-4 py-8">
         {/* Done-for-you help banner */}
         <a
-          href={`https://wa.me/923479104843?text=${encodeURIComponent("Assalam o Alaikum! I want you to set up my result portal.\n\nMy school name is: ___\nGoogle Sheet link: ___")}`}
+          href={`https://wa.me/923478312432?text=${encodeURIComponent("Assalam o Alaikum! I want you to set up my result portal.\n\nMy school name is: ___\nGoogle Sheet link: ___")}`}
           target="_blank"
           rel="noreferrer"
           className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 mb-6 hover:bg-accent/30 transition-colors group"
@@ -1111,7 +1111,7 @@ export default function Dashboard() {
                         {t('dash.payment_instruction')}
                       </p>
                       <a
-                        href={`https://wa.me/923479104843?text=${encodeURIComponent(
+                        href={`https://wa.me/923478312432?text=${encodeURIComponent(
                           `Assalam o Alaikum! 🎓\n\nI have purchased credits on ResultPortal.\n\n📧 My Email: ${user?.email || ''}\n🏫 School: ${school?.name || ''}\n💰 Package: ${selectedPlan === 100 ? 'School Starter (100)' : selectedPlan === 500 ? 'School Growth (500)' : 'School Premium (1,000)'} credits\n💵 Amount: PKR ${selectedPlan === 100 ? '300' : selectedPlan === 500 ? '1,350' : '2,500'}\n\nPayment screenshot is attached. Please add my credits. JazakAllah! 🙏`
                         )}`}
                         target="_blank"

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-const whatsappUrl = `https://wa.me/923479104843?text=${encodeURIComponent(
+const whatsappUrl = `https://wa.me/923478312432?text=${encodeURIComponent(
   "Assalam o Alaikum! I want you to set up my result portal.\n\nMy school name is: ___\nGoogle Sheet link: ___"
 )}`;
 
