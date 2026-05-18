@@ -1096,9 +1096,9 @@ export default function Dashboard() {
                   <div className="rounded-xl bg-muted/50 border border-border p-4 space-y-3 animate-in fade-in slide-in-from-bottom-2">
                     <p className="text-sm font-semibold text-foreground">{t('dash.payment_details')}</p>
                     <div className="space-y-1.5 text-sm text-muted-foreground">
-                      <p><strong className="text-foreground">Easypaisa:</strong> 03479104843</p>
-                      <p><strong className="text-foreground">JazzCash:</strong> 03479104843</p>
-                      <p><strong className="text-foreground">{t('dash.account_name_label')}</strong> Muhammad Irfan</p>
+                      <p><strong className="text-foreground">Easypaisa:</strong> 03341212432</p>
+                      <p><strong className="text-foreground">JazzCash:</strong> 03341212432</p>
+                      <p><strong className="text-foreground">{t('dash.account_name_label')}</strong> NOOR REHMAN</p>
                       <p className="pt-1"><strong className="text-foreground">{t('dash.amount')}</strong>{' '}
                         <span className="text-primary font-semibold">
                           PKR {selectedPlan === 100 ? '300' : selectedPlan === 500 ? '1,350' : '2,500'}
