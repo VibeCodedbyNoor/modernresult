@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { School, CreditCard, Users, BookOpen, Search, Plus, MessageCircle, LogOut, ArrowUpDown, Phone, User, Wallet, CheckCircle, Ban, Clock, Trash2 } from 'lucide-react';
+import { School, CreditCard, Users, BookOpen, Search, Plus, MessageCircle, LogOut, ArrowUpDown, Phone, User, Wallet, CheckCircle, Ban, Clock, Trash2, LogIn } from 'lucide-react';
 
 interface SchoolWithCredits {
   id: string;
@@ -468,7 +468,7 @@ resultportal.online`;
                         {new Date(school.created_at).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 flex-wrap">
                           <Button
                             size="sm"
                             variant="outline"
@@ -479,6 +479,14 @@ resultportal.online`;
                             }}
                           >
                             <Plus className="h-3 w-3 mr-1" /> Credits
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            disabled={loginAsId === school.id}
+                            onClick={() => handleLoginAs(school.id, school.name)}
+                          >
+                            <LogIn className="h-3 w-3 mr-1" /> {loginAsId === school.id ? '...' : 'Login as'}
                           </Button>
                           {school.owner_id !== user?.id && (
                           <AlertDialog>
