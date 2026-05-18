@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
+import SEO from '@/components/SEO';
 import CorporatePortal from './portals/CorporatePortal';
 import CyberPunkPortal from './portals/CyberPunkPortal';
 import DarkModePortal from './portals/DarkModePortal';
@@ -51,9 +52,15 @@ const PORTAL_MAP: Record<string, React.ComponentType<any>> = {
 export default function DemoPortal() {
   const { templateId } = useParams<{ templateId: string }>();
   const PortalComponent = PORTAL_MAP[templateId || 'luxury-gold'] || LuxuryGoldPortal;
-  
+  const niceName = (templateId || 'luxury-gold').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
   return (
     <div className="relative">
+      <SEO
+        title={`${niceName} Result Portal Design — Live Demo`}
+        description={`Preview the ${niceName} result portal design from ResultPortal.online. See how student exam results look with this template before signing up.`}
+        path={`/demo/${templateId || 'luxury-gold'}`}
+      />
       {/* Floating Get This Design Banner */}
       <div className="fixed bottom-0 left-0 right-0 z-50 animate-fade-in">
         <div

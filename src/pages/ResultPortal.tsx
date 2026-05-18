@@ -7,6 +7,7 @@ import { Search } from 'lucide-react';
 import { PortalSkeleton } from '@/components/LoadingSkeletons';
 import type { ExamState } from '@/lib/portalTypes';
 import ExamStatusBanner from '@/components/portal/ExamStatusBanner';
+import SEO from '@/components/SEO';
 
 // Import all portal components
 import CorporatePortal from './portals/CorporatePortal';
@@ -276,6 +277,11 @@ export default function ResultPortal() {
 
   return (
     <div className="relative">
+      <SEO
+        title={`${school.name} — Check Exam Results Online`}
+        description={`Official online result portal for ${school.name}. Enter your roll number to instantly check your latest exam results.`}
+        path={`/results/${school.slug}`}
+      />
       <div className={isDisabled ? 'pointer-events-none opacity-50 select-none' : ''}>
         <PortalComponent
           isDemo={false}
