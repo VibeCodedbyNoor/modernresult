@@ -9,6 +9,7 @@ import DesignGrid from '@/components/landing/DesignGrid';
 import DoneForYouSection from '@/components/landing/DoneForYouSection';
 import CTASection from '@/components/landing/CTASection';
 import VideoGuideSection from '@/components/landing/VideoGuideSection';
+import SEO from '@/components/SEO';
 
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -31,6 +32,11 @@ export default function Index() {
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0a0b14 0%, #0f1021 50%, #0a0b14 100%)' }}>
+      <SEO
+        title="ResultPortal.online — Online Exam Result Portal for Schools"
+        description="Publish school exam results online in minutes. 22+ branded portal designs, instant student lookup, Excel uploads, and shareable links. Start with 20 free credits."
+        path="/"
+      />
       {/* Navbar */}
       <nav className="sticky top-0 z-50 backdrop-blur-md" style={{ background: 'rgba(10,11,20,0.85)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="container mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-1">

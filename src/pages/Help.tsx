@@ -6,6 +6,7 @@ import { PlayCircle, HelpCircle, MessageCircle, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { helpVideos, videoTranslations } from '@/lib/helpVideos';
 import ThemeToggle from '@/components/ThemeToggle';
+import SEO from '@/components/SEO';
 
 export default function Help() {
   const { t, lang } = useLanguage();
@@ -20,8 +21,24 @@ export default function Help() {
     { q: t('help.faq4_q'), a: t('help.faq4_a') },
   ];
 
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(f => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Help & FAQs — ResultPortal.online Tutorials"
+        description="Video tutorials, frequently asked questions, and WhatsApp support for setting up your school result portal, uploading results, and buying credits."
+        path="/help"
+        jsonLd={faqJsonLd}
+      />
       {/* Navbar */}
       <nav className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 h-14 flex items-center justify-between">

@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { Copy, Users, Wallet, ArrowRight, CheckCircle, Share2, UserPlus, CreditCard, Clock, Ban } from 'lucide-react';
+import SEO from '@/components/SEO';
 
 function maskEmail(email: string) {
   const [local, domain] = email.split('@');
@@ -408,6 +409,11 @@ export default function EarnWithUs() {
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0a0b14 0%, #0f1021 50%, #0a0b14 100%)' }}>
+      <SEO
+        title="Earn With Us — 10% Referral Commission in PKR"
+        description="Refer schools to ResultPortal.online and earn 10% PKR commission on every recharge. Withdraw anytime via JazzCash or Easypaisa. Start earning today."
+        path="/earn"
+      />
       {/* Navbar */}
       <nav className="sticky top-0 z-50 backdrop-blur-md" style={{ background: 'rgba(10,11,20,0.85)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="container mx-auto px-4 h-14 flex items-center justify-between">

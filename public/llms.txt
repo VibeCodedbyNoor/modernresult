@@ -1,0 +1,23 @@
+# ResultPortal.online
+
+> Multi-tenant SaaS for schools in Pakistan to publish exam results online. Schools upload student data via Excel or Google Sheets and instantly share a branded result portal where students/parents can check their results.
+
+ResultPortal.online lets school owners pick from 22+ portal designs, upload results, and share a custom slug-based URL. The platform runs on a credit-based pricing model (Easypaisa/JazzCash) with a referral program for earnings.
+
+## Pages
+
+- [Home](/): Product overview, features, pricing, design gallery.
+- [Sign up](/signup): Create a free school account (20 welcome credits).
+- [Log in](/login): Sign in to the school dashboard.
+- [Help](/help): Video tutorials, FAQs, and WhatsApp support.
+- [Earn with us](/earn): Referral program — 10% commission in PKR, withdrawable via JazzCash/Easypaisa.
+- [Terms](/terms): Terms of service and pricing rules.
+
+## Examples
+
+- [Demo portal — Luxury Gold](/demo/luxury-gold): Preview a result portal design.
+- [Demo portal — Neon](/demo/neon): Preview another design variant.
+
+## Optional
+
+- [Dashboard](/dashboard): Authenticated school owner workspace (login required).

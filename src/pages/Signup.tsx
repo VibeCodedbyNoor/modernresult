@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User, Phone, School, Mail } from 'lucide-react';
+import SEO from '@/components/SEO';
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -85,6 +86,11 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <SEO
+        title="Sign Up Free — Create Your School Result Portal"
+        description="Create a free school account on ResultPortal.online and get 20 welcome credits. Publish exam results online in minutes — no credit card required."
+        path="/signup"
+      />
       <div className="w-full max-w-md animate-fade-in">
         <div className="text-center mb-8">
           <Link to="/" className="font-display text-2xl font-bold text-primary">OnlineResultPortal</Link>

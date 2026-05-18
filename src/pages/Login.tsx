@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import SEO from '@/components/SEO';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -30,6 +31,12 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <SEO
+        title="Log In — ResultPortal.online School Dashboard"
+        description="Sign in to your ResultPortal.online school dashboard to publish exam results, manage student data, and customize your portal design."
+        path="/login"
+        noindex
+      />
       <div className="w-full max-w-md animate-fade-in">
         <div className="text-center mb-8">
           <Link to="/" className="font-display text-2xl font-bold text-primary">OnlineResultPortal</Link>
