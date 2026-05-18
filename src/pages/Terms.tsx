@@ -1,9 +1,15 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import SEO from '@/components/SEO';
 
 export default function Terms() {
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0a0b14 0%, #0f1021 50%, #0a0b14 100%)' }}>
+      <SEO
+        title="Terms of Service — ResultPortal.online"
+        description="Read the terms of service for ResultPortal.online, including credit usage, referral payouts, and acceptable use of our school result portal platform."
+        path="/terms"
+      />
       {/* Navbar */}
       <nav className="sticky top-0 z-50 backdrop-blur-md" style={{ background: 'rgba(10,11,20,0.85)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="container mx-auto px-4 h-14 flex items-center">
