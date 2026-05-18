@@ -722,7 +722,7 @@ export default function Dashboard() {
       <div className="container mx-auto px-4 py-8">
         {/* Done-for-you help banner */}
         <a
-          href={`https://wa.me/923479104843?text=${encodeURIComponent("Assalam o Alaikum! I want you to set up my result portal.\n\nMy school name is: ___\nGoogle Sheet link: ___")}`}
+          href={`https://wa.me/923478312432?text=${encodeURIComponent("Assalam o Alaikum! I want you to set up my result portal.\n\nMy school name is: ___\nGoogle Sheet link: ___")}`}
           target="_blank"
           rel="noreferrer"
           className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 mb-6 hover:bg-accent/30 transition-colors group"
@@ -1096,9 +1096,9 @@ export default function Dashboard() {
                   <div className="rounded-xl bg-muted/50 border border-border p-4 space-y-3 animate-in fade-in slide-in-from-bottom-2">
                     <p className="text-sm font-semibold text-foreground">{t('dash.payment_details')}</p>
                     <div className="space-y-1.5 text-sm text-muted-foreground">
-                      <p><strong className="text-foreground">Easypaisa:</strong> 03479104843</p>
-                      <p><strong className="text-foreground">JazzCash:</strong> 03479104843</p>
-                      <p><strong className="text-foreground">{t('dash.account_name_label')}</strong> Muhammad Irfan</p>
+                      <p><strong className="text-foreground">Easypaisa:</strong> 03341212432</p>
+                      <p><strong className="text-foreground">JazzCash:</strong> 03341212432</p>
+                      <p><strong className="text-foreground">{t('dash.account_name_label')}</strong> NOOR REHMAN</p>
                       <p className="pt-1"><strong className="text-foreground">{t('dash.amount')}</strong>{' '}
                         <span className="text-primary font-semibold">
                           PKR {selectedPlan === 100 ? '300' : selectedPlan === 500 ? '1,350' : '2,500'}
@@ -1111,7 +1111,7 @@ export default function Dashboard() {
                         {t('dash.payment_instruction')}
                       </p>
                       <a
-                        href={`https://wa.me/923479104843?text=${encodeURIComponent(
+                        href={`https://wa.me/923478312432?text=${encodeURIComponent(
                           `Assalam o Alaikum! 🎓\n\nI have purchased credits on ResultPortal.\n\n📧 My Email: ${user?.email || ''}\n🏫 School: ${school?.name || ''}\n💰 Package: ${selectedPlan === 100 ? 'School Starter (100)' : selectedPlan === 500 ? 'School Growth (500)' : 'School Premium (1,000)'} credits\n💵 Amount: PKR ${selectedPlan === 100 ? '300' : selectedPlan === 500 ? '1,350' : '2,500'}\n\nPayment screenshot is attached. Please add my credits. JazakAllah! 🙏`
                         )}`}
                         target="_blank"
@@ -1128,6 +1128,25 @@ export default function Dashboard() {
                     </div>
                   </div>
                 )}
+
+                {/* International payment notice */}
+                <div className="rounded-xl border border-dashed border-border bg-muted/30 p-4 text-center space-y-2">
+                  <p className="text-sm font-semibold text-foreground">🌍 International users</p>
+                  <p className="text-xs text-muted-foreground">
+                    Outside Pakistan? We accept Wise, PayPal, bank transfer and crypto. Message us on WhatsApp and we'll guide you through it.
+                  </p>
+                  <a
+                    href={`https://wa.me/923478312432?text=${encodeURIComponent("Assalam o Alaikum! I'm an international user and want to purchase ResultPortal credits. Please share payment options.")}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-block"
+                  >
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <MessageCircle className="h-3.5 w-3.5" />
+                      Contact us on WhatsApp
+                    </Button>
+                  </a>
+                </div>
               </CardContent>
             </Card>
 

@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { School, CreditCard, Users, BookOpen, Search, Plus, MessageCircle, LogOut, ArrowUpDown, Phone, User, Wallet, CheckCircle, Ban, Clock, Trash2 } from 'lucide-react';
+import { School, CreditCard, Users, BookOpen, Search, Plus, MessageCircle, LogOut, ArrowUpDown, Phone, User, Wallet, CheckCircle, Ban, Clock, Trash2, LogIn } from 'lucide-react';
 
 interface SchoolWithCredits {
   id: string;
@@ -70,6 +70,23 @@ export default function AdminDashboard() {
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
   const [updatingWithdrawal, setUpdatingWithdrawal] = useState<string | null>(null);
   const [deletingSchool, setDeletingSchool] = useState<string | null>(null);
+  const [loginAsId, setLoginAsId] = useState<string | null>(null);
+
+  const handleLoginAs = async (schoolId: string, schoolName: string) => {
+    if (!confirm(`Log in as the owner of "${schoolName}"? You will be signed out of your admin account.`)) return;
+    setLoginAsId(schoolId);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-login-as', {
+        body: { school_id: schoolId, redirect_to: `${window.location.origin}/dashboard` },
+      });
+      if (error || !data?.action_link) throw new Error(error?.message || data?.error || 'Failed');
+      toast({ title: `Opening ${schoolName} session…` });
+      window.location.href = data.action_link;
+    } catch (err: any) {
+      toast({ title: 'Login as failed', description: err.message, variant: 'destructive' });
+      setLoginAsId(null);
+    }
+  };
 
   // Check admin role
   useEffect(() => {
@@ -468,7 +485,7 @@ resultportal.online`;
                         {new Date(school.created_at).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 flex-wrap">
                           <Button
                             size="sm"
                             variant="outline"
@@ -479,6 +496,14 @@ resultportal.online`;
                             }}
                           >
                             <Plus className="h-3 w-3 mr-1" /> Credits
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            disabled={loginAsId === school.id}
+                            onClick={() => handleLoginAs(school.id, school.name)}
+                          >
+                            <LogIn className="h-3 w-3 mr-1" /> {loginAsId === school.id ? '...' : 'Login as'}
                           </Button>
                           {school.owner_id !== user?.id && (
                           <AlertDialog>

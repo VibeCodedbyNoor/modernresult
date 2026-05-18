@@ -1,7 +1,7 @@
 import { MessageCircle } from 'lucide-react';
 
 export default function WhatsAppHelpButton() {
-  const whatsappUrl = `https://wa.me/923479104843?text=${encodeURIComponent('Assalam o Alaikum! I need help with OnlineResultPortal.')}`;
+  const whatsappUrl = `https://wa.me/923478312432?text=${encodeURIComponent('Assalam o Alaikum! I need help with OnlineResultPortal.')}`;
 
   return (
     <a

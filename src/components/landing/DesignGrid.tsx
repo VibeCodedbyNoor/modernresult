@@ -70,7 +70,7 @@ function MobileCarousel() {
     return () => { emblaApi.off('select', onSelect); };
   }, [emblaApi]);
 
-  const whatsappLink = `https://wa.me/923479104843?text=${encodeURIComponent("Hi! I'm interested in getting a custom design for my Result Portal.")}`;
+  const whatsappLink = `https://wa.me/923478312432?text=${encodeURIComponent("Hi! I'm interested in getting a custom design for my Result Portal.")}`;
   const totalSlides = resultTemplates.length + 1;
 
   return (
@@ -144,7 +144,7 @@ export default function DesignGrid() {
   const { t } = useLanguage();
   const isMobile = useIsMobile();
 
-  const whatsappLink = `https://wa.me/923479104843?text=${encodeURIComponent("Hi! I'm interested in getting a custom design for my Result Portal.")}`;
+  const whatsappLink = `https://wa.me/923478312432?text=${encodeURIComponent("Hi! I'm interested in getting a custom design for my Result Portal.")}`;
 
   return (
     <section className="mx-auto px-2 sm:px-4 py-10 sm:py-16" id="designs">
