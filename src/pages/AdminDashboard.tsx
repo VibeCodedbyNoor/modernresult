@@ -70,6 +70,23 @@ export default function AdminDashboard() {
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
   const [updatingWithdrawal, setUpdatingWithdrawal] = useState<string | null>(null);
   const [deletingSchool, setDeletingSchool] = useState<string | null>(null);
+  const [loginAsId, setLoginAsId] = useState<string | null>(null);
+
+  const handleLoginAs = async (schoolId: string, schoolName: string) => {
+    if (!confirm(`Log in as the owner of "${schoolName}"? You will be signed out of your admin account.`)) return;
+    setLoginAsId(schoolId);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-login-as', {
+        body: { school_id: schoolId, redirect_to: `${window.location.origin}/dashboard` },
+      });
+      if (error || !data?.action_link) throw new Error(error?.message || data?.error || 'Failed');
+      toast({ title: `Opening ${schoolName} session…` });
+      window.location.href = data.action_link;
+    } catch (err: any) {
+      toast({ title: 'Login as failed', description: err.message, variant: 'destructive' });
+      setLoginAsId(null);
+    }
+  };
 
   // Check admin role
   useEffect(() => {
