@@ -115,3 +115,99 @@
     font-family: 'Space Grotesk', sans-serif;
   }
 }
+
+/* Blog post typography */
+.blog-content {
+  line-height: 1.8;
+  font-size: 1.0625rem;
+  color: rgba(255,255,255,0.85);
+}
+.blog-content h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: #fff;
+  scroll-margin-top: 6rem;
+}
+.blog-content h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: #fff;
+  scroll-margin-top: 6rem;
+}
+.blog-content h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+.blog-content p { margin: 1rem 0; }
+.blog-content a {
+  color: #a78bfa;
+  text-decoration: underline;
+  text-decoration-color: rgba(167,139,250,0.4);
+  text-underline-offset: 3px;
+}
+.blog-content a:hover { color: #c4b5fd; }
+.blog-content ul, .blog-content ol {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+.blog-content ul { list-style: disc; }
+.blog-content ol { list-style: decimal; }
+.blog-content li { margin: 0.4rem 0; }
+.blog-content blockquote {
+  border-left: 3px solid #a78bfa;
+  padding: 0.75rem 1.25rem;
+  margin: 1.5rem 0;
+  background: rgba(167,139,250,0.06);
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  color: rgba(255,255,255,0.75);
+}
+.blog-content code {
+  background: rgba(255,255,255,0.08);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+.blog-content pre {
+  background: #0f1020;
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 1rem;
+  border-radius: 10px;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+.blog-content pre code {
+  background: transparent;
+  padding: 0;
+}
+.blog-content img {
+  display: block;
+  margin: 1.75rem auto;
+  border-radius: 10px;
+  max-width: 100%;
+}
+.blog-content hr {
+  border-color: rgba(255,255,255,0.1);
+  margin: 2rem 0;
+}
+.blog-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+.blog-content th, .blog-content td {
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+.blog-content th { background: rgba(255,255,255,0.05); }
