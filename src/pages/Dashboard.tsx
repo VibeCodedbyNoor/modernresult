@@ -1128,11 +1128,6 @@ export default function Dashboard() {
                     </div>
                   </div>
                 )}
-
-                      Contact us on WhatsApp
-                    </Button>
-                  </a>
-                </div>
               </CardContent>
             </Card>
 
