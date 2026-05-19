@@ -19,6 +19,9 @@ import EarnWithUs from "./pages/EarnWithUs";
 import Terms from "./pages/Terms";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
+import BlogCategory from "./pages/BlogCategory";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +63,9 @@ function AppContent() {
         <Route path="/earn" element={<EarnWithUs />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/help" element={<Help />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/category/:slug" element={<BlogCategory />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

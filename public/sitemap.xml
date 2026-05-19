@@ -30,6 +30,16 @@
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
+  <url>
+    <loc>https://resultportal.online/blog</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url><loc>https://resultportal.online/blog/category/school-management</loc><priority>0.7</priority></url>
+  <url><loc>https://resultportal.online/blog/category/online-results</loc><priority>0.7</priority></url>
+  <url><loc>https://resultportal.online/blog/category/pakistan-education</loc><priority>0.7</priority></url>
+  <url><loc>https://resultportal.online/blog/category/how-to-guides</loc><priority>0.7</priority></url>
+  <url><loc>https://resultportal.online/blog/category/edtech-tools</loc><priority>0.7</priority></url>
   <url><loc>https://resultportal.online/demo/luxury-gold</loc><priority>0.6</priority></url>
   <url><loc>https://resultportal.online/demo/neon</loc><priority>0.6</priority></url>
   <url><loc>https://resultportal.online/demo/minimalist</loc><priority>0.6</priority></url>
