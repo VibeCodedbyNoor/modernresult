@@ -52,6 +52,11 @@ export default function Index() {
                 </Button>
               </Link>
             )}
+            <Link to="/blog" className="hidden sm:block">
+              <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-3 h-8" style={{ color: '#8b8a9e' }}>
+                Blog
+              </Button>
+            </Link>
             <Link to="/terms" className="hidden sm:block">
               <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-3 h-8" style={{ color: '#8b8a9e' }}>
                 {t('nav.terms')}
@@ -88,6 +93,10 @@ export default function Index() {
           <span style={{ color: '#3a3950' }}>•</span>
           <Link to="/help" className="text-[10px] hover:underline" style={{ color: '#3a3950' }}>
             {t('nav.help')}
+          </Link>
+          <span style={{ color: '#3a3950' }}>•</span>
+          <Link to="/blog" className="text-[10px] hover:underline" style={{ color: '#3a3950' }}>
+            Blog
           </Link>
         </div>
       </footer>
