@@ -1129,20 +1129,6 @@ export default function Dashboard() {
                   </div>
                 )}
 
-                {/* International payment notice */}
-                <div className="rounded-xl border border-dashed border-border bg-muted/30 p-4 text-center space-y-2">
-                  <p className="text-sm font-semibold text-foreground">🌍 International users</p>
-                  <p className="text-xs text-muted-foreground">
-                    Outside Pakistan? We accept Wise, PayPal, bank transfer and crypto. Message us on WhatsApp and we'll guide you through it.
-                  </p>
-                  <a
-                    href={`https://wa.me/923478312432?text=${encodeURIComponent("Assalam o Alaikum! I'm an international user and want to purchase ResultPortal credits. Please share payment options.")}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-block"
-                  >
-                    <Button size="sm" variant="outline" className="gap-2">
-                      <MessageCircle className="h-3.5 w-3.5" />
                       Contact us on WhatsApp
                     </Button>
                   </a>
