@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import GlobalLanguageToggle from "@/components/GlobalLanguageToggle";
+import AIChatWidget from "@/components/AIChatWidget";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -29,26 +29,6 @@ function AppContent() {
   const location = useLocation();
   const isResultPortal = location.pathname.startsWith('/results/') || location.pathname.startsWith('/demo/');
 
-  useEffect(() => {
-    if (isResultPortal) {
-      // Remove existing Noorify widget script
-      const existingScript = document.querySelector('script[data-business-id="f9dc4584-70e3-4b42-b152-2758c93e4265"]');
-      if (existingScript) existingScript.remove();
-      // Remove any widget elements the script may have injected
-      document.querySelectorAll('[id*="noorify"], [class*="noorify"], iframe[src*="noorify"]').forEach(el => el.remove());
-    } else {
-      // Inject the widget script if not already present
-      const existingScript = document.querySelector('script[data-business-id="f9dc4584-70e3-4b42-b152-2758c93e4265"]');
-      if (!existingScript) {
-        const script = document.createElement('script');
-        script.src = 'https://noorify-always-on.lovable.app/widget.js';
-        script.setAttribute('data-business-id', 'f9dc4584-70e3-4b42-b152-2758c93e4265');
-        script.async = true;
-        document.body.appendChild(script);
-      }
-    }
-  }, [isResultPortal]);
-
   return (
     <>
       {!isResultPortal && <GlobalLanguageToggle />}
@@ -68,6 +48,7 @@ function AppContent() {
         <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      {!isResultPortal && <AIChatWidget />}
     </>
   );
 }

@@ -490,6 +490,27 @@ export type Database = {
         }
         Relationships: []
       }
+      signup_ips: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           key: string
@@ -593,6 +614,7 @@ export type Database = {
         Args: { p_referral_code: string; p_referred_user_id: string }
         Returns: boolean
       }
+      check_ip_signup_limit: { Args: { p_ip: string }; Returns: boolean }
       deduct_credit: { Args: { p_school_id: string }; Returns: boolean }
       deduct_credits_bulk: {
         Args: { p_count: number; p_school_id: string }
@@ -670,6 +692,10 @@ export type Database = {
       }
       process_referral_commission: {
         Args: { p_credits_added: number; p_school_id: string }
+        Returns: undefined
+      }
+      record_signup_ip: {
+        Args: { p_ip: string; p_user_id: string }
         Returns: undefined
       }
     }
