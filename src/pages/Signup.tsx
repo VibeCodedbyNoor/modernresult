@@ -38,7 +38,28 @@ export default function Signup() {
       return;
     }
 
+    const waClean = whatsappNumber.trim().replace(/[\s-]/g, '');
+    if (!/^\+\d{8,15}$/.test(waClean)) {
+      toast.error('WhatsApp must include country code (e.g. +923001234567)');
+      return;
+    }
+
     setLoading(true);
+
+    // Pre-check IP signup limit
+    try {
+      const { data: ipCheck } = await supabase.functions.invoke('signup-ip-limit', {
+        body: { action: 'check' },
+      });
+      if (ipCheck && ipCheck.allowed === false) {
+        setLoading(false);
+        toast.error('Signup limit reached for this network (max 3). Contact +923478312432 on WhatsApp.');
+        return;
+      }
+    } catch (err) {
+      console.error('IP check failed:', err);
+    }
+
     const { error } = await signUp(email, password);
     
     if (error) {
@@ -49,6 +70,20 @@ export default function Signup() {
 
     const { data: { user: newUser } } = await supabase.auth.getUser();
     if (newUser) {
+      try {
+        const { data: ipRec } = await supabase.functions.invoke('signup-ip-limit', {
+          body: { action: 'record', user_id: newUser.id },
+        });
+        if (ipRec && ipRec.allowed === false) {
+          await supabase.auth.signOut();
+          setLoading(false);
+          toast.error('Signup limit reached. Account removed.');
+          return;
+        }
+      } catch (err) {
+        console.error('IP record failed:', err);
+      }
+
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert(
@@ -56,7 +91,7 @@ export default function Signup() {
             user_id: newUser.id,
             owner_name: ownerName.trim(),
             school_name: schoolName.trim(),
-            whatsapp_number: whatsappNumber.trim(),
+            whatsapp_number: waClean,
           },
           { onConflict: 'user_id' }
         );
