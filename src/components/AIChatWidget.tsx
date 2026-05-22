@@ -11,7 +11,7 @@ const PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 export default function AIChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([
-    { role: 'assistant', content: "Hi! 👋 I'm Noor — how can I help you today?" },
+    { role: 'assistant', content: "Hi! I'm **Noor** 👋\n\nAsk me anything in any language — English, اردو, Roman Urdu, پښتو, हिन्दी…" },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -111,13 +111,13 @@ export default function AIChatWidget() {
 
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-24 left-5 z-[60] w-[92vw] max-w-sm h-[70vh] max-h-[560px] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-200">
+        <div className="fixed bottom-24 left-2 right-2 sm:left-5 sm:right-auto z-[60] sm:w-[92vw] sm:max-w-sm h-[75vh] max-h-[600px] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-200">
           <div className="px-4 py-3 bg-gradient-to-r from-primary to-purple-600 text-white flex items-center gap-3">
             <div className="h-9 w-9 rounded-full bg-white/20 flex items-center justify-center font-bold">N</div>
-            <div className="flex-1">
-              <div className="font-semibold text-sm">Noor — Support</div>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-sm">Noor</div>
               <div className="text-xs opacity-90 flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-300" /> Online
+                <span className="h-1.5 w-1.5 rounded-full bg-green-300" /> Online · Any language
               </div>
             </div>
           </div>
@@ -152,7 +152,7 @@ export default function AIChatWidget() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && send()}
-              placeholder="Type a message..."
+              placeholder="Ask me anything in any language..."
               disabled={loading}
               className="flex-1 px-3 py-2 rounded-full bg-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
