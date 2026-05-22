@@ -152,7 +152,7 @@ export default function AIChatWidget() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && send()}
-              placeholder="Type a message..."
+              placeholder="Ask me anything in any language..."
               disabled={loading}
               className="flex-1 px-3 py-2 rounded-full bg-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
