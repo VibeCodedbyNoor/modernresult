@@ -11,7 +11,7 @@ const PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 export default function AIChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([
-    { role: 'assistant', content: "Hi! 👋 I'm Noor — how can I help you today?" },
+    { role: 'assistant', content: "Hi! I'm **Noor** 👋\n\nAsk me anything in any language — English, اردو, Roman Urdu, پښتو, हिन्दी…" },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
