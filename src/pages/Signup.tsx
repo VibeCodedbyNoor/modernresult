@@ -156,12 +156,23 @@ export default function Signup() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="whatsapp">WhatsApp Number (with country code)</Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="whatsapp" value={whatsappNumber} onChange={e => setWhatsappNumber(e.target.value)} placeholder="+923001234567" className="pl-9" required />
+                <Label htmlFor="whatsapp">WhatsApp Number</Label>
+                <div className="flex gap-2">
+                  <CountryCodeSelect value={country} onChange={setCountry} />
+                  <Input
+                    id="whatsapp"
+                    type="tel"
+                    inputMode="numeric"
+                    value={whatsappNumber}
+                    onChange={e => setWhatsappNumber(e.target.value)}
+                    placeholder="3001234567"
+                    className="flex-1"
+                    required
+                  />
                 </div>
-                <p className="text-xs text-muted-foreground">Must start with country code, e.g. +92 for Pakistan</p>
+                <p className="text-xs text-muted-foreground">
+                  Select your country and enter your number (without country code).
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
