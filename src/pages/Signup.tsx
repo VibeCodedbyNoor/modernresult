@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User, Phone, School, Mail } from 'lucide-react';
 import SEO from '@/components/SEO';
+import CountryCodeSelect from '@/components/CountryCodeSelect';
+import { COUNTRIES, Country } from '@/lib/countryCodes';
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ export default function Signup() {
   const [ownerName, setOwnerName] = useState('');
   const [schoolName, setSchoolName] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [country, setCountry] = useState<Country>(COUNTRIES[0]);
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
   const [searchParams] = useSearchParams();
@@ -38,9 +41,10 @@ export default function Signup() {
       return;
     }
 
-    const waClean = whatsappNumber.trim().replace(/[\s-]/g, '');
-    if (!/^\+\d{8,15}$/.test(waClean)) {
-      toast.error('WhatsApp must include country code (e.g. +923001234567)');
+    const nationalDigits = whatsappNumber.replace(/\D/g, '').replace(/^0+/, '');
+    const waClean = `${country.dial}${nationalDigits}`;
+    if (!/^\+\d{8,15}$/.test(waClean) || nationalDigits.length < 6) {
+      toast.error('Enter a valid WhatsApp number');
       return;
     }
 
