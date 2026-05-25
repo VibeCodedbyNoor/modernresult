@@ -80,6 +80,7 @@ export default function Index() {
       <DesignGrid />
       <HowItWorks />
       <DoneForYouSection />
+      <PricingSection />
       <CTASection />
 
       {/* Footer */}
