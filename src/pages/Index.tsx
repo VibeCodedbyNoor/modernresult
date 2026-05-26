@@ -9,7 +9,6 @@ import DesignGrid from '@/components/landing/DesignGrid';
 import DoneForYouSection from '@/components/landing/DoneForYouSection';
 import CTASection from '@/components/landing/CTASection';
 import VideoGuideSection from '@/components/landing/VideoGuideSection';
-import PricingSection from '@/components/landing/PricingSection';
 import SEO from '@/components/SEO';
 
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -80,7 +79,6 @@ export default function Index() {
       <DesignGrid />
       <HowItWorks />
       <DoneForYouSection />
-      <PricingSection />
       <CTASection />
 
       {/* Footer */}
