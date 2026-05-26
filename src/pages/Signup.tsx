@@ -9,8 +9,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { User, Phone, School, Mail } from 'lucide-react';
 import SEO from '@/components/SEO';
-import CountryCodeSelect from '@/components/CountryCodeSelect';
-import { COUNTRIES, Country } from '@/lib/countryCodes';
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -20,7 +18,6 @@ export default function Signup() {
   const [ownerName, setOwnerName] = useState('');
   const [schoolName, setSchoolName] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
-  const [country, setCountry] = useState<Country>(COUNTRIES[0]);
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
   const [searchParams] = useSearchParams();
@@ -41,10 +38,9 @@ export default function Signup() {
       return;
     }
 
-    const nationalDigits = whatsappNumber.replace(/\D/g, '').replace(/^0+/, '');
-    const waClean = `${country.dial}${nationalDigits}`;
-    if (!/^\+\d{8,15}$/.test(waClean) || nationalDigits.length < 6) {
-      toast.error('Enter a valid WhatsApp number');
+    const waClean = whatsappNumber.trim().replace(/[\s-]/g, '');
+    if (!/^\+\d{8,15}$/.test(waClean)) {
+      toast.error('WhatsApp must include country code (e.g. +923001234567)');
       return;
     }
 
@@ -156,23 +152,12 @@ export default function Signup() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="whatsapp">WhatsApp Number</Label>
-                <div className="flex gap-2">
-                  <CountryCodeSelect value={country} onChange={setCountry} />
-                  <Input
-                    id="whatsapp"
-                    type="tel"
-                    inputMode="numeric"
-                    value={whatsappNumber}
-                    onChange={e => setWhatsappNumber(e.target.value)}
-                    placeholder="3001234567"
-                    className="flex-1"
-                    required
-                  />
+                <Label htmlFor="whatsapp">WhatsApp Number (with country code)</Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input id="whatsapp" value={whatsappNumber} onChange={e => setWhatsappNumber(e.target.value)} placeholder="+923001234567" className="pl-9" required />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Select your country and enter your number (without country code).
-                </p>
+                <p className="text-xs text-muted-foreground">Must start with country code, e.g. +92 for Pakistan</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
