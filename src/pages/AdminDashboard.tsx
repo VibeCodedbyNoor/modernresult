@@ -458,6 +458,7 @@ resultportal.online`;
                     <TableHead>WhatsApp</TableHead>
                     <TableHead>Slug</TableHead>
                     <TableHead>Credits</TableHead>
+                    <TableHead>Plan</TableHead>
                     <TableHead>Joined</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
