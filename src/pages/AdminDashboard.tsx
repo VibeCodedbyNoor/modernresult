@@ -501,6 +501,17 @@ resultportal.online`;
                           {school.credit_balance}
                         </Badge>
                       </TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          variant={school.plan === 'pro' ? 'default' : 'outline'}
+                          className={school.plan === 'pro' ? 'bg-amber-500 text-black hover:bg-amber-600' : ''}
+                          onClick={() => handleTogglePlan(school)}
+                          title="Click to toggle plan"
+                        >
+                          {school.plan === 'pro' ? '⭐ Pro' : 'Free'}
+                        </Button>
+                      </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         {new Date(school.created_at).toLocaleDateString()}
                       </TableCell>
@@ -557,7 +568,7 @@ resultportal.online`;
                   ))}
                   {filteredSchools.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                         No schools found
                       </TableCell>
                     </TableRow>
