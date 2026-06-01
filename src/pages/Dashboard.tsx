@@ -40,6 +40,7 @@ interface SchoolData {
   search_fields: string[];
   template_changes_count: number;
   upload_count: number;
+  plan?: string;
 }
 
 interface Exam {
@@ -459,17 +460,7 @@ export default function Dashboard() {
       }
     }
 
-    if (school.upload_count >= 2) {
-      const confirmed = await new Promise<boolean>(resolve => {
-        setUploadConfirmResolve(() => resolve);
-        setUploadConfirmOpen(true);
-      });
-      if (!confirmed) return;
-    }
-
-    const { data: uploadOk, error: uploadErr } = await supabase.rpc('deduct_upload_credits', { p_school_id: school.id });
-    if (uploadErr) { toast.error(uploadErr.message); return; }
-    if (!uploadOk) { toast.error('Not enough credits! You need at least 10 credits to upload results.'); return; }
+    // Free plan: uploads are unlimited and free — no credit deduction.
 
     setUploading(true);
     try {
@@ -531,9 +522,7 @@ export default function Dashboard() {
       if (error) {
         toast.error(error.message);
       } else {
-        const uploadMsg = school.upload_count < 2
-          ? `${validRows.length} results uploaded (free upload used)`
-          : `${validRows.length} results uploaded (10 credits deducted)`;
+        const uploadMsg = `${validRows.length} results uploaded`;
         toast.success(uploadMsg);
         setSchool({ ...school, upload_count: school.upload_count + 1 });
         setColumnMappingOpen(false);
@@ -701,11 +690,30 @@ export default function Dashboard() {
             <span className="font-display font-bold text-primary text-sm sm:text-base shrink-0">OnlineResultPortal</span>
             <span className="text-muted-foreground hidden sm:inline">/</span>
             <span className="font-medium text-foreground text-xs sm:text-sm truncate">{school.name}</span>
+            {(school as any).plan === 'pro' ? (
+              <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500 text-black shrink-0">
+                ⭐ Pro
+              </span>
+            ) : (
+              <span className="hidden sm:inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground shrink-0">
+                Free
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <ThemeToggle />
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setHelpDialogOpen(true)} title={t('dash.tab_help')}>
               <HelpCircle className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1 text-xs sm:text-sm px-1.5 sm:px-3 h-8"
+              onClick={() => navigate('/dashboard/billing')}
+              title="Billing & Plan"
+            >
+              <CreditCard className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Billing</span>
             </Button>
             <a href={`https://resultportal.online/results/${school.slug}`} target="_blank" rel="noreferrer">
               <Button variant="outline" size="sm" className="gap-1 text-xs sm:text-sm px-2 sm:px-3 h-8">

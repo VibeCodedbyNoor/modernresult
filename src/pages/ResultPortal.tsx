@@ -8,6 +8,8 @@ import { PortalSkeleton } from '@/components/LoadingSkeletons';
 import type { ExamState } from '@/lib/portalTypes';
 import ExamStatusBanner from '@/components/portal/ExamStatusBanner';
 import SEO from '@/components/SEO';
+import AdBanner from '@/components/AdBanner';
+import { usePlanBySlug } from '@/hooks/usePlan';
 
 // Import all portal components
 import CorporatePortal from './portals/CorporatePortal';
@@ -275,6 +277,8 @@ export default function ResultPortal() {
 
   const isDisabled = examState.status !== 'active';
 
+  const plan = usePlanBySlug(school.slug);
+
   return (
     <div className="relative">
       <SEO
@@ -282,6 +286,7 @@ export default function ResultPortal() {
         description={`Official online result portal for ${school.name}. Enter your roll number to instantly check your latest exam results.`}
         path={`/results/${school.slug}`}
       />
+      <AdBanner plan={plan} slot="top" />
       <div className={isDisabled ? 'pointer-events-none opacity-50 select-none' : ''}>
         <PortalComponent
           isDemo={false}
@@ -292,6 +297,7 @@ export default function ResultPortal() {
           examState={examState}
         />
       </div>
+      <AdBanner plan={plan} slot="bottom" />
       {isDisabled && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <ExamStatusBanner examState={examState} variant={bannerVariant} />

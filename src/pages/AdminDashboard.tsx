@@ -24,6 +24,7 @@ interface SchoolWithCredits {
   whatsapp_number?: string;
   owner_email?: string;
   invited_by?: string;
+  plan?: 'free' | 'pro';
 }
 
 interface TransactionRow {
@@ -88,6 +89,23 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleTogglePlan = async (school: SchoolWithCredits) => {
+    const current = school.plan === 'pro' ? 'pro' : 'free';
+    const next = current === 'pro' ? 'free' : 'pro';
+    if (!confirm(`Set "${school.name}" to ${next === 'pro' ? 'Pro ⭐' : 'Free'} plan?`)) return;
+    const { error } = await supabase.rpc('set_school_plan' as any, {
+      p_school_id: school.id,
+      p_plan: next,
+    });
+    if (error) {
+      toast({ title: 'Failed to update plan', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setSchools((prev) => prev.map((s) => (s.id === school.id ? { ...s, plan: next } : s)));
+    toast({ title: `${school.name} → ${next.toUpperCase()} plan` });
+  };
+
+
   // Check admin role
   useEffect(() => {
     if (authLoading) return;
@@ -120,7 +138,7 @@ export default function AdminDashboard() {
     // Load schools
     const { data: schoolsData } = await supabase
       .from('schools')
-      .select('id, name, slug, owner_id, created_at');
+      .select('id, name, slug, owner_id, created_at, plan');
 
     const { data: creditsData } = await supabase
       .from('school_credits')
@@ -163,6 +181,7 @@ export default function AdminDashboard() {
 
         return {
           ...s,
+          plan: ((s as any).plan === 'pro' ? 'pro' : 'free') as 'free' | 'pro',
           credit_balance: creditMap.get(s.id) ?? 0,
           owner_name: profile?.owner_name || '',
           whatsapp_number: profile?.whatsapp_number || '',
@@ -439,6 +458,7 @@ resultportal.online`;
                     <TableHead>WhatsApp</TableHead>
                     <TableHead>Slug</TableHead>
                     <TableHead>Credits</TableHead>
+                    <TableHead>Plan</TableHead>
                     <TableHead>Joined</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -480,6 +500,17 @@ resultportal.online`;
                         <Badge variant={school.credit_balance > 0 ? 'default' : 'destructive'}>
                           {school.credit_balance}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          variant={school.plan === 'pro' ? 'default' : 'outline'}
+                          className={school.plan === 'pro' ? 'bg-amber-500 text-black hover:bg-amber-600' : ''}
+                          onClick={() => handleTogglePlan(school)}
+                          title="Click to toggle plan"
+                        >
+                          {school.plan === 'pro' ? '⭐ Pro' : 'Free'}
+                        </Button>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         {new Date(school.created_at).toLocaleDateString()}
@@ -537,7 +568,7 @@ resultportal.online`;
                   ))}
                   {filteredSchools.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                         No schools found
                       </TableCell>
                     </TableRow>
