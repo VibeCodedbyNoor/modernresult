@@ -138,7 +138,7 @@ export default function AdminDashboard() {
     // Load schools
     const { data: schoolsData } = await supabase
       .from('schools')
-      .select('id, name, slug, owner_id, created_at');
+      .select('id, name, slug, owner_id, created_at, plan');
 
     const { data: creditsData } = await supabase
       .from('school_credits')
@@ -181,6 +181,7 @@ export default function AdminDashboard() {
 
         return {
           ...s,
+          plan: ((s as any).plan === 'pro' ? 'pro' : 'free') as 'free' | 'pro',
           credit_balance: creditMap.get(s.id) ?? 0,
           owner_name: profile?.owner_name || '',
           whatsapp_number: profile?.whatsapp_number || '',
