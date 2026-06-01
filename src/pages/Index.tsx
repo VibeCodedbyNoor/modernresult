@@ -9,6 +9,7 @@ import DesignGrid from '@/components/landing/DesignGrid';
 import DoneForYouSection from '@/components/landing/DoneForYouSection';
 import CTASection from '@/components/landing/CTASection';
 import VideoGuideSection from '@/components/landing/VideoGuideSection';
+import FreeForeverBanner from '@/components/landing/FreeForeverBanner';
 import SEO from '@/components/SEO';
 
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -78,8 +79,9 @@ export default function Index() {
       <VideoGuideSection />
       <DesignGrid />
       <HowItWorks />
-      <DoneForYouSection />
-      <CTASection />
+        <DoneForYouSection />
+        <FreeForeverBanner />
+        <CTASection />
 
       {/* Footer */}
       <footer className="py-6 sm:py-8 text-center space-y-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
