@@ -40,7 +40,7 @@ interface SchoolData {
   search_fields: string[];
   template_changes_count: number;
   upload_count: number;
-  plan?: 'free' | 'pro';
+  plan?: string;
 }
 
 interface Exam {
@@ -690,7 +690,7 @@ export default function Dashboard() {
             <span className="font-display font-bold text-primary text-sm sm:text-base shrink-0">OnlineResultPortal</span>
             <span className="text-muted-foreground hidden sm:inline">/</span>
             <span className="font-medium text-foreground text-xs sm:text-sm truncate">{school.name}</span>
-            {school.plan === 'pro' ? (
+            {(school as any).plan === 'pro' ? (
               <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500 text-black shrink-0">
                 ⭐ Pro
               </span>
