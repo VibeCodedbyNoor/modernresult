@@ -24,6 +24,7 @@ interface SchoolWithCredits {
   whatsapp_number?: string;
   owner_email?: string;
   invited_by?: string;
+  plan?: 'free' | 'pro';
 }
 
 interface TransactionRow {
@@ -87,6 +88,23 @@ export default function AdminDashboard() {
       setLoginAsId(null);
     }
   };
+
+  const handleTogglePlan = async (school: SchoolWithCredits) => {
+    const current = school.plan === 'pro' ? 'pro' : 'free';
+    const next = current === 'pro' ? 'free' : 'pro';
+    if (!confirm(`Set "${school.name}" to ${next === 'pro' ? 'Pro ⭐' : 'Free'} plan?`)) return;
+    const { error } = await supabase.rpc('set_school_plan' as any, {
+      p_school_id: school.id,
+      p_plan: next,
+    });
+    if (error) {
+      toast({ title: 'Failed to update plan', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setSchools((prev) => prev.map((s) => (s.id === school.id ? { ...s, plan: next } : s)));
+    toast({ title: `${school.name} → ${next.toUpperCase()} plan` });
+  };
+
 
   // Check admin role
   useEffect(() => {
