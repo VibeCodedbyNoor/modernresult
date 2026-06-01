@@ -198,6 +198,30 @@ export type Database = {
           },
         ]
       }
+      column_mappings: {
+        Row: {
+          created_at: string
+          id: string
+          mapping_config: Json
+          name: string
+          school_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mapping_config?: Json
+          name: string
+          school_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mapping_config?: Json
+          name?: string
+          school_id?: string
+        }
+        Relationships: []
+      }
       credit_transactions: {
         Row: {
           amount: number
@@ -233,6 +257,33 @@ export type Database = {
           },
         ]
       }
+      exam_subjects: {
+        Row: {
+          created_at: string
+          exam_id: string
+          id: string
+          pass_marks: number
+          subject_name: string
+          total_marks: number
+        }
+        Insert: {
+          created_at?: string
+          exam_id: string
+          id?: string
+          pass_marks?: number
+          subject_name: string
+          total_marks?: number
+        }
+        Update: {
+          created_at?: string
+          exam_id?: string
+          id?: string
+          pass_marks?: number
+          subject_name?: string
+          total_marks?: number
+        }
+        Relationships: []
+      }
       exams: {
         Row: {
           created_at: string
@@ -241,7 +292,9 @@ export type Database = {
           is_published: boolean
           is_stopped: boolean
           name: string
+          password: string | null
           school_id: string
+          search_mode: string
         }
         Insert: {
           created_at?: string
@@ -250,7 +303,9 @@ export type Database = {
           is_published?: boolean
           is_stopped?: boolean
           name: string
+          password?: string | null
           school_id: string
+          search_mode?: string
         }
         Update: {
           created_at?: string
@@ -259,7 +314,9 @@ export type Database = {
           is_published?: boolean
           is_stopped?: boolean
           name?: string
+          password?: string | null
           school_id?: string
+          search_mode?: string
         }
         Relationships: [
           {
@@ -453,6 +510,7 @@ export type Database = {
           logo_url: string | null
           name: string
           owner_id: string
+          plan: string
           result_template: string
           search_fields: string[]
           slug: string
@@ -467,6 +525,7 @@ export type Database = {
           logo_url?: string | null
           name: string
           owner_id: string
+          plan?: string
           result_template?: string
           search_fields?: string[]
           slug: string
@@ -481,6 +540,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           owner_id?: string
+          plan?: string
           result_template?: string
           search_fields?: string[]
           slug?: string
@@ -696,6 +756,10 @@ export type Database = {
       }
       record_signup_ip: {
         Args: { p_ip: string; p_user_id: string }
+        Returns: undefined
+      }
+      set_school_plan: {
+        Args: { p_plan: string; p_school_id: string }
         Returns: undefined
       }
     }
