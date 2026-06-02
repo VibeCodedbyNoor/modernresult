@@ -277,7 +277,7 @@ export default function ResultPortal() {
 
 
   return (
-    <div className="relative">
+    <div className={plan === 'free' ? 'relative pb-20 md:pb-0' : 'relative'}>
       <SEO
         title={`${school.name} — Check Exam Results Online`}
         description={`Official online result portal for ${school.name}. Enter your roll number to instantly check your latest exam results.`}
