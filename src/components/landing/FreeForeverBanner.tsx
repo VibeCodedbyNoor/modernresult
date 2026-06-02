@@ -63,15 +63,12 @@ export default function FreeForeverBanner() {
           <Button
             variant="outline"
             size="lg"
-            onClick={() => {
-              setShowCompare((v) => !v);
-              setTimeout(() => {
-                document.getElementById('plan-compare')?.scrollIntoView({ behavior: 'smooth' });
-              }, 50);
-            }}
+            onClick={handleSeePro}
           >
-            <Star className="h-4 w-4 mr-1" /> See Pro Features
+            {user ? <Star className="h-4 w-4 mr-1" /> : <Lock className="h-4 w-4 mr-1" />}
+            See Pro Features
           </Button>
+
         </div>
 
         {showCompare && (
