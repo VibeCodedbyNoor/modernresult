@@ -417,7 +417,7 @@ resultportal.online`;
 
         {/* Tab Navigation */}
         <div className="flex gap-1 border-b">
-          {(['overview', 'referrals'] as const).map(tab => (
+          {(['overview', 'credits', 'transactions', 'referrals'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -457,7 +457,7 @@ resultportal.online`;
                     <TableHead>Invited By</TableHead>
                     <TableHead>WhatsApp</TableHead>
                     <TableHead>Slug</TableHead>
-
+                    <TableHead>Credits</TableHead>
                     <TableHead>Plan</TableHead>
                     <TableHead>Joined</TableHead>
                     <TableHead>Actions</TableHead>
@@ -496,7 +496,11 @@ resultportal.online`;
                         )}
                       </TableCell>
                       <TableCell><Badge variant="secondary">{school.slug}</Badge></TableCell>
-
+                      <TableCell>
+                        <Badge variant={school.credit_balance > 0 ? 'default' : 'destructive'}>
+                          {school.credit_balance}
+                        </Badge>
+                      </TableCell>
                       <TableCell>
                         <Button
                           size="sm"
@@ -515,14 +519,23 @@ resultportal.online`;
                         <div className="flex items-center gap-1 flex-wrap">
                           <Button
                             size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedSchool(school);
+                              setActiveTab('credits');
+                              if (school.whatsapp_number) setWhatsappNumber(school.whatsapp_number);
+                            }}
+                          >
+                            <Plus className="h-3 w-3 mr-1" /> Credits
+                          </Button>
+                          <Button
+                            size="sm"
                             variant="secondary"
                             disabled={loginAsId === school.id}
                             onClick={() => handleLoginAs(school.id, school.name)}
                           >
                             <LogIn className="h-3 w-3 mr-1" /> {loginAsId === school.id ? '...' : 'Login as'}
                           </Button>
-
-
                           {school.owner_id !== user?.id && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
