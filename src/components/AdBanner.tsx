@@ -9,6 +9,7 @@ interface Props {
 
 const NATIVE_SRC = 'https://pl29573320.effectivecpmnetwork.com/877a0f4c8a70209aba84116e7622c5cc/invoke.js';
 const NATIVE_BASE_ID = 'container-877a0f4c8a70209aba84116e7622c5cc';
+const SOCIAL_BAR_SRC = 'https://pl29573321.effectivecpmnetwork.com/af/e0/fd/afe0fd0567e2a0c0bcd913da73e79901.js';
 
 /**
  * Renders an ad banner only when the school plan is 'free'.
@@ -18,11 +19,12 @@ export default function AdBanner({ plan, slot }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    document.querySelectorAll(`script[src="${SOCIAL_BAR_SRC}"]`).forEach((script) => script.remove());
     if (plan !== 'free') return;
     const isMobile = window.matchMedia('(max-width: 767px)').matches;
     if (isMobile && slot === 'top') return;
 
-    const containerId = slot === 'top' ? NATIVE_BASE_ID : `${NATIVE_BASE_ID}-2`;
+    const containerId = slot === 'top' || isMobile ? NATIVE_BASE_ID : `${NATIVE_BASE_ID}-2`;
     const timer = window.setTimeout(() => {
       if (!ref.current) return;
       // Build placement container
