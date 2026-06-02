@@ -522,14 +522,7 @@ resultportal.online`;
                             <LogIn className="h-3 w-3 mr-1" /> {loginAsId === school.id ? '...' : 'Login as'}
                           </Button>
 
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            disabled={loginAsId === school.id}
-                            onClick={() => handleLoginAs(school.id, school.name)}
-                          >
-                            <LogIn className="h-3 w-3 mr-1" /> {loginAsId === school.id ? '...' : 'Login as'}
-                          </Button>
+
                           {school.owner_id !== user?.id && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
