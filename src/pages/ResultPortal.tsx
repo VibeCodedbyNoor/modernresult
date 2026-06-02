@@ -279,7 +279,7 @@ export default function ResultPortal() {
 
   const isDisabled = examState.status !== 'active';
 
-  const plan = usePlanBySlug(school.slug);
+
 
   return (
     <div className="relative">
