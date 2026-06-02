@@ -496,11 +496,7 @@ resultportal.online`;
                         )}
                       </TableCell>
                       <TableCell><Badge variant="secondary">{school.slug}</Badge></TableCell>
-                      <TableCell>
-                        <Badge variant={school.credit_balance > 0 ? 'default' : 'destructive'}>
-                          {school.credit_balance}
-                        </Badge>
-                      </TableCell>
+
                       <TableCell>
                         <Button
                           size="sm"
