@@ -197,11 +197,6 @@ export default function ResultPortal() {
     } as any);
 
     if (data && data.length > 0) {
-      const { data: creditOk } = await supabase.rpc('deduct_credit', { p_school_id: school.id });
-      if (!creditOk) {
-        throw new Error('Result checking service is currently unavailable. Please contact the school.');
-      }
-
       const row = data[0];
       const rawSubjects = row.subjects as any;
       let subjects: any[] = [];
