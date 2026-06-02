@@ -85,6 +85,8 @@ export default function ResultPortal() {
   const [examState, setExamState] = useState<ExamState>({ status: 'no_exam' });
   const [activeExam, setActiveExam] = useState<{ id: string; name: string; display_at: string | null; is_stopped: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
+  const plan = usePlanBySlug(slug);
+
 
   // Load school + exam data
   useEffect(() => {
