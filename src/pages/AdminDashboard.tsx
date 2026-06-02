@@ -515,15 +515,13 @@ resultportal.online`;
                         <div className="flex items-center gap-1 flex-wrap">
                           <Button
                             size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedSchool(school);
-                              setActiveTab('credits');
-                              if (school.whatsapp_number) setWhatsappNumber(school.whatsapp_number);
-                            }}
+                            variant="secondary"
+                            disabled={loginAsId === school.id}
+                            onClick={() => handleLoginAs(school.id, school.name)}
                           >
-                            <Plus className="h-3 w-3 mr-1" /> Credits
+                            <LogIn className="h-3 w-3 mr-1" /> {loginAsId === school.id ? '...' : 'Login as'}
                           </Button>
+
                           <Button
                             size="sm"
                             variant="secondary"
