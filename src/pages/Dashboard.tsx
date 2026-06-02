@@ -10,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
@@ -158,25 +157,12 @@ export default function Dashboard() {
   // Class filter
   const [classFilter, setClassFilter] = useState<string>('all');
 
-  // Credits state
-  const [creditBalance, setCreditBalance] = useState<number | null>(null);
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [selectedPlan, setSelectedPlan] = useState<number | null>(null);
-
   // Timer dialog state
   const [timerDialogOpen, setTimerDialogOpen] = useState(false);
   const [timerExamId, setTimerExamId] = useState<string | null>(null);
   const [timerDays, setTimerDays] = useState(0);
   const [timerHours, setTimerHours] = useState(0);
   const [timerMinutes, setTimerMinutes] = useState(0);
-
-  // Template change confirmation dialog
-  const [templateConfirmOpen, setTemplateConfirmOpen] = useState(false);
-  const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(null);
-
-  // Upload confirmation dialog
-  const [uploadConfirmOpen, setUploadConfirmOpen] = useState(false);
-  const [uploadConfirmResolve, setUploadConfirmResolve] = useState<((val: boolean) => void) | null>(null);
 
   // Referral state
   const [referralCode, setReferralCode] = useState<string | null>(null);
@@ -213,7 +199,6 @@ export default function Dashboard() {
     if (data) {
       setSchool(data);
       fetchExams(data.id);
-      fetchCredits(data.id);
     }
     fetchReferralData();
     setLoading(false);
@@ -313,36 +298,25 @@ export default function Dashboard() {
     setWithdrawing(false);
   }
 
-  async function handleConfirmTemplateChange() {
-    if (!school || !pendingTemplateId) return;
-    setTemplateConfirmOpen(false);
-
-    const { data: success, error: rpcError } = await supabase
-      .rpc('deduct_template_change_credits', { p_school_id: school.id });
-    if (rpcError) { toast.error(rpcError.message); setPendingTemplateId(null); return; }
-    if (!success) { toast.error('Not enough credits! You need at least 5 credits.'); setPendingTemplateId(null); return; }
+  async function updateResultTemplate(templateId: string, templateName: string) {
+    if (!school) return;
 
     const { error } = await supabase
       .from('schools')
-      .update({ result_template: pendingTemplateId })
+      .update({ result_template: templateId, template_changes_count: school.template_changes_count + 1 })
       .eq('id', school.id);
+
     if (error) {
       toast.error(error.message);
-    } else {
-      setSchool({ ...school, result_template: pendingTemplateId, template_changes_count: school.template_changes_count + 1 });
-      toast.success('Design changed (5 credits deducted)');
-      const { data: credData } = await supabase.from('school_credits').select('balance').eq('school_id', school.id).single();
-      if (credData) setCreditBalance(credData.balance);
+      return;
     }
-    setPendingTemplateId(null);
-  }
 
-  async function fetchCredits(schoolId: string) {
-    const { data: creditData } = await supabase.from('school_credits').select('balance').eq('school_id', schoolId).single();
-    if (creditData) setCreditBalance(creditData.balance);
-
-    const { data: txData } = await supabase.from('credit_transactions').select('*').eq('school_id', schoolId).order('created_at', { ascending: false }).limit(50);
-    setTransactions(txData || []);
+    setSchool({
+      ...school,
+      result_template: templateId,
+      template_changes_count: school.template_changes_count + 1,
+    });
+    toast.success(`Design changed to "${templateName}"`);
   }
 
   async function fetchExams(schoolId: string) {
@@ -528,7 +502,6 @@ export default function Dashboard() {
         setColumnMappingOpen(false);
         setParsedSheets([]);
         fetchResults(selectedExam);
-        fetchCredits(school.id);
       }
     } catch (err: any) {
       toast.error('Upload failed: ' + err.message);
@@ -604,11 +577,6 @@ export default function Dashboard() {
     return 'live';
   }
 
-  const todayCredits = transactions.filter(tx => tx.type === 'result_check' && new Date(tx.created_at).toDateString() === new Date().toDateString()).reduce((s, tx) => s + Math.abs(tx.amount), 0);
-  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
-  const weekCredits = transactions.filter(tx => tx.type === 'result_check' && new Date(tx.created_at) >= weekAgo).reduce((s, tx) => s + Math.abs(tx.amount), 0);
-  const monthAgo = new Date(); monthAgo.setDate(monthAgo.getDate() - 30);
-  const monthCredits = transactions.filter(tx => tx.type === 'result_check' && new Date(tx.created_at) >= monthAgo).reduce((s, tx) => s + Math.abs(tx.amount), 0);
 
   const classNames = [...new Set(results.map(r => r.class_name).filter(Boolean))];
   const filteredResults = classFilter === 'all' ? results : results.filter(r => r.class_name === classFilter);
@@ -751,7 +719,6 @@ export default function Dashboard() {
         <Tabs defaultValue="exams">
           <TabsList className="flex-wrap h-auto gap-1 p-1">
             <TabsTrigger value="exams" className="text-xs sm:text-sm">{t('dash.tab_exams')}</TabsTrigger>
-            <TabsTrigger value="credits" className="text-xs sm:text-sm">{t('dash.tab_credits')}</TabsTrigger>
             <TabsTrigger value="settings" className="text-xs sm:text-sm">{t('dash.tab_settings')}</TabsTrigger>
             <TabsTrigger value="referrals" className="text-xs sm:text-sm">{t('dash.tab_referrals')}</TabsTrigger>
             <TabsTrigger value="help" className="text-xs sm:text-sm">{t('dash.tab_help')}</TabsTrigger>
@@ -866,13 +833,6 @@ export default function Dashboard() {
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" className="gap-1.5">
                         <FileSpreadsheet className="h-3.5 w-3.5" /> {t('dash.upload_excel')}
-                        {school && (
-                          <Badge variant="secondary" className="ml-1 text-[10px]">
-                            {school.upload_count < 2
-                              ? `${2 - school.upload_count} ${t('dash.free')}`
-                              : `10 ${t('dash.credits_each')}`}
-                          </Badge>
-                        )}
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
@@ -1013,175 +973,6 @@ export default function Dashboard() {
             )}
           </TabsContent>
 
-          <TabsContent value="credits" className="mt-6 space-y-6">
-            {/* Balance Card */}
-            <Card className="max-w-2xl">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Coins className="h-7 w-7 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">{t('dash.available_credits')}</p>
-                    <p className="text-4xl font-display font-bold text-foreground">{creditBalance ?? '—'}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{t('dash.credit_desc')}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Analytics */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl">
-              {[
-                { label: t('dash.today'), value: todayCredits, icon: BarChart3 },
-                { label: t('dash.this_week'), value: weekCredits, icon: TrendingDown },
-                { label: t('dash.this_month'), value: monthCredits, icon: CreditCard },
-              ].map(({ label, value, icon: Icon }) => (
-                <Card key={label}>
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center">
-                      <Icon className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">{label}</p>
-                      <p className="text-lg font-display font-bold text-foreground">{value}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* Buy Credits */}
-            <Card className="max-w-2xl border-primary/20">
-              <CardHeader>
-                <CardTitle className="font-display flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-primary" /> {t('dash.buy_credits')}
-                </CardTitle>
-                <CardDescription className="text-base" dangerouslySetInnerHTML={{ __html: t('dash.buy_credits_desc') }} />
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {[
-                    { credits: 100, price: 300, perCredit: '3', name: '🟢 School Starter', popular: false, save: '' },
-                    { credits: 500, price: 1350, perCredit: '2.7', name: '🔵 School Growth', popular: true, save: 'Save PKR 150' },
-                    { credits: 1000, price: 2500, perCredit: '2.5', name: '🟣 School Premium', popular: false, save: 'Save PKR 500' },
-                  ].map(plan => (
-                    <button
-                      key={plan.credits}
-                      type="button"
-                      onClick={() => setSelectedPlan(plan.credits)}
-                      className={`rounded-xl p-4 text-center space-y-1 relative overflow-hidden transition-all border-2 ${
-                        selectedPlan === plan.credits
-                          ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
-                          : 'border-border hover:border-primary/40'
-                      }`}
-                    >
-                      {plan.popular && (
-                        <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[9px] font-bold px-2 py-0.5 rounded-bl-lg flex items-center gap-1">
-                          ⭐ Most Popular
-                        </div>
-                      )}
-                      <p className="text-xs font-semibold text-muted-foreground">{plan.name}</p>
-                      <p className="text-2xl font-display font-bold text-foreground">{plan.credits.toLocaleString()}</p>
-                      <p className="text-xs text-muted-foreground">{t('dash.credits')}</p>
-                      <p className="text-lg font-semibold text-primary">PKR {plan.price.toLocaleString()}</p>
-                      <p className="text-[10px] text-muted-foreground">Rs. {plan.perCredit}/credit</p>
-                      {plan.save && <p className="text-[10px] font-semibold text-green-600">✔ {plan.save}</p>}
-                      {selectedPlan === plan.credits && (
-                        <div className="flex items-center justify-center gap-1 text-xs text-primary font-medium pt-1">
-                          <Check className="h-3 w-3" /> {t('dash.selected')}
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                </div>
-
-                {!selectedPlan && (
-                  <p className="text-sm text-muted-foreground text-center animate-pulse">{t('dash.select_plan')}</p>
-                )}
-
-                {selectedPlan && (
-                  <div className="rounded-xl bg-muted/50 border border-border p-4 space-y-3 animate-in fade-in slide-in-from-bottom-2">
-                    <p className="text-sm font-semibold text-foreground">{t('dash.payment_details')}</p>
-                    <div className="space-y-1.5 text-sm text-muted-foreground">
-                      <p><strong className="text-foreground">Easypaisa:</strong> 03341212432</p>
-                      <p><strong className="text-foreground">JazzCash:</strong> 03341212432</p>
-                      <p><strong className="text-foreground">{t('dash.account_name_label')}</strong> NOOR REHMAN</p>
-                      <p className="pt-1"><strong className="text-foreground">{t('dash.amount')}</strong>{' '}
-                        <span className="text-primary font-semibold">
-                          PKR {selectedPlan === 100 ? '300' : selectedPlan === 500 ? '1,350' : '2,500'}
-                        </span>
-                      </p>
-                    </div>
-                    <div className="pt-3 border-t border-border space-y-3">
-                      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                        <Clock className="h-3 w-3" />
-                        {t('dash.payment_instruction')}
-                      </p>
-                      <a
-                        href={`https://wa.me/923478312432?text=${encodeURIComponent(
-                          `Assalam o Alaikum! 🎓\n\nI have purchased credits on ResultPortal.\n\n📧 My Email: ${user?.email || ''}\n🏫 School: ${school?.name || ''}\n💰 Package: ${selectedPlan === 100 ? 'School Starter (100)' : selectedPlan === 500 ? 'School Growth (500)' : 'School Premium (1,000)'} credits\n💵 Amount: PKR ${selectedPlan === 100 ? '300' : selectedPlan === 500 ? '1,350' : '2,500'}\n\nPayment screenshot is attached. Please add my credits. JazakAllah! 🙏`
-                        )}`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        <Button className="w-full gap-2 bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.9)] text-primary-foreground">
-                          <MessageCircle className="h-4 w-4" />
-                          {t('dash.send_screenshot')}
-                        </Button>
-                      </a>
-                      <p className="text-[11px] text-muted-foreground text-center">
-                        {t('dash.screenshot_hint')}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Transaction History */}
-            {transactions.length > 0 && (
-              <Card className="max-w-2xl">
-                <CardHeader>
-                  <CardTitle className="font-display text-lg flex items-center gap-2">
-                    <CreditCard className="h-5 w-5 text-primary" /> {t('dash.transaction_history')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{t('dash.tx_date')}</TableHead>
-                        <TableHead>{t('dash.tx_type')}</TableHead>
-                        <TableHead>{t('dash.tx_description')}</TableHead>
-                        <TableHead className="text-right">{t('dash.tx_amount')}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {transactions.map(tx => (
-                        <TableRow key={tx.id}>
-                          <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                            {format(new Date(tx.created_at), 'dd MMM yyyy, hh:mm a')}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={tx.amount > 0 ? 'default' : 'secondary'} className="text-[10px]">
-                              {tx.type === 'signup_bonus' ? t('dash.tx_bonus') : tx.type === 'admin_topup' ? t('dash.tx_topup') : tx.type === 'result_check' ? t('dash.tx_result_view') : tx.type === 'bulk_marksheet' ? t('dash.tx_bulk_download') : tx.type}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
-                            {tx.description || '—'}
-                          </TableCell>
-                          <TableCell className={`text-right font-mono text-sm font-semibold ${tx.amount > 0 ? 'text-green-500' : 'text-destructive'}`}>
-                            {tx.amount > 0 ? '+' : ''}{tx.amount}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
 
           <TabsContent value="referrals" className="mt-6 space-y-6">
             {(() => {
@@ -1550,10 +1341,8 @@ export default function Dashboard() {
                     {t('dash.design_desc')}
                   </p>
                 </div>
-                <Badge variant={school.template_changes_count < 3 ? 'default' : 'secondary'} className="text-xs shrink-0">
-                  {school.template_changes_count < 3
-                    ? `${3 - school.template_changes_count} ${t('dash.free_changes_remaining')}`
-                    : t('dash.credits_per_change')}
+                <Badge variant="secondary" className="text-xs shrink-0">
+                  Free for all plans
                 </Badge>
               </div>
 
@@ -1563,51 +1352,9 @@ export default function Dashboard() {
                   return (
                     <button
                       key={template.id}
-                    onClick={async () => {
+                    onClick={() => {
                         if (isSelected) return;
-                        
-                        if (school.template_changes_count >= 3) {
-                          setPendingTemplateId(template.id);
-                          setTemplateConfirmOpen(true);
-                          return;
-                        }
-
-                        const { data: success, error: rpcError } = await supabase
-                          .rpc('deduct_template_change_credits', { p_school_id: school.id });
-                        
-                        if (rpcError) {
-                          toast.error(rpcError.message);
-                          return;
-                        }
-                        if (!success) {
-                          toast.error('Not enough credits! You need at least 5 credits to change the design.');
-                          return;
-                        }
-
-                        const { error } = await supabase
-                          .from('schools')
-                          .update({ result_template: template.id })
-                          .eq('id', school.id);
-                        if (error) {
-                          toast.error(error.message);
-                        } else {
-                          setSchool({
-                            ...school,
-                            result_template: template.id,
-                            template_changes_count: school.template_changes_count + 1,
-                          });
-                          if (school.template_changes_count < 3) {
-                            toast.success(`Design changed to "${template.name}" (free change used)`);
-                          } else {
-                            toast.success(`Design changed to "${template.name}" (5 credits deducted)`);
-                          }
-                          const { data: credData } = await supabase
-                            .from('school_credits')
-                            .select('balance')
-                            .eq('school_id', school.id)
-                            .single();
-                          if (credData) setCreditBalance(credData.balance);
-                        }
+                        updateResultTemplate(template.id, template.name);
                       }}
                       className={`group relative rounded-xl border-2 overflow-hidden transition-all duration-200 hover:scale-[1.02] hover:shadow-lg text-left ${
                         isSelected
@@ -1847,37 +1594,6 @@ export default function Dashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <AlertDialog open={templateConfirmOpen} onOpenChange={setTemplateConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('dash.change_design')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              This design change will cost <span className="font-semibold text-foreground">5 credits</span>. Your current balance is <span className="font-semibold text-foreground">{creditBalance ?? 0} credits</span>.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPendingTemplateId(null)}>{t('dash.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmTemplateChange}>{t('dash.continue')}</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <AlertDialog open={uploadConfirmOpen} onOpenChange={(open) => {
-        if (!open && uploadConfirmResolve) { uploadConfirmResolve(false); setUploadConfirmResolve(null); }
-        setUploadConfirmOpen(open);
-      }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('dash.upload_confirm_title')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              This upload will cost <span className="font-semibold text-foreground">10 credits</span>. Your current balance is <span className="font-semibold text-foreground">{creditBalance ?? 0} credits</span>.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => { if (uploadConfirmResolve) { uploadConfirmResolve(false); setUploadConfirmResolve(null); } }}>{t('dash.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { if (uploadConfirmResolve) { uploadConfirmResolve(true); setUploadConfirmResolve(null); } setUploadConfirmOpen(false); }}>{t('dash.continue')}</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
       <HelpDialog open={helpDialogOpen} onOpenChange={setHelpDialogOpen} />
       <WhatsAppHelpButton />
     </div>
