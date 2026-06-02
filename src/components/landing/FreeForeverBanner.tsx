@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, Star, MessageCircle } from 'lucide-react';
+import { CheckCircle2, Star, MessageCircle, Lock } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 
 const PRO_ROWS = [
   { label: 'Price', free: 'Free forever', pro: '$20/month' },
@@ -14,6 +16,24 @@ const PRO_ROWS = [
 
 export default function FreeForeverBanner() {
   const [showCompare, setShowCompare] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSeePro = () => {
+    if (!user) {
+      toast({
+        title: 'Please sign in first',
+        description: 'Create a free account to view Pro features.',
+      });
+      navigate('/signup');
+      return;
+    }
+    setShowCompare((v) => !v);
+    setTimeout(() => {
+      document.getElementById('plan-compare')?.scrollIntoView({ behavior: 'smooth' });
+    }, 50);
+  };
+
 
   return (
     <section className="container mx-auto px-4 py-12 sm:py-16">
