@@ -83,7 +83,7 @@ export default function ResultPortal() {
   const { slug } = useParams<{ slug: string }>();
   const [school, setSchool] = useState<SchoolData | null>(null);
   const [examState, setExamState] = useState<ExamState>({ status: 'no_exam' });
-  const [activeExam, setActiveExam] = useState<{ id: string; name: string; display_at: string | null; is_stopped: boolean } | null>(null);
+  const [activeExam, setActiveExam] = useState<{ id: string; name: string; display_at: string | null; is_stopped: boolean; search_mode?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const plan = usePlanBySlug(slug);
 
