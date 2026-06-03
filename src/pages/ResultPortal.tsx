@@ -83,7 +83,7 @@ export default function ResultPortal() {
   const { slug } = useParams<{ slug: string }>();
   const [school, setSchool] = useState<SchoolData | null>(null);
   const [examState, setExamState] = useState<ExamState>({ status: 'no_exam' });
-  const [activeExam, setActiveExam] = useState<{ id: string; name: string; display_at: string | null; is_stopped: boolean } | null>(null);
+  const [activeExam, setActiveExam] = useState<{ id: string; name: string; display_at: string | null; is_stopped: boolean; search_mode?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const plan = usePlanBySlug(slug);
 
@@ -97,7 +97,7 @@ export default function ResultPortal() {
         // Fetch published exam
         const { data: exams } = await supabase
           .from('exams')
-          .select('id, name, display_at, is_stopped')
+          .select('id, name, display_at, is_stopped, search_mode')
           .eq('school_id', schoolData.id)
           .eq('is_published', true)
           .order('created_at', { ascending: false })
@@ -147,7 +147,7 @@ export default function ResultPortal() {
         // Re-fetch the active published exam
         const { data: exams } = await supabase
           .from('exams')
-          .select('id, name, display_at, is_stopped')
+          .select('id, name, display_at, is_stopped, search_mode')
           .eq('school_id', school.id)
           .eq('is_published', true)
           .order('created_at', { ascending: false })
@@ -290,7 +290,12 @@ export default function ResultPortal() {
           schoolName={school.name}
           logoUrl={school.logo_url}
           onSearch={handleSearch}
-          searchFields={school.search_fields || ['roll_number', 'student_name']}
+          searchFields={
+            activeExam?.search_mode === 'name' ? ['student_name']
+            : activeExam?.search_mode === 'both' ? ['roll_number', 'student_name']
+            : activeExam?.search_mode === 'roll_number' ? ['roll_number']
+            : (school.search_fields || ['roll_number', 'student_name'])
+          }
           examState={examState}
         />
       </div>
