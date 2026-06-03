@@ -830,29 +830,18 @@ export default function Dashboard() {
 
                 {/* Actions bar */}
                 <div className="flex gap-2 flex-wrap items-center">
-                  <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="gap-1.5">
-                        <FileSpreadsheet className="h-3.5 w-3.5" /> {t('dash.upload_excel')}
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle className="font-display">{t('dash.upload_results')}</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <p className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('dash.upload_desc_1') }} />
-                        <p className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('dash.upload_desc_2') }} />
-                        <Input
-                          type="file"
-                          accept=".xlsx,.xls,.csv"
-                          onChange={handleFileUpload}
-                          disabled={uploading}
-                        />
-                        {uploading && <p className="text-sm text-muted-foreground">{t('dash.uploading')}</p>}
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setUploadDialogOpen(true)}>
+                    <FileSpreadsheet className="h-3.5 w-3.5" /> {t('dash.upload_excel')}
+                  </Button>
+                  {selectedExam && school && (
+                    <UploadWizard
+                      open={uploadDialogOpen}
+                      onOpenChange={setUploadDialogOpen}
+                      examId={selectedExam}
+                      schoolId={school.id}
+                      onComplete={() => fetchResults(selectedExam)}
+                    />
+                  )}
                   {exams.find(e => e.id === selectedExam)?.is_published ? (
                     <Button
                       variant="outline"
