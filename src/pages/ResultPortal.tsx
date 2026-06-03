@@ -290,7 +290,12 @@ export default function ResultPortal() {
           schoolName={school.name}
           logoUrl={school.logo_url}
           onSearch={handleSearch}
-          searchFields={school.search_fields || ['roll_number', 'student_name']}
+          searchFields={
+            activeExam?.search_mode === 'name' ? ['student_name']
+            : activeExam?.search_mode === 'both' ? ['roll_number', 'student_name']
+            : activeExam?.search_mode === 'roll_number' ? ['roll_number']
+            : (school.search_fields || ['roll_number', 'student_name'])
+          }
           examState={examState}
         />
       </div>
