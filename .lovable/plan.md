@@ -1,81 +1,90 @@
-## Overview
+# 5-Step Excel Upload Wizard + Dynamic Search
 
-Add a 5-step dynamic Excel import wizard, a two-tier pricing system (Free/Pro), conditional ad placement on free portals, homepage trust banner, billing page, and admin plan toggle. Remove existing paid-credit payment integrations in favor of manual WhatsApp upgrades.
+This is a significant rebuild of the upload flow. I'll keep the existing inline upload as a fallback and add a new wizard component that becomes the primary upload path. Old code stays in place but unused, so reverting is trivial.
 
-The current app is credit-based (PKR 9/credit, EasyPaisa). This change replaces monetization entirely with Free vs Pro ($20/month, manually activated). Confirm before I proceed since this is a major business-model shift.
+## New Files
 
----
+### `src/components/upload/UploadWizard.tsx`
+Main dialog component orchestrating 5 steps. Holds wizard state (file, sheets, sheet-mode, search-mode, field map, subject map, parsed rows, errors).
 
-## 1. Database changes (one migration)
+### `src/components/upload/steps/`
+- `Step1Upload.tsx` — file input + first-5-row preview table
+- `Step2Structure.tsx` — sheet-mode radio + sheet checkboxes + search-mode radio
+- `Step3Mapping.tsx` — required-field dropdowns + subject mapping table (Use As / Total / Pass / display name) + "Use saved template" picker
+- `Step4Preview.tsx` — parsed students table with red-highlighted errors and inline edit
+- `Step5Confirm.tsx` — summary + import button + progress + "save mapping as template" prompt
 
-- `schools.plan` — text, default `'free'`, check in (`'free'`,`'pro'`)
-- `exams.search_mode` — text, default `'roll_number'`, in (`'roll_number'`,`'name'`,`'both'`)
-- `exams.password` — text nullable (Pro: password-protect exams)
-- New table `column_mappings` (id, school_id, name, mapping_config jsonb, created_at) with RLS so owners manage their own + GRANTs
-- New table `exam_subjects` (exam_id, subject_name, total_marks, pass_marks) so per-exam totals/pass marks are stored from the wizard
-- Helper RPC `set_school_plan(p_school_id, p_plan)` — admin-only via `has_role`
+### `src/lib/uploadWizard.ts`
+Pure helpers: `parseWorkbook`, `applyMapping`, `validateRows`, `chunkInsert`, `buildSampleWorkbook(subjectCount)`.
 
-Keep all existing credit tables intact (no destructive drops) — just stop using them in the UI.
+### `src/lib/sampleTemplate.ts`
+Generates a dynamic .xlsx (uses existing `xlsx` package) with N subject columns based on user-input number.
 
----
+## Files Modified
 
-## 2. Excel Import Wizard (`src/components/dashboard/import/`)
+### `src/pages/Dashboard.tsx`
+- Replace the old upload dialog trigger with `<UploadWizard examId={selectedExam} schoolId={school.id} onComplete={...} />`.
+- Replace "Download Sample Template" handler with a small prompt asking for subject count, then call `buildSampleWorkbook(n)`.
+- Leave existing `handleFileUpload` / `handleConfirmUpload` functions in the file (unused) so the previous behavior can be restored.
+- Backup file: `.lovable/backups/Dashboard.before_wizard.tsx`.
 
-New 5-step wizard component replacing the current upload flow on Dashboard:
+### `src/hooks/usePortalSearch.ts` + Portal templates
+Currently every portal hardcodes both roll + name fields via `searchFields` prop. Pass `searchMode` ('roll_number' | 'name' | 'both') through `ResultPortal.tsx` → portal components, and adjust the search form to render only required inputs. Class dropdown stays optional in every mode.
 
-1. **Upload** — parse with SheetJS (`xlsx` lib, already in deps), show first 5 rows preview, list all sheet names
-2. **Configure** — radio: single-sheet-with-class-col vs sheet-per-class (+ sheet checkboxes); radio for search_mode
-3. **Map columns** — required-field dropdowns + subject mapping table with per-subject total/pass marks + display-name rename; offer saved templates from `column_mappings`
-4. **Preview & validate** — red-highlight missing names / duplicate rolls / marks > total / skipped empties; inline editing
-5. **Confirm & import** — chunked inserts of 500 into `results` (+ create `exam_subjects`); progress bar; prompt "Save as template?"
+### `src/pages/ResultPortal.tsx`
+- Fetch the active exam's `search_mode` (already in schema) and pass it to the portal component.
+- Adjust the `handleSearch` callback to accept queries with either field.
 
-Dynamic sample template: prompt for subject count, generate `.xlsx` on the fly.
+## Database
+Schema already has what's needed (`exams.search_mode`, `exam_subjects`, `column_mappings`). No new migration required. Will use these on save:
+- After successful import, optionally insert into `column_mappings` (name, school_id, mapping_config jsonb).
+- Insert `exam_subjects` rows from the mapping so portals can render subject metadata.
+- Update `exams.search_mode` when wizard finishes.
 
-Update `ResultPortal.tsx` search UI to read `exam.search_mode` and render only relevant inputs (class dropdown stays optional).
+## Implementation Details
 
----
+### Step parsing
+- Use `XLSX.read` (already a dep). For Option 1 (all-in-one), use first sheet, treat one column as class. For Option 2, list workbook.SheetNames as checkboxes.
+- Headers = first row keys after filtering `__EMPTY*`.
 
-## 3. Pricing / billing
+### Mapping shape (jsonb saved as template)
+```json
+{
+  "sheet_mode": "single" | "per_sheet",
+  "search_mode": "roll_number" | "name" | "both",
+  "fields": { "name": "Student", "roll": "Roll", "father": "Father", "class": "Class|null" },
+  "subjects": [
+    { "column": "Math_Marks", "display": "Mathematics", "total": 100, "pass": 33 }
+  ]
+}
+```
 
-- Remove EasyPaisa/JazzCash/Stripe/Lemon Squeezy UI from Dashboard, AI chat agent prompt, Terms, Earn, Help pages
-- New `/dashboard/billing` page: plan chip, usage stats, WhatsApp upgrade card (`https://wa.me/923478312432`)
-- Dashboard sidebar: plan chip ([Free] / [Pro ⭐])
-- AdminDashboard school detail: Free↔Pro toggle calling `set_school_plan` with confirm dialog
-- AuthContext (or new `usePlan` hook) exposes current school plan
+### Validation rules (Step 4)
+- Missing student name → red
+- Duplicate roll number within same class → red
+- `obtained > total` for any subject → red
+- Empty rows (all subject + name cells blank) → silently skipped, counted
+- Inline edit updates the row; re-validate on blur
 
----
+### Import (Step 5)
+- `chunkInsert` deletes existing `exam_id` results then inserts in batches of 500 with a progress bar
+- Inserts unique subjects into `exam_subjects` (idempotent by `exam_id + subject_name`)
+- Updates `exams.search_mode`
+- Prompt to save mapping as template → insert into `column_mappings`
 
-## 4. Ads — free plan only
+### Dynamic Sample Template
+- Replace any current static sample download. Show a small dialog: "How many subjects?" → number input → on submit generate xlsx with headers `Roll Number, Student Name, Father Name, Class, Subject 1, Subject 2, ...` and 2 example rows.
 
-- `src/components/AdBanner.tsx` — accepts `placementId`, reads plan from context, returns `null` if Pro
-- Two placements above/below result card in every portal template via `ResultPortal.tsx` wrapper (single edit, not 22 files)
-- Social-bar script injected once via `useEffect` only when school is free
-- 300ms delay after result render before injecting ad scripts
-- Never injected on dashboard or Pro portals
+### Portal Search Mode UI
+- `roll_number`: single Roll input
+- `name`: single Name input
+- `both`: both inputs, either alone is valid
+- Class dropdown stays optional everywhere
 
----
+## Out of Scope (will not change)
+- Existing portal templates' visual styling beyond the search form
+- Credit/billing flow
+- Admin panel
+- Backup/restore mechanics beyond a single `.bak` of Dashboard.tsx
 
-## 5. Homepage trust banner
-
-Add "Free Forever — No Credit Card Required" banner between `DoneForYouSection` and `CTASection` in `Index.tsx`. "See Pro Features" scrolls to a minimal 2-column Free vs Pro comparison (shown to logged-out users) or routes to `/dashboard/billing` when logged in.
-
----
-
-## Out of scope (confirm if you want these too)
-
-- Branded PDF DMC, merit list page, countdown gating by plan — listed as Pro perks but not built in this pass unless you say so
-- Migrating existing schools to set `plan='free'` explicitly (default handles it)
-- Removing credit-related dashboard tabs entirely vs hiding them
-
----
-
-## Technical notes
-
-- SheetJS (`xlsx`) — install if missing
-- Chunked inserts use `supabase.from('results').insert(chunk)` in a loop with progress state
-- Ad scripts injected via dynamically created `<script>` tags appended to `document.body`, cleaned up on unmount
-- Plan check is a single supabase query cached in React Query, keyed on school id
-
----
-
-**Confirm to proceed**, or tell me which parts to skip / do first. This is ~15+ new files and edits to ~10 existing files; I'd suggest landing it in 2 PRs (wizard first, then pricing+ads) but can do it all at once if you prefer.
+After approval I'll implement all of the above in one pass.
