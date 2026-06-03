@@ -27,6 +27,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import GettingStartedCard from '@/components/dashboard/GettingStartedCard';
 import HelpTab from '@/components/dashboard/HelpTab';
 import HelpDialog from '@/components/dashboard/HelpDialog';
+import UploadWizard from '@/components/upload/UploadWizard';
 
 
 interface SchoolData {
