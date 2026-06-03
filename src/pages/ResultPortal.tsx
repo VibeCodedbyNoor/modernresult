@@ -97,7 +97,7 @@ export default function ResultPortal() {
         // Fetch published exam
         const { data: exams } = await supabase
           .from('exams')
-          .select('id, name, display_at, is_stopped')
+          .select('id, name, display_at, is_stopped, search_mode')
           .eq('school_id', schoolData.id)
           .eq('is_published', true)
           .order('created_at', { ascending: false })
