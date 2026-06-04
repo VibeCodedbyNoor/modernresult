@@ -368,7 +368,20 @@ export default function Dashboard() {
       setNewExamName('');
       setExamDialogOpen(false);
       fetchExams(school.id);
+  }
+
+  async function handleSaveExamSettings(settings: ExamSettings) {
+    if (!selectedExam) return;
+    setSavingSettings(true);
+    const { error } = await supabase.from('exams').update({ exam_settings: settings as any }).eq('id', selectedExam);
+    setSavingSettings(false);
+    if (error) toast.error(error.message);
+    else {
+      toast.success('Calculation settings saved');
+      setSettingsDialogOpen(false);
+      if (school) fetchExams(school.id);
     }
+  }
   }
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
