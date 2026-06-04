@@ -368,6 +368,7 @@ export default function Dashboard() {
       setNewExamName('');
       setExamDialogOpen(false);
       fetchExams(school.id);
+    }
   }
 
   async function handleSaveExamSettings(settings: ExamSettings) {
@@ -381,7 +382,6 @@ export default function Dashboard() {
       setSettingsDialogOpen(false);
       if (school) fetchExams(school.id);
     }
-  }
   }
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
