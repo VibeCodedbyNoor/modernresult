@@ -28,6 +28,9 @@ import GettingStartedCard from '@/components/dashboard/GettingStartedCard';
 import HelpTab from '@/components/dashboard/HelpTab';
 import HelpDialog from '@/components/dashboard/HelpDialog';
 import UploadWizard from '@/components/upload/UploadWizard';
+import ExamSettingsForm from '@/components/dashboard/ExamSettingsForm';
+import type { ExamSettings } from '@/lib/examCalculations';
+import { Trophy, Sliders } from 'lucide-react';
 
 
 interface SchoolData {
@@ -139,6 +142,8 @@ export default function Dashboard() {
   // New exam form
   const [newExamName, setNewExamName] = useState('');
   const [examDialogOpen, setExamDialogOpen] = useState(false);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [savingSettings, setSavingSettings] = useState(false);
 
   // Upload dialog
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
