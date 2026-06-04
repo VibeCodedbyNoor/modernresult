@@ -230,24 +230,25 @@ export default function ResultPortal() {
 
       const totalObtained = subjects.reduce((sum: number, s: any) => sum + (Number(s.obtained_marks) || 0), 0);
       const totalMax = subjects.reduce((sum: number, s: any) => sum + (Number(s.total_marks) || 0), 0);
-      const percentage = totalMax > 0 ? ((totalObtained / totalMax) * 100).toFixed(1) + '%' : '0%';
-      const pct = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
-      const grade = row.grade || (pct >= 90 ? 'A+' : pct >= 80 ? 'A' : pct >= 70 ? 'B' : pct >= 60 ? 'C' : pct >= 50 ? 'D' : 'F');
-      const remarks = pct >= 80 ? 'Excellent' : pct >= 60 ? 'Good' : pct >= 50 ? 'Satisfactory' : 'Needs Improvement';
+      const settings = normalizeSettings(activeExam?.exam_settings);
+      const derived = computeDerived({ subjects, raw: rawSubjects, position }, settings);
 
-      return {
+      const result = {
         name: row.student_name,
         father_name: (row as any).father_name || '',
         class: row.class_name,
         roll_number: row.roll_number,
-        position,
+        position: derived.position,
         subjects,
         total_obtained: totalObtained,
         total_marks: totalMax,
-        percentage,
-        grade,
-        remarks,
+        percentage: derived.percentage,
+        grade: derived.grade,
+        status: derived.status,
+        remarks: derived.remarks,
       };
+      setLastResult(result);
+      return result;
     }
 
     return null;
