@@ -509,11 +509,13 @@ export type Database = {
         Row: {
           accent_color: string
           created_at: string
+          dmc_settings: Json
           id: string
           logo_url: string | null
           name: string
           owner_id: string
           plan: string
+          result_check_count: number
           result_template: string
           search_fields: string[]
           slug: string
@@ -524,11 +526,13 @@ export type Database = {
         Insert: {
           accent_color?: string
           created_at?: string
+          dmc_settings?: Json
           id?: string
           logo_url?: string | null
           name: string
           owner_id: string
           plan?: string
+          result_check_count?: number
           result_template?: string
           search_fields?: string[]
           slug: string
@@ -539,11 +543,13 @@ export type Database = {
         Update: {
           accent_color?: string
           created_at?: string
+          dmc_settings?: Json
           id?: string
           logo_url?: string | null
           name?: string
           owner_id?: string
           plan?: string
+          result_check_count?: number
           result_template?: string
           search_fields?: string[]
           slug?: string
@@ -757,6 +763,7 @@ export type Database = {
         Args: { p_credits_added: number; p_school_id: string }
         Returns: undefined
       }
+      recalc_exam_positions: { Args: { p_exam_id: string }; Returns: undefined }
       record_signup_ip: {
         Args: { p_ip: string; p_user_id: string }
         Returns: undefined

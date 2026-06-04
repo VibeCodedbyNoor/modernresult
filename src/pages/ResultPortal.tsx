@@ -10,6 +10,11 @@ import ExamStatusBanner from '@/components/portal/ExamStatusBanner';
 import SEO from '@/components/SEO';
 import AdBanner from '@/components/AdBanner';
 import { usePlanBySlug } from '@/hooks/usePlan';
+import { normalizeSettings, computeDerived } from '@/lib/examCalculations';
+import { generateDMC } from '@/lib/generateDMC';
+import { Button } from '@/components/ui/button';
+import { Trophy, FileDown } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 // Import all portal components
 import CorporatePortal from './portals/CorporatePortal';
@@ -83,7 +88,8 @@ export default function ResultPortal() {
   const { slug } = useParams<{ slug: string }>();
   const [school, setSchool] = useState<SchoolData | null>(null);
   const [examState, setExamState] = useState<ExamState>({ status: 'no_exam' });
-  const [activeExam, setActiveExam] = useState<{ id: string; name: string; display_at: string | null; is_stopped: boolean; search_mode?: string } | null>(null);
+  const [activeExam, setActiveExam] = useState<{ id: string; name: string; display_at: string | null; is_stopped: boolean; search_mode?: string; exam_settings?: any } | null>(null);
+  const [lastResult, setLastResult] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const plan = usePlanBySlug(slug);
 
@@ -97,7 +103,7 @@ export default function ResultPortal() {
         // Fetch published exam
         const { data: exams } = await supabase
           .from('exams')
-          .select('id, name, display_at, is_stopped, search_mode')
+          .select('id, name, display_at, is_stopped, search_mode, exam_settings')
           .eq('school_id', schoolData.id)
           .eq('is_published', true)
           .order('created_at', { ascending: false })
@@ -147,7 +153,7 @@ export default function ResultPortal() {
         // Re-fetch the active published exam
         const { data: exams } = await supabase
           .from('exams')
-          .select('id, name, display_at, is_stopped, search_mode')
+          .select('id, name, display_at, is_stopped, search_mode, exam_settings')
           .eq('school_id', school.id)
           .eq('is_published', true)
           .order('created_at', { ascending: false })
@@ -224,24 +230,25 @@ export default function ResultPortal() {
 
       const totalObtained = subjects.reduce((sum: number, s: any) => sum + (Number(s.obtained_marks) || 0), 0);
       const totalMax = subjects.reduce((sum: number, s: any) => sum + (Number(s.total_marks) || 0), 0);
-      const percentage = totalMax > 0 ? ((totalObtained / totalMax) * 100).toFixed(1) + '%' : '0%';
-      const pct = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
-      const grade = row.grade || (pct >= 90 ? 'A+' : pct >= 80 ? 'A' : pct >= 70 ? 'B' : pct >= 60 ? 'C' : pct >= 50 ? 'D' : 'F');
-      const remarks = pct >= 80 ? 'Excellent' : pct >= 60 ? 'Good' : pct >= 50 ? 'Satisfactory' : 'Needs Improvement';
+      const settings = normalizeSettings(activeExam?.exam_settings);
+      const derived = computeDerived({ subjects, raw: rawSubjects, position }, settings);
 
-      return {
+      const result = {
         name: row.student_name,
         father_name: (row as any).father_name || '',
         class: row.class_name,
         roll_number: row.roll_number,
-        position,
+        position: derived.position,
         subjects,
         total_obtained: totalObtained,
         total_marks: totalMax,
-        percentage,
-        grade,
-        remarks,
+        percentage: derived.percentage,
+        grade: derived.grade,
+        status: derived.status,
+        remarks: derived.remarks,
       };
+      setLastResult(result);
+      return result;
     }
 
     return null;
@@ -299,6 +306,45 @@ export default function ResultPortal() {
           examState={examState}
         />
       </div>
+
+      {/* Merit list link — always visible on portal */}
+      {activeExam && (
+        <div className="max-w-4xl mx-auto px-4 pt-3 flex justify-center">
+          <Button asChild variant="outline" size="sm" className="gap-1.5">
+            <Link to={`/results/${school.slug}/merit?exam=${activeExam.id}`}>
+              <Trophy className="h-4 w-4 text-amber-500" /> View Merit List
+            </Link>
+          </Button>
+        </div>
+      )}
+
+      {/* Pro-only DMC download */}
+      {plan === 'pro' && lastResult && (
+        <div className="fixed inset-x-0 bottom-0 z-30 md:static md:max-w-4xl md:mx-auto md:my-4 px-3 py-2 bg-background/95 backdrop-blur border-t md:border md:rounded-xl md:shadow-md flex gap-2">
+          <Button
+            className="flex-1 gap-1.5"
+            onClick={() => generateDMC({
+              schoolName: school.name,
+              logoUrl: school.logo_url,
+              examName: activeExam?.name || '',
+              studentName: lastResult.name,
+              fatherName: lastResult.father_name,
+              rollNumber: lastResult.roll_number,
+              className: lastResult.class,
+              subjects: lastResult.subjects,
+              totalObtained: lastResult.total_obtained,
+              totalMarks: lastResult.total_marks,
+              percentage: lastResult.percentage,
+              grade: lastResult.grade,
+              position: lastResult.position,
+              status: lastResult.status || 'PASS',
+            }, (school as any).dmc_settings || {})}
+          >
+            <FileDown className="h-4 w-4" /> Download Marksheet (PDF)
+          </Button>
+        </div>
+      )}
+
       <AdBanner plan={plan} slot="bottom" />
       {isDisabled && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">

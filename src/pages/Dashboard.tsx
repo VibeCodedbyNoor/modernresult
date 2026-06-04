@@ -28,6 +28,9 @@ import GettingStartedCard from '@/components/dashboard/GettingStartedCard';
 import HelpTab from '@/components/dashboard/HelpTab';
 import HelpDialog from '@/components/dashboard/HelpDialog';
 import UploadWizard from '@/components/upload/UploadWizard';
+import ExamSettingsForm from '@/components/dashboard/ExamSettingsForm';
+import type { ExamSettings } from '@/lib/examCalculations';
+import { Trophy, Sliders } from 'lucide-react';
 
 
 interface SchoolData {
@@ -139,6 +142,8 @@ export default function Dashboard() {
   // New exam form
   const [newExamName, setNewExamName] = useState('');
   const [examDialogOpen, setExamDialogOpen] = useState(false);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [savingSettings, setSavingSettings] = useState(false);
 
   // Upload dialog
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -363,6 +368,19 @@ export default function Dashboard() {
       setNewExamName('');
       setExamDialogOpen(false);
       fetchExams(school.id);
+    }
+  }
+
+  async function handleSaveExamSettings(settings: ExamSettings) {
+    if (!selectedExam) return;
+    setSavingSettings(true);
+    const { error } = await supabase.from('exams').update({ exam_settings: settings as any }).eq('id', selectedExam);
+    setSavingSettings(false);
+    if (error) toast.error(error.message);
+    else {
+      toast.success('Calculation settings saved');
+      setSettingsDialogOpen(false);
+      if (school) fetchExams(school.id);
     }
   }
 
@@ -860,6 +878,28 @@ export default function Dashboard() {
                       <Eye className="h-3.5 w-3.5" /> {t('dash.publish_exam')}
                     </Button>
                   )}
+
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setSettingsDialogOpen(true)}>
+                    <Sliders className="h-3.5 w-3.5" /> Calculation Settings
+                  </Button>
+                  {school && (
+                    <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                      <a href={`/results/${school.slug}/merit?exam=${selectedExam}`} target="_blank" rel="noreferrer">
+                        <Trophy className="h-3.5 w-3.5" /> View Merit List
+                      </a>
+                    </Button>
+                  )}
+
+                  <Dialog open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen}>
+                    <DialogContent>
+                      <DialogHeader><DialogTitle>Calculation Settings</DialogTitle></DialogHeader>
+                      <ExamSettingsForm
+                        value={(exams.find(e => e.id === selectedExam) as any)?.exam_settings}
+                        onSave={handleSaveExamSettings}
+                        saving={savingSettings}
+                      />
+                    </DialogContent>
+                  </Dialog>
 
                   {classNames.length > 0 && (
                     <div className="flex gap-1.5 flex-wrap ml-auto">
