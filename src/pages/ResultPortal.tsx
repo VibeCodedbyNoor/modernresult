@@ -10,6 +10,11 @@ import ExamStatusBanner from '@/components/portal/ExamStatusBanner';
 import SEO from '@/components/SEO';
 import AdBanner from '@/components/AdBanner';
 import { usePlanBySlug } from '@/hooks/usePlan';
+import { normalizeSettings, computeDerived } from '@/lib/examCalculations';
+import { generateDMC } from '@/lib/generateDMC';
+import { Button } from '@/components/ui/button';
+import { Trophy, FileDown } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 // Import all portal components
 import CorporatePortal from './portals/CorporatePortal';
