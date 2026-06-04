@@ -306,6 +306,45 @@ export default function ResultPortal() {
           examState={examState}
         />
       </div>
+
+      {/* Merit list link — always visible on portal */}
+      {activeExam && (
+        <div className="max-w-4xl mx-auto px-4 pt-3 flex justify-center">
+          <Button asChild variant="outline" size="sm" className="gap-1.5">
+            <Link to={`/results/${school.slug}/merit?exam=${activeExam.id}`}>
+              <Trophy className="h-4 w-4 text-amber-500" /> View Merit List
+            </Link>
+          </Button>
+        </div>
+      )}
+
+      {/* Pro-only DMC download */}
+      {plan === 'pro' && lastResult && (
+        <div className="fixed inset-x-0 bottom-0 z-30 md:static md:max-w-4xl md:mx-auto md:my-4 px-3 py-2 bg-background/95 backdrop-blur border-t md:border md:rounded-xl md:shadow-md flex gap-2">
+          <Button
+            className="flex-1 gap-1.5"
+            onClick={() => generateDMC({
+              schoolName: school.name,
+              logoUrl: school.logo_url,
+              examName: activeExam?.name || '',
+              studentName: lastResult.name,
+              fatherName: lastResult.father_name,
+              rollNumber: lastResult.roll_number,
+              className: lastResult.class,
+              subjects: lastResult.subjects,
+              totalObtained: lastResult.total_obtained,
+              totalMarks: lastResult.total_marks,
+              percentage: lastResult.percentage,
+              grade: lastResult.grade,
+              position: lastResult.position,
+              status: lastResult.status || 'PASS',
+            }, (school as any).dmc_settings || {})}
+          >
+            <FileDown className="h-4 w-4" /> Download Marksheet (PDF)
+          </Button>
+        </div>
+      )}
+
       <AdBanner plan={plan} slot="bottom" />
       {isDisabled && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
