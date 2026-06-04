@@ -23,6 +23,7 @@ interface SchoolWithPlan {
   owner_email?: string;
   invited_by?: string;
   plan?: 'free' | 'pro';
+  result_check_count?: number;
 }
 
 
@@ -120,7 +121,7 @@ export default function AdminDashboard() {
     // Load schools
     const { data: schoolsData } = await supabase
       .from('schools')
-      .select('id, name, slug, owner_id, created_at, plan');
+      .select('id, name, slug, owner_id, created_at, plan, result_check_count');
 
 
     const { data: examsData } = await supabase
@@ -155,6 +156,7 @@ export default function AdminDashboard() {
         return {
           ...s,
           plan: ((s as any).plan === 'pro' ? 'pro' : 'free') as 'free' | 'pro',
+          result_check_count: (s as any).result_check_count ?? 0,
           owner_name: profile?.owner_name || '',
           whatsapp_number: profile?.whatsapp_number || '',
           invited_by: referrerId
@@ -357,7 +359,14 @@ export default function AdminDashboard() {
                 <TableBody>
                   {filteredSchools.map(school => (
                     <TableRow key={school.id}>
-                      <TableCell className="font-medium">{school.name}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <span>{school.name}</span>
+                          <Badge variant="outline" className="gap-1 text-[10px]" title="Result checks">
+                            👁 {school.result_check_count ?? 0}
+                          </Badge>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         {school.owner_name ? (
                           <span className="flex items-center gap-1.5 text-sm">
