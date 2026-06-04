@@ -879,6 +879,28 @@ export default function Dashboard() {
                     </Button>
                   )}
 
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setSettingsDialogOpen(true)}>
+                    <Sliders className="h-3.5 w-3.5" /> Calculation Settings
+                  </Button>
+                  {school && (
+                    <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                      <a href={`/results/${school.slug}/merit?exam=${selectedExam}`} target="_blank" rel="noreferrer">
+                        <Trophy className="h-3.5 w-3.5" /> View Merit List
+                      </a>
+                    </Button>
+                  )}
+
+                  <Dialog open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen}>
+                    <DialogContent>
+                      <DialogHeader><DialogTitle>Calculation Settings</DialogTitle></DialogHeader>
+                      <ExamSettingsForm
+                        value={(exams.find(e => e.id === selectedExam) as any)?.exam_settings}
+                        onSave={handleSaveExamSettings}
+                        saving={savingSettings}
+                      />
+                    </DialogContent>
+                  </Dialog>
+
                   {classNames.length > 0 && (
                     <div className="flex gap-1.5 flex-wrap ml-auto">
                       <Button
