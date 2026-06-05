@@ -30,7 +30,7 @@ import HelpDialog from '@/components/dashboard/HelpDialog';
 import UploadWizard from '@/components/upload/UploadWizard';
 import ExamSettingsForm from '@/components/dashboard/ExamSettingsForm';
 import type { ExamSettings } from '@/lib/examCalculations';
-import { Trophy, Sliders } from 'lucide-react';
+import { Sliders } from 'lucide-react';
 
 
 interface SchoolData {
