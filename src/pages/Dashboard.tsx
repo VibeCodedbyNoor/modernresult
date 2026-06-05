@@ -30,7 +30,7 @@ import HelpDialog from '@/components/dashboard/HelpDialog';
 import UploadWizard from '@/components/upload/UploadWizard';
 import ExamSettingsForm from '@/components/dashboard/ExamSettingsForm';
 import type { ExamSettings } from '@/lib/examCalculations';
-import { Trophy, Sliders } from 'lucide-react';
+import { Sliders } from 'lucide-react';
 
 
 interface SchoolData {
@@ -882,13 +882,6 @@ export default function Dashboard() {
                   <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setSettingsDialogOpen(true)}>
                     <Sliders className="h-3.5 w-3.5" /> Calculation Settings
                   </Button>
-                  {school && (
-                    <Button variant="outline" size="sm" className="gap-1.5" asChild>
-                      <a href={`/results/${school.slug}/merit?exam=${selectedExam}`} target="_blank" rel="noreferrer">
-                        <Trophy className="h-3.5 w-3.5" /> View Merit List
-                      </a>
-                    </Button>
-                  )}
 
                   <Dialog open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen}>
                     <DialogContent>

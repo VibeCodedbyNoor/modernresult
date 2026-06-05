@@ -23,13 +23,12 @@ import NotFound from "./pages/NotFound";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import BlogCategory from "./pages/BlogCategory";
-import MeritList from "./pages/MeritList";
 
 const queryClient = new QueryClient();
 
 function AppContent() {
   const location = useLocation();
-  const isResultPortal = location.pathname.startsWith('/results/') || location.pathname.startsWith('/demo/') || /\/merit$/.test(location.pathname);
+  const isResultPortal = location.pathname.startsWith('/results/') || location.pathname.startsWith('/demo/');
 
   return (
     <>
@@ -41,8 +40,6 @@ function AppContent() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/billing" element={<Billing />} />
         <Route path="/results/:slug" element={<ResultPortal />} />
-        <Route path="/results/:slug/merit" element={<MeritList />} />
-        <Route path="/:slug/merit" element={<MeritList />} />
         <Route path="/demo/:templateId" element={<DemoPortal />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/earn" element={<EarnWithUs />} />
