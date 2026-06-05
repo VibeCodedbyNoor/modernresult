@@ -5,7 +5,7 @@ import type { PortalProps } from '@/lib/portalTypes';
 import BackButton from '@/components/portal/BackButton';
 import ResultActions from '@/components/portal/ResultActions';
 
-const MinimalistPortal = ({ isDemo = true, schoolName = "Al-Huda Model School", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult }: PortalProps) => {
+const MinimalistPortal = ({ isDemo = true, schoolName = "Al-Huda Model School", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult , availableClasses, hideClassSelector }: PortalProps) => {
   const { selectedClass, setSelectedClass, formValues, setField, loading, result, error, resultRef, handleSubmit } = usePortalSearch({ isDemo, onSearch, demoResult });
 
   return (
@@ -20,7 +20,7 @@ const MinimalistPortal = ({ isDemo = true, schoolName = "Al-Huda Model School", 
         <div className="mb-6 sm:mb-12">
           <h2 className="text-lg sm:text-2xl font-semibold text-black mb-4 sm:mb-8">Check Result</h2>
           <form onSubmit={(e) => handleSubmit(e, searchFields)} className="space-y-4 sm:space-y-6">
-            <div className="group"><label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Class</label><select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 bg-white text-sm sm:text-base text-black focus:outline-none focus:border-black transition-all" required><option value="">Select class</option>{Object.keys(CLASS_SUBJECTS).map((cls) => (<option key={cls} value={cls}>{cls}</option>))}</select></div>
+            <div className="group"><label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">Class</label><select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 bg-white text-sm sm:text-base text-black focus:outline-none focus:border-black transition-all" required><option value="">Select class</option>{(availableClasses ?? Object.keys(CLASS_SUBJECTS)).map((cls) => (<option key={cls} value={cls}>{cls}</option>))}</select></div>
             {searchFields.map(field => (
               <div key={field} className="group"><label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">{SEARCH_FIELD_LABELS[field] || field}</label><input type="text" value={formValues[field] || ''} onChange={(e) => setField(field, e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 bg-white text-sm sm:text-base text-black focus:outline-none focus:border-black transition-all" placeholder={SEARCH_FIELD_PLACEHOLDERS[field] || ''} required /></div>
             ))}

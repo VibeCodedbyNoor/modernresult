@@ -89,10 +89,17 @@ export default function ResultPortal() {
   const [school, setSchool] = useState<SchoolData | null>(null);
   const [examState, setExamState] = useState<ExamState>({ status: 'no_exam' });
   const [activeExam, setActiveExam] = useState<{ id: string; name: string; display_at: string | null; is_stopped: boolean; search_mode?: string; exam_settings?: any } | null>(null);
+  const [examClasses, setExamClasses] = useState<string[]>([]);
   const [lastResult, setLastResult] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const plan = usePlanBySlug(slug);
 
+  async function fetchClassesForExam(examId: string) {
+    const { data } = await supabase.from('results').select('class_name').eq('exam_id', examId);
+    const set = new Set<string>();
+    (data || []).forEach((r: any) => { if (r.class_name) set.add(r.class_name); });
+    setExamClasses(Array.from(set).sort());
+  }
 
   // Load school + exam data
   useEffect(() => {
@@ -112,6 +119,7 @@ export default function ResultPortal() {
         const exam = exams?.[0] || null;
         setActiveExam(exam);
         setExamState(computeExamState(exam));
+        if (exam) await fetchClassesForExam(exam.id);
       }
       setLoading(false);
     }
@@ -162,6 +170,7 @@ export default function ResultPortal() {
         const exam = exams?.[0] || null;
         setActiveExam(exam);
         setExamState(computeExamState(exam));
+        if (exam) await fetchClassesForExam(exam.id);
       })
       .subscribe();
 
@@ -303,6 +312,8 @@ export default function ResultPortal() {
             : activeExam?.search_mode === 'roll_number' ? ['roll_number']
             : (school.search_fields || ['roll_number', 'student_name'])
           }
+          availableClasses={examClasses}
+          hideClassSelector={activeExam?.search_mode === 'roll_number' || examClasses.length <= 1}
           examState={examState}
         />
       </div>

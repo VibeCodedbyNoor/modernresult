@@ -6,7 +6,7 @@ import { PortalProps, SEARCH_FIELD_LABELS, SEARCH_FIELD_PLACEHOLDERS } from '@/l
 import BackButton from '@/components/portal/BackButton';
 import ResultActions from '@/components/portal/ResultActions';
 
-const FuturisticPortal = ({ isDemo = true, schoolName = "TechEd Institute", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult }: PortalProps) => {
+const FuturisticPortal = ({ isDemo = true, schoolName = "TechEd Institute", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult , availableClasses, hideClassSelector }: PortalProps) => {
   const [selectedClass, setSelectedClass] = useState('');
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ const FuturisticPortal = ({ isDemo = true, schoolName = "TechEd Institute", logo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const hasValue = searchFields.some(f => formValues[f]?.trim());
-    if (!selectedClass || !hasValue) { toast.error('Please fill in the required fields'); return; }
+    if ((!hideClassSelector && !selectedClass) || !hasValue) { toast.error('Please fill in the required fields'); return; }
     setLoading(true); setError(''); setResult(null);
     if (isDemo) { setTimeout(() => { const name = formValues['student_name'] || formValues['roll_number'] || 'Student'; setResult(generateDemoResult(name, selectedClass)); setLoading(false); toast.success('Result loaded successfully!'); }, 1000); }
     else if (onSearch) { try { const r = await onSearch({ className: selectedClass, rollNumber: formValues['roll_number'] || '', studentName: formValues['student_name'] || '', fatherName: formValues['father_name'] || '' }); if (r) { setResult(r); toast.success('Result loaded successfully!'); } else { setError('No result found.'); } } catch (err: any) { setError(err?.message || 'An error occurred.'); } finally { setLoading(false); } }
@@ -38,7 +38,7 @@ const FuturisticPortal = ({ isDemo = true, schoolName = "TechEd Institute", logo
           <div className="relative bg-slate-800/80 backdrop-blur-sm border border-blue-500/30 rounded-xl sm:rounded-2xl p-4 sm:p-8">
             <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6"><div className="w-2 sm:w-3 h-2 sm:h-3 bg-green-500 rounded-full"></div><h2 className="text-lg sm:text-2xl font-bold text-blue-400">RESULT QUERY INTERFACE</h2></div>
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-              <div><label className="block text-xs sm:text-sm font-semibold text-blue-300 mb-1.5 sm:mb-2 flex items-center gap-2"><span className="w-1 sm:w-1.5 h-1 sm:h-1.5 bg-blue-500 rounded-full"></span>CLASS SELECTION</label><select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900/50 border border-blue-500/30 text-sm sm:text-base text-white rounded-lg focus:outline-none focus:border-blue-500 transition-all" required><option value="">Select Class Level...</option>{Object.keys(CLASS_SUBJECTS).map((cls) => (<option key={cls} value={cls}>{cls}</option>))}</select></div>
+              <div><label className="block text-xs sm:text-sm font-semibold text-blue-300 mb-1.5 sm:mb-2 flex items-center gap-2"><span className="w-1 sm:w-1.5 h-1 sm:h-1.5 bg-blue-500 rounded-full"></span>CLASS SELECTION</label><select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900/50 border border-blue-500/30 text-sm sm:text-base text-white rounded-lg focus:outline-none focus:border-blue-500 transition-all" required><option value="">Select Class Level...</option>{(availableClasses ?? Object.keys(CLASS_SUBJECTS)).map((cls) => (<option key={cls} value={cls}>{cls}</option>))}</select></div>
               {searchFields.map(field => (
                 <div key={field}><label className="block text-xs sm:text-sm font-semibold text-blue-300 mb-1.5 sm:mb-2 flex items-center gap-2"><span className="w-1 sm:w-1.5 h-1 sm:h-1.5 bg-blue-500 rounded-full"></span>{(SEARCH_FIELD_LABELS[field] || field).toUpperCase()}</label><input type="text" value={formValues[field] || ''} onChange={(e) => setFormValues(prev => ({ ...prev, [field]: e.target.value }))} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900/50 border border-blue-500/30 text-sm sm:text-base text-white rounded-lg placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all" placeholder={SEARCH_FIELD_PLACEHOLDERS[field] || ''} required /></div>
               ))}

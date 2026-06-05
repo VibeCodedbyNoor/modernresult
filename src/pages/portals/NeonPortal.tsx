@@ -9,7 +9,7 @@ import { NeonButton } from '@/components/ui/neon-button';
 import { PortalProps, SEARCH_FIELD_LABELS, SEARCH_FIELD_PLACEHOLDERS } from '@/lib/portalTypes';
 import BackButton from '@/components/portal/BackButton';
 
-const NeonPortal = ({ isDemo = true, schoolName = "SHAHEEN PUBLIC HIGH SCHOOL", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult }: PortalProps) => {
+const NeonPortal = ({ isDemo = true, schoolName = "SHAHEEN PUBLIC HIGH SCHOOL", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult , availableClasses, hideClassSelector }: PortalProps) => {
   const [selectedClass, setSelectedClass] = useState('');
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -20,7 +20,7 @@ const NeonPortal = ({ isDemo = true, schoolName = "SHAHEEN PUBLIC HIGH SCHOOL", 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const hasValue = searchFields.some(f => formValues[f]?.trim());
-    if (!selectedClass || !hasValue) { toast.error('Please fill in the required fields'); return; }
+    if ((!hideClassSelector && !selectedClass) || !hasValue) { toast.error('Please fill in the required fields'); return; }
     setLoading(true); setError(''); setResult(null); setProgress(0);
 
     if (isDemo) {
@@ -56,7 +56,7 @@ const NeonPortal = ({ isDemo = true, schoolName = "SHAHEEN PUBLIC HIGH SCHOOL", 
           <div className="bg-black/50 backdrop-blur-sm border-2 border-cyan-500/50 rounded-lg p-8 shadow-[0_0_50px_rgba(0,255,255,0.3)] hover:shadow-[0_0_80px_rgba(0,255,255,0.4)] transition-shadow duration-500">
             <h2 className="text-2xl font-bold text-cyan-400 mb-6 text-center tracking-wider drop-shadow-[0_0_10px_rgba(0,255,255,0.8)]">CHECK RESULT</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div><label className="block text-cyan-300 mb-2 font-mono text-sm tracking-wider">SELECT CLASS</label><NeonSelect value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} required><option value="">Choose your class</option>{Object.keys(CLASS_SUBJECTS).map((cls) => (<option key={cls} value={cls}>{cls}</option>))}</NeonSelect></div>
+              <div><label className="block text-cyan-300 mb-2 font-mono text-sm tracking-wider">SELECT CLASS</label><NeonSelect value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} required><option value="">Choose your class</option>{(availableClasses ?? Object.keys(CLASS_SUBJECTS)).map((cls) => (<option key={cls} value={cls}>{cls}</option>))}</NeonSelect></div>
               {searchFields.map(field => (
                 <div key={field}><label className="block text-cyan-300 mb-2 font-mono text-sm tracking-wider">{(SEARCH_FIELD_LABELS[field] || field).toUpperCase()}</label><NeonInput type="text" value={formValues[field] || ''} onChange={(e) => setFormValues(prev => ({ ...prev, [field]: e.target.value }))} placeholder={SEARCH_FIELD_PLACEHOLDERS[field] || ''} required /></div>
               ))}
