@@ -312,6 +312,8 @@ export default function ResultPortal() {
             : activeExam?.search_mode === 'roll_number' ? ['roll_number']
             : (school.search_fields || ['roll_number', 'student_name'])
           }
+          availableClasses={examClasses}
+          hideClassSelector={activeExam?.search_mode === 'roll_number' || examClasses.length <= 1}
           examState={examState}
         />
       </div>
