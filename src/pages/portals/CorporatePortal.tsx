@@ -8,7 +8,7 @@ import { PortalProps, SEARCH_FIELD_LABELS, SEARCH_FIELD_PLACEHOLDERS } from '@/l
 import BackButton from '@/components/portal/BackButton';
 import ResultActions from '@/components/portal/ResultActions';
 
-const CorporatePortal = ({ isDemo = true, schoolName = "Premier Business School", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult }: PortalProps) => {
+const CorporatePortal = ({ isDemo = true, schoolName = "Premier Business School", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult , availableClasses, hideClassSelector }: PortalProps) => {
   const [selectedClass, setSelectedClass] = useState('');
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ const CorporatePortal = ({ isDemo = true, schoolName = "Premier Business School"
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const hasValue = searchFields.some(f => formValues[f]?.trim());
-    if (!selectedClass || !hasValue) { toast.error('Please fill in the required fields'); return; }
+    if ((!hideClassSelector && !selectedClass) || !hasValue) { toast.error('Please fill in the required fields'); return; }
     setLoading(true); setError(''); setResult(null);
     if (isDemo) {
       setTimeout(() => {
@@ -74,7 +74,7 @@ const CorporatePortal = ({ isDemo = true, schoolName = "Premier Business School"
                 <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-2 sm:mb-3">Class Selection</label>
                 <select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-50 border sm:border-2 border-slate-200 text-sm sm:text-base text-slate-800 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 transition-all shadow-sm" required>
                   <option value="">Select Your Class...</option>
-                  {Object.keys(CLASS_SUBJECTS).map((cls) => (<option key={cls} value={cls}>{cls}</option>))}
+                  {(availableClasses ?? Object.keys(CLASS_SUBJECTS)).map((cls) => (<option key={cls} value={cls}>{cls}</option>))}
                 </select>
               </div>
               {searchFields.map(field => (

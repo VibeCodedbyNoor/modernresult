@@ -7,7 +7,7 @@ import { PortalProps, SEARCH_FIELD_LABELS, SEARCH_FIELD_PLACEHOLDERS } from '@/l
 import BackButton from '@/components/portal/BackButton';
 import ResultActions from '@/components/portal/ResultActions';
 
-const CyberPunkPortal = ({ isDemo = true, schoolName = "FRONTIER ACADEMY", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult }: PortalProps) => {
+const CyberPunkPortal = ({ isDemo = true, schoolName = "FRONTIER ACADEMY", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult , availableClasses, hideClassSelector }: PortalProps) => {
   const [selectedClass, setSelectedClass] = useState('');
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -18,7 +18,7 @@ const CyberPunkPortal = ({ isDemo = true, schoolName = "FRONTIER ACADEMY", logoU
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const hasValue = searchFields.some(f => formValues[f]?.trim());
-    if (!selectedClass || !hasValue) { toast.error('Please fill in the required fields'); return; }
+    if ((!hideClassSelector && !selectedClass) || !hasValue) { toast.error('Please fill in the required fields'); return; }
     setLoading(true); setError(''); setResult(null);
     if (isDemo) {
       setTimeout(() => { const name = formValues['student_name'] || formValues['roll_number'] || 'Student'; setResult(generateDemoResult(name, selectedClass)); setLoading(false); toast.success('Result loaded successfully!'); }, 1000);
@@ -47,7 +47,7 @@ const CyberPunkPortal = ({ isDemo = true, schoolName = "FRONTIER ACADEMY", logoU
           <div className="relative bg-gray-900 border-2 border-cyan-500 rounded-xl p-8">
             <h2 className="text-2xl font-bold text-cyan-400 mb-6 font-mono">&gt; CHECK_RESULT()</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div><label className="block text-sm font-mono text-cyan-300 mb-2">&gt; SELECT_CLASS</label><select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="w-full px-4 py-3 bg-black border-2 border-cyan-500/50 text-cyan-400 font-mono focus:outline-none focus:border-pink-500 transition-all" required><option value="">CHOOSE_CLASS...</option>{Object.keys(CLASS_SUBJECTS).map((cls) => (<option key={cls} value={cls}>{cls}</option>))}</select></div>
+              {!hideClassSelector && (<div><label className="block text-sm font-mono text-cyan-300 mb-2">&gt; SELECT_CLASS</label><select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="w-full px-4 py-3 bg-black border-2 border-cyan-500/50 text-cyan-400 font-mono focus:outline-none focus:border-pink-500 transition-all" required><option value="">CHOOSE_CLASS...</option>{(availableClasses ?? Object.keys(CLASS_SUBJECTS)).map((cls) => (<option key={cls} value={cls}>{cls}</option>))}</select></div>)}
               {searchFields.map(field => (
                 <div key={field}><label className="block text-sm font-mono text-cyan-300 mb-2">&gt; {(SEARCH_FIELD_LABELS[field] || field).toUpperCase().replace(/ /g, '_')}</label><input type="text" value={formValues[field] || ''} onChange={(e) => setFormValues(prev => ({ ...prev, [field]: e.target.value }))} className="w-full px-4 py-3 bg-black border-2 border-cyan-500/50 text-cyan-400 font-mono placeholder-cyan-700 focus:outline-none focus:border-pink-500 transition-all" placeholder={SEARCH_FIELD_PLACEHOLDERS[field] || ''} required /></div>
               ))}

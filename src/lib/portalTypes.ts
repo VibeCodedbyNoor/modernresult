@@ -10,6 +10,8 @@ export interface PortalProps {
   logoUrl?: string | null;
   onSearch?: (params: SearchParams) => Promise<any>;
   searchFields?: string[];
+  availableClasses?: string[];
+  hideClassSelector?: boolean;
   demoResult?: any;
   examState?: ExamState;
 }

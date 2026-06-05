@@ -6,7 +6,7 @@ import type { PortalProps } from '@/lib/portalTypes';
 import BackButton from '@/components/portal/BackButton';
 import ResultActions from '@/components/portal/ResultActions';
 
-const SunsetPortal = ({ isDemo = true, schoolName = "Golden Horizon Academy", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult }: PortalProps) => {
+const SunsetPortal = ({ isDemo = true, schoolName = "Golden Horizon Academy", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult , availableClasses, hideClassSelector }: PortalProps) => {
   const { selectedClass, setSelectedClass, formValues, setField, loading, result, error, resultRef, handleSubmit } = usePortalSearch({ isDemo, onSearch, demoResult });
 
   return (
@@ -31,7 +31,7 @@ const SunsetPortal = ({ isDemo = true, schoolName = "Golden Horizon Academy", lo
           <div className="relative bg-white/20 backdrop-blur-md border sm:border-2 border-white/30 rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-2xl">
             <div className="text-center mb-4 sm:mb-6"><h2 className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">Student Result Inquiry</h2><div className="w-20 sm:w-24 h-0.5 mx-auto bg-gradient-to-r from-transparent via-yellow-300 to-transparent"></div></div>
             <form onSubmit={(e) => handleSubmit(e, searchFields)} className="space-y-4 sm:space-y-6">
-              <div><label className="block text-xs sm:text-sm font-semibold text-white mb-2 sm:mb-3">Class Selection</label><select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/20 border sm:border-2 border-white/30 text-sm sm:text-base text-white rounded-lg sm:rounded-xl focus:outline-none focus:border-yellow-300 transition-all shadow-lg backdrop-blur-sm" required><option value="" className="text-gray-800">Select Your Class...</option>{Object.keys(CLASS_SUBJECTS).map((cls) => (<option key={cls} value={cls} className="text-gray-800">{cls}</option>))}</select></div>
+              {!hideClassSelector && (<div><label className="block text-xs sm:text-sm font-semibold text-white mb-2 sm:mb-3">Class Selection</label><select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/20 border sm:border-2 border-white/30 text-sm sm:text-base text-white rounded-lg sm:rounded-xl focus:outline-none focus:border-yellow-300 transition-all shadow-lg backdrop-blur-sm" required><option value="" className="text-gray-800">Select Your Class...</option>{(availableClasses ?? Object.keys(CLASS_SUBJECTS)).map((cls) => (<option key={cls} value={cls} className="text-gray-800">{cls}</option>))}</select></div>)}
               {searchFields.map(field => (
                 <div key={field}><label className="block text-xs sm:text-sm font-semibold text-white mb-2 sm:mb-3">{SEARCH_FIELD_LABELS[field] || field}</label><input type="text" value={formValues[field] || ''} onChange={(e) => setField(field, e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/20 border sm:border-2 border-white/30 text-sm sm:text-base text-white rounded-lg sm:rounded-xl placeholder-white/60 focus:outline-none focus:border-yellow-300 transition-all shadow-lg backdrop-blur-sm" placeholder={SEARCH_FIELD_PLACEHOLDERS[field] || ''} required /></div>
               ))}

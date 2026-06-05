@@ -6,7 +6,7 @@ import { PortalProps, SEARCH_FIELD_LABELS, SEARCH_FIELD_PLACEHOLDERS } from '@/l
 import BackButton from '@/components/portal/BackButton';
 import ResultActions from '@/components/portal/ResultActions';
 
-const NeumorphismPortal = ({ isDemo = true, schoolName = "Army Burn Hall College", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult }: PortalProps) => {
+const NeumorphismPortal = ({ isDemo = true, schoolName = "Army Burn Hall College", logoUrl, onSearch, searchFields = ['roll_number', 'student_name'], demoResult , availableClasses, hideClassSelector }: PortalProps) => {
   const [selectedClass, setSelectedClass] = useState('');
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ const NeumorphismPortal = ({ isDemo = true, schoolName = "Army Burn Hall College
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const hasValue = searchFields.some(f => formValues[f]?.trim());
-    if (!selectedClass || !hasValue) { toast.error('Please fill in the required fields'); return; }
+    if ((!hideClassSelector && !selectedClass) || !hasValue) { toast.error('Please fill in the required fields'); return; }
     setLoading(true); setError(''); setResult(null);
     if (isDemo) { setTimeout(() => { const name = formValues['student_name'] || formValues['roll_number'] || 'Student'; setResult(generateDemoResult(name, selectedClass)); setLoading(false); toast.success('Result loaded successfully!'); }, 1000); }
     else if (onSearch) { try { const r = await onSearch({ className: selectedClass, rollNumber: formValues['roll_number'] || '', studentName: formValues['student_name'] || '', fatherName: formValues['father_name'] || '' }); if (r) { setResult(r); toast.success('Result loaded successfully!'); } else { setError('No result found'); } } catch (err: any) { setError(err?.message || 'Search failed'); } finally { setLoading(false); } }
@@ -40,7 +40,7 @@ const NeumorphismPortal = ({ isDemo = true, schoolName = "Army Burn Hall College
         <div className={`${neuStyle} rounded-2xl sm:rounded-3xl p-4 sm:p-8 bg-[#e0e5ec] mb-4 sm:mb-8`}>
           <h2 className="text-lg sm:text-2xl font-bold text-gray-700 mb-4 sm:mb-6">Check Your Result</h2>
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-            <div><label className="block text-xs sm:text-sm font-semibold text-gray-600 mb-2 sm:mb-3">Select Class</label><select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className={`${neuStyleInset} w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl bg-[#e0e5ec] text-sm sm:text-base text-gray-700 focus:outline-none transition-all`} required><option value="">Choose your class</option>{Object.keys(CLASS_SUBJECTS).map((cls) => (<option key={cls} value={cls}>{cls}</option>))}</select></div>
+            {!hideClassSelector && (<div><label className="block text-xs sm:text-sm font-semibold text-gray-600 mb-2 sm:mb-3">Select Class</label><select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className={`${neuStyleInset} w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl bg-[#e0e5ec] text-sm sm:text-base text-gray-700 focus:outline-none transition-all`} required><option value="">Choose your class</option>{(availableClasses ?? Object.keys(CLASS_SUBJECTS)).map((cls) => (<option key={cls} value={cls}>{cls}</option>))}</select></div>)}
             {searchFields.map(field => (
               <div key={field}><label className="block text-xs sm:text-sm font-semibold text-gray-600 mb-2 sm:mb-3">{SEARCH_FIELD_LABELS[field] || field}</label><input type="text" value={formValues[field] || ''} onChange={(e) => setFormValues(prev => ({ ...prev, [field]: e.target.value }))} className={`${neuStyleInset} w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl bg-[#e0e5ec] text-sm sm:text-base text-gray-700 placeholder-gray-500 focus:outline-none transition-all`} placeholder={SEARCH_FIELD_PLACEHOLDERS[field] || ''} required /></div>
             ))}
