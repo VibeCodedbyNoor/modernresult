@@ -171,6 +171,7 @@ export default function ResultPortal() {
         setActiveExam(exam);
         setExamState(computeExamState(exam));
         if (exam) await fetchClassesForExam(exam.id);
+      })
       .subscribe();
 
     return () => { supabase.removeChannel(examChannel); };
