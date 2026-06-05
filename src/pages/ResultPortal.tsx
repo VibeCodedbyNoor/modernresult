@@ -170,6 +170,7 @@ export default function ResultPortal() {
         const exam = exams?.[0] || null;
         setActiveExam(exam);
         setExamState(computeExamState(exam));
+        if (exam) await fetchClassesForExam(exam.id);
       })
       .subscribe();
 
