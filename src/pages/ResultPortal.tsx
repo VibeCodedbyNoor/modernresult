@@ -318,16 +318,6 @@ export default function ResultPortal() {
         />
       </div>
 
-      {/* Merit list link — always visible on portal */}
-      {activeExam && (
-        <div className="max-w-4xl mx-auto px-4 pt-3 flex justify-center">
-          <Button asChild variant="outline" size="sm" className="gap-1.5">
-            <Link to={`/results/${school.slug}/merit?exam=${activeExam.id}`}>
-              <Trophy className="h-4 w-4 text-amber-500" /> View Merit List
-            </Link>
-          </Button>
-        </div>
-      )}
 
       {/* Pro-only DMC download */}
       {plan === 'pro' && lastResult && (
