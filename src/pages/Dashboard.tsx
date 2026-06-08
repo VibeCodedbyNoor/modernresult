@@ -29,8 +29,10 @@ import HelpTab from '@/components/dashboard/HelpTab';
 import HelpDialog from '@/components/dashboard/HelpDialog';
 import UploadWizard from '@/components/upload/UploadWizard';
 import ExamSettingsForm from '@/components/dashboard/ExamSettingsForm';
+import DMCSettingsForm from '@/components/dashboard/DMCSettingsForm';
 import type { ExamSettings } from '@/lib/examCalculations';
-import { Sliders } from 'lucide-react';
+import type { DMCSettings } from '@/lib/generateDMC';
+import { Sliders, FileText } from 'lucide-react';
 
 
 interface SchoolData {
