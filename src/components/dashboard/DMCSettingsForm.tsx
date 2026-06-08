@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,10 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Image as ImageIcon, Loader2, Save, Pencil, Trash2, X } from 'lucide-react';
+import { FileText, Loader2, Save, Check } from 'lucide-react';
 import { toast } from 'sonner';
-import SignatureCanvas from 'react-signature-canvas';
-import type { DMCSettings } from '@/lib/generateDMC';
+import { DMC_TEMPLATES, type DMCSettings, type DMCTemplateId } from '@/lib/generateDMC';
+import DMCTemplatePreview from './DMCTemplatePreview';
 
 interface DMCSettingsFormProps {
   schoolId: string;
@@ -19,16 +19,13 @@ interface DMCSettingsFormProps {
 
 export default function DMCSettingsForm({ schoolId, initialSettings, onSave }: DMCSettingsFormProps) {
   const [settings, setSettings] = useState<DMCSettings>({
+    template: 'classic',
     watermark: true,
     title: 'Detailed Marks Certificate',
     footer_note: 'This is a computer generated result',
-    ...initialSettings
+    ...initialSettings,
   });
   const [loading, setLoading] = useState(false);
-  const [activeDrawType, setActiveDrawType] = useState<'controller' | 'principal' | null>(null);
-  const sigPad = useRef<SignatureCanvas>(null);
-  const [uploadingController, setUploadingController] = useState(false);
-  const [uploadingPrincipal, setUploadingPrincipal] = useState(false);
 
   const handleSave = async () => {
     setLoading(true);
@@ -46,52 +43,10 @@ export default function DMCSettingsForm({ schoolId, initialSettings, onSave }: D
     }
   };
 
-  const uploadSignature = async (file: File, type: 'controller' | 'principal') => {
-    const isController = type === 'controller';
-    isController ? setUploadingController(true) : setUploadingPrincipal(true);
-
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${schoolId}/${type}_sig_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage
-        .from('school-assets')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('school-assets')
-        .getPublicUrl(fileName);
-
-      setSettings(prev => ({
-        ...prev,
-        [isController ? 'controller_signature_url' : 'principal_signature_url']: publicUrl
-      }));
-      toast.success(`${isController ? 'Controller' : 'Principal'} signature uploaded!`);
-    } catch (error: any) {
-      toast.error('Upload failed: ' + error.message);
-    } finally {
-      isController ? setUploadingController(false) : setUploadingPrincipal(false);
-    }
-  };
-
-  const handleDrawSave = async () => {
-    if (!sigPad.current || !activeDrawType) return;
-    
-    // getTrimmedCanvas removes the empty whitespace around the signature
-    const canvas = sigPad.current.getTrimmedCanvas();
-    const dataUrl = canvas.toDataURL('image/png');
-    
-    // Convert dataUrl to File
-    const blob = await (await fetch(dataUrl)).blob();
-    const file = new File([blob], `${activeDrawType}_signature.png`, { type: 'image/png' });
-    
-    await uploadSignature(file, activeDrawType);
-    setActiveDrawType(null);
-  };
+  const selectedTemplate: DMCTemplateId = settings.template || 'classic';
 
   return (
-    <Card className="max-w-2xl">
+    <Card className="max-w-3xl">
       <CardHeader>
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <CardTitle className="font-display text-lg flex items-center gap-2">
@@ -102,11 +57,45 @@ export default function DMCSettingsForm({ schoolId, initialSettings, onSave }: D
           </Badge>
         </div>
         <CardDescription>
-          Customize the appearance of the downloadable PDF Marksheets.
+          Pick a design template and customize what appears on the downloadable PDF marksheets.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="space-y-4">
+        {/* Template picker */}
+        <div className="space-y-3">
+          <Label className="text-sm font-semibold">Marksheet Template</Label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {DMC_TEMPLATES.map((tpl) => {
+              const isSelected = selectedTemplate === tpl.id;
+              return (
+                <button
+                  key={tpl.id}
+                  type="button"
+                  onClick={() => setSettings({ ...settings, template: tpl.id })}
+                  className={`group relative rounded-lg border-2 overflow-hidden transition-all text-left ${
+                    isSelected
+                      ? 'border-primary ring-2 ring-primary/30 shadow-md'
+                      : 'border-border hover:border-muted-foreground/40'
+                  }`}
+                >
+                  <div className="aspect-[3/4] bg-muted/30 overflow-hidden">
+                    <DMCTemplatePreview templateId={tpl.id} />
+                  </div>
+                  <div className="p-2 space-y-0.5">
+                    <div className="flex items-center justify-between gap-1">
+                      <p className="text-xs font-semibold truncate">{tpl.name}</p>
+                      {isSelected && <Check className="h-3 w-3 text-primary shrink-0" />}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground line-clamp-2 leading-tight">{tpl.description}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Settings */}
+        <div className="space-y-4 pt-4 border-t">
           <div className="grid gap-2">
             <Label htmlFor="dmc-title">DMC Title</Label>
             <Input
@@ -168,143 +157,6 @@ export default function DMCSettingsForm({ schoolId, initialSettings, onSave }: D
             </Label>
           </div>
         </div>
-
-        <div className="grid sm:grid-cols-2 gap-6 pt-4 border-t">
-          {/* Controller Signature Section */}
-          <div className="space-y-3">
-            <Label className="flex justify-between items-center">
-              Controller Signature
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-7 px-2 text-xs gap-1"
-                onClick={() => setActiveDrawType('controller')}
-              >
-                <Pencil className="h-3 w-3" /> Draw
-              </Button>
-            </Label>
-            <div className="flex flex-col gap-3">
-              {settings.controller_signature_url && (
-                <div className="relative aspect-[3/1] rounded-md border bg-white flex items-center justify-center overflow-hidden">
-                  <img src={settings.controller_signature_url} alt="Controller Sig" className="max-h-full object-contain" />
-                  <Button 
-                    variant="destructive" 
-                    size="icon" 
-                    className="absolute top-1 right-1 h-6 w-6"
-                    onClick={() => setSettings({ ...settings, controller_signature_url: null })}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              )}
-              <div className="flex items-center gap-2">
-                <Input
-                  type="file"
-                  accept="image/*"
-                  className="text-xs h-9 cursor-pointer"
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) uploadSignature(file, 'controller');
-                  }}
-                  disabled={uploadingController}
-                />
-                {uploadingController && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-              </div>
-            </div>
-          </div>
-
-          {/* Principal Signature Section */}
-          <div className="space-y-3">
-            <Label className="flex justify-between items-center">
-              Principal Signature
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-7 px-2 text-xs gap-1"
-                onClick={() => setActiveDrawType('principal')}
-              >
-                <Pencil className="h-3 w-3" /> Draw
-              </Button>
-            </Label>
-            <div className="flex flex-col gap-3">
-              {settings.principal_signature_url && (
-                <div className="relative aspect-[3/1] rounded-md border bg-white flex items-center justify-center overflow-hidden">
-                  <img src={settings.principal_signature_url} alt="Principal Sig" className="max-h-full object-contain" />
-                  <Button 
-                    variant="destructive" 
-                    size="icon" 
-                    className="absolute top-1 right-1 h-6 w-6"
-                    onClick={() => setSettings({ ...settings, principal_signature_url: null })}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              )}
-              <div className="flex items-center gap-2">
-                <Input
-                  type="file"
-                  accept="image/*"
-                  className="text-xs h-9 cursor-pointer"
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) uploadSignature(file, 'principal');
-                  }}
-                  disabled={uploadingPrincipal}
-                />
-                {uploadingPrincipal && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Signature Drawing Modal/Overlay */}
-        {activeDrawType && (
-          <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
-            <Card className="w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-200">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <div>
-                  <CardTitle className="text-lg">Draw Signature</CardTitle>
-                  <CardDescription>Draw your signature for {activeDrawType === 'controller' ? 'Controller' : 'Principal'}</CardDescription>
-                </div>
-                <Button variant="ghost" size="icon" onClick={() => setActiveDrawType(null)}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="border-2 border-dashed rounded-lg bg-white overflow-hidden">
-                  <SignatureCanvas 
-                    ref={sigPad}
-                    penColor="black"
-                    canvasProps={{
-                      className: "w-full h-48 cursor-crosshair",
-                    }}
-                  />
-                </div>
-                <div className="flex justify-between gap-3">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => sigPad.current?.clear()}
-                    className="flex-1"
-                  >
-                    Clear
-                  </Button>
-                  <Button 
-                    onClick={handleDrawSave}
-                    className="flex-1 gap-2"
-                    disabled={uploadingController || uploadingPrincipal}
-                  >
-                    {(uploadingController || uploadingPrincipal) ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save className="h-4 w-4" />
-                    )}
-                    Apply Signature
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
 
         <div className="flex justify-end pt-4">
           <Button onClick={handleSave} disabled={loading} className="gap-2">

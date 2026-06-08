@@ -1,120 +1,64 @@
+## Goal
 
-# Scope
+Drop the signature draw/upload feature entirely and replace it with **5 selectable PDF marksheet (DMC) design templates** that the school owner picks in the dashboard. The chosen template is used when students download their marksheet from the portal.
 
-Five additions on top of the existing ResultPortal. All optional — schools that skip configuration get the current default behavior unchanged.
+## 1. Remove signature feature
 
----
+- `src/components/dashboard/DMCSettingsForm.tsx` — delete the entire signature section: draw modal, upload inputs, `SignatureCanvas` ref, upload-signature handler, related state (`activeDrawType`, `uploadingController`, `uploadingPrincipal`), and the `Pencil`/`Trash2`/`X` icons used only for signatures.
+- `src/lib/generateDMC.ts` — remove `controller_signature_url` and `principal_signature_url` from `DMCSettings` and remove the entire "Signatures" block (image rendering, signature lines, "Controller/Principal Signature" labels).
+- Remove the `react-signature-canvas` dependency from `package.json`.
+- Database: set `dmc_settings` to drop both signature URL keys for all schools (migration: a JSONB update stripping those keys). The `school-assets` storage bucket and public-read policy stay in place (still used for logos).
 
-## 1. Per-Exam Calculation Settings
+## 2. Add 5 DMC templates
 
-Add `exam_settings jsonb` column on `exams`. Shape:
+Create `src/lib/dmcTemplates.ts` exporting a registry of 5 template renderers. Each renderer takes `(doc, data, settings)` and produces a fully styled jsPDF page. Distinct visual identities:
 
-```json
-{
-  "percentage": { "mode": "auto" | "column", "column": "Percentage" },
-  "grade":      { "mode": "auto" | "custom" | "column",
-                  "scale": [{ "name": "A+", "min": 90, "max": 100 }, ...],
-                  "column": "Grade" },
-  "position":   { "mode": "none" | "auto" | "column", "column": "Position" },
-  "result":     { "mode": "auto" | "column",
-                  "min_percentage": 33, "column": "Status" }
-}
+| ID | Name | Visual character |
+|---|---|---|
+| `classic` | Classic | Traditional bordered certificate, serif header, double-rule lines, formal layout (current style refined) |
+| `modern` | Modern | Clean minimal, sans-serif, generous whitespace, single accent bar at top using school accent color |
+| `elegant` | Elegant | Decorative corners/ornaments, italic serif title, soft gold accents, centered composition |
+| `compact` | Compact | Dense single-page layout, smaller fonts, side-by-side info + marks, ideal for many subjects |
+| `premium` | Premium | Bold colored header band (school accent), white-on-color title, prominent grade badge, watermark mandatory |
+
+`generateDMC()` becomes a thin dispatcher that calls the renderer based on `settings.template` (default `classic`). Shared helpers (`urlToDataUrl`, autoTable wrapper, totals row) live in the same file.
+
+## 3. Dashboard template picker
+
+Update `src/components/dashboard/DMCSettingsForm.tsx`:
+- Add a new "Marksheet Template" section at the top of the card.
+- Render 5 selectable cards (2-3 columns responsive) each showing a small CSS preview (no iframes, per project memory) and template name.
+- Selected card gets primary ring/border (matches existing result-template picker styling).
+- Selection saves to `schools.dmc_settings.template` via the existing save flow.
+- Keep existing settings: title, address/phone/email, footer note, watermark toggle.
+
+CSS mini-previews are simple styled divs that hint at each layout (header bar, border, ornament corners, etc.) — kept lightweight per existing convention.
+
+## 4. Wiring
+
+- `src/pages/ResultPortal.tsx` — no change needed; it already passes `(school as any).dmc_settings` to `generateDMC`, which now respects `template`.
+- `src/integrations/supabase/types.ts` is auto-regenerated; the `dmc_settings` JSONB shape is unconstrained at the DB level, so no schema change needed beyond the cleanup migration.
+
+## Technical notes
+
+```text
+src/lib/
+  generateDMC.ts        ← dispatcher + shared helpers + DMCSettings type
+  dmcTemplates/
+    classic.ts
+    modern.ts
+    elegant.ts
+    compact.ts
+    premium.ts
+    index.ts            ← TEMPLATE_REGISTRY + previews metadata
+src/components/dashboard/
+  DMCSettingsForm.tsx   ← template picker + cleaned settings (no signatures)
+  DMCTemplatePreview.tsx ← small CSS preview component (5 variants)
 ```
 
-UI:
-- New `ExamSettingsForm.tsx` rendered inside the existing exam create/edit dialog in `Dashboard.tsx`. Four collapsible sections matching the spec (Percentage, Grade, Position, Pass/Fail). All toggles default to Auto so existing exams keep working.
-- Custom grade scale = editable table (add/remove rows, rename, min/max number inputs).
-- When any field is set to `"column"`, the Upload Wizard's Step-3 mapping screen surfaces that column as a required mapping (read from `exam_settings`).
+Migration (single SQL): `UPDATE schools SET dmc_settings = (dmc_settings - 'controller_signature_url' - 'principal_signature_url') WHERE dmc_settings ? 'controller_signature_url' OR dmc_settings ? 'principal_signature_url';`
 
-Apply settings in a single helper `src/lib/examCalculations.ts` exporting `computeDerived(rawRow, settings) -> { percentage, grade, position, status }`. Used by:
-- `ResultPortal.tsx` (`handleSearch` result-card payload)
-- Merit list page
-- PDF DMC generator
+## Out of scope
 
-Position auto-calc: ranking happens per (class, exam) by percentage desc with tie handling (1, 1, 3). For perf, computed inside a new SQL function `compute_exam_positions(p_exam_id)` and cached as `position` in JSON results row on import; recomputed when admin clicks "Recalculate Positions" in exam menu.
-
----
-
-## 2. Merit List Page
-
-Public route `/:slug/merit?exam=<id>` → `src/pages/MeritList.tsx`.
-
-Layout: school header, exam name + year, top-3 podium with medal emojis, full ranked table (Rank | Name | Class | % | Grade | Status), class filter dropdown, name search input.
-
-Wiring:
-- Add `<Route path="/:slug/merit" element={<MeritList/>} />` in `App.tsx`.
-- "View Merit List" link on the public school portal homepage (added in each result-portal template via existing `PortalBranding` slot — single shared component).
-- Exam options menu in Dashboard: new "View Merit List" item that opens the same URL.
-
-Respects `exam_settings` (uses computed percentage/grade/position/status).
-
----
-
-## 3. PDF Marksheet (DMC) — Pro only
-
-`src/lib/generateDMC.ts` using existing `jspdf` + `jspdf-autotable` (already used for bulk PDFs). Single-student DMC layout per spec: header w/ logo, student info grid, marks table, totals row, footer with optional watermark + signatures.
-
-Customization stored on `schools` as `dmc_settings jsonb`:
-```json
-{ "watermark": true, "title": "Detailed Marks Certificate",
-  "footer_note": "This is a computer generated result",
-  "controller_signature_url": null, "principal_signature_url": null }
-```
-
-UI:
-- New "DMC Settings" tab inside Dashboard customize section (toggle watermark, text fields, optional image uploads to existing storage).
-- "Download Marksheet (PDF)" button rendered by `DownloadResultCard` only when `plan === 'pro'` (uses existing `usePlanBySlug`).
-
----
-
-## 4. Mobile Result Page Polish
-
-Edit `src/components/portal/ResultCard.tsx` (shared by all portal templates):
-- Below `md`: subject marks render as stacked cards (subject name, "obtained/total", grade chip, pass/fail badge) instead of `<table>`.
-- Student info: `grid-cols-2` on mobile, single row on desktop.
-- Add `rounded-2xl shadow-lg` to result card.
-
-Edit `src/components/portal/ResultActions.tsx`:
-- On mobile, "Download DMC" + "Share on WhatsApp" become a sticky bottom bar (`fixed inset-x-0 bottom-0` z-40, full-width split buttons). WhatsApp button hidden on desktop.
-- Bump `ResultPortal.tsx` mobile bottom padding from `pb-20` to `pb-32` so the sticky bar doesn't cover the AdBanner.
-
-Audit at 320 / 375 / 414 — `overflow-x-hidden` on portal root.
-
----
-
-## 5. Result-Check Counter (Super Admin)
-
-Add `result_check_count int default 0` on `schools`. Increment inside `fuzzy_search_results` (turn into a wrapping plpgsql function that calls the existing SQL function then `UPDATE schools SET result_check_count = result_check_count + 1 WHERE id = ...` when a row is found).
-
-Display in `AdminDashboard.tsx` school list as a small "👁 N checks" badge next to each school, and on the school detail panel as a stat tile.
-
----
-
-## Technical Details
-
-**Migration (single file):**
-- `ALTER TABLE exams ADD COLUMN exam_settings jsonb DEFAULT '{}'::jsonb;`
-- `ALTER TABLE schools ADD COLUMN dmc_settings jsonb DEFAULT '{}'::jsonb;`
-- `ALTER TABLE schools ADD COLUMN result_check_count int NOT NULL DEFAULT 0;`
-- Replace `fuzzy_search_results` to also bump `result_check_count` (security definer).
-- New SQL helper `recalc_exam_positions(p_exam_id uuid)` updating each result row's JSON with a `position` field.
-
-**New files:**
-- `src/components/dashboard/ExamSettingsForm.tsx`
-- `src/lib/examCalculations.ts`
-- `src/lib/generateDMC.ts`
-- `src/pages/MeritList.tsx`
-- `src/components/dashboard/DMCSettingsForm.tsx`
-
-**Modified files:**
-- `src/App.tsx` — merit route
-- `src/pages/Dashboard.tsx` — embed `ExamSettingsForm` in exam dialog; add "View Merit List" + "Recalculate Positions" to exam menu; add DMC settings tab
-- `src/components/upload/UploadWizard.tsx` — surface column mappings for fields set to `"column"` mode
-- `src/pages/ResultPortal.tsx` — apply `computeDerived`
-- `src/components/portal/ResultCard.tsx` — mobile card layout
-- `src/components/portal/ResultActions.tsx` — sticky mobile action bar + Pro-gated DMC button
-- `src/pages/AdminDashboard.tsx` — result-check counter display
-
-**Out of scope:** No changes to credit/billing, no new portal templates, no auth changes. Existing exams without `exam_settings` continue to behave exactly as today (defaults are equivalent to current logic).
-
-After approval I'll implement everything in one pass, starting with the migration.
+- No changes to credit system, portals, or exam logic.
+- Signature storage objects already uploaded remain in the bucket (orphaned but harmless); not deleting them avoids risk of touching shared storage.

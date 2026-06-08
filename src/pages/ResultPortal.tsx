@@ -279,6 +279,7 @@ export default function ResultPortal() {
             onClick={() => generateDMC({
               schoolName: school.name,
               logoUrl: school.logo_url,
+              accentColor: school.accent_color,
               examName: activeExam?.name || '',
               studentName: lastResult.name,
               fatherName: lastResult.father_name,
