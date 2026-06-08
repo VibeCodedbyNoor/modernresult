@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { FileText, Image as ImageIcon, Loader2, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import type { DMCSettings } from '@/lib/generateDMC';
@@ -74,9 +75,14 @@ export default function DMCSettingsForm({ schoolId, initialSettings, onSave }: D
   return (
     <Card className="max-w-2xl">
       <CardHeader>
-        <CardTitle className="font-display text-lg flex items-center gap-2">
-          <FileText className="h-5 w-5 text-primary" /> Marksheet (DMC) Settings
-        </CardTitle>
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <CardTitle className="font-display text-lg flex items-center gap-2">
+            <FileText className="h-5 w-5 text-primary" /> Marksheet (DMC) Settings
+          </CardTitle>
+          <Badge variant="secondary" className="text-xs shrink-0">
+            Free for all plans
+          </Badge>
+        </div>
         <CardDescription>
           Customize the appearance of the downloadable PDF Marksheets.
         </CardDescription>
