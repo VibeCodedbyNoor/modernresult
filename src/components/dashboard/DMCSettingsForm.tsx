@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,8 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Image as ImageIcon, Loader2, Save } from 'lucide-react';
+import { FileText, Image as ImageIcon, Loader2, Save, Pencil, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
+import SignatureCanvas from 'react-signature-canvas';
 import type { DMCSettings } from '@/lib/generateDMC';
 
 interface DMCSettingsFormProps {
