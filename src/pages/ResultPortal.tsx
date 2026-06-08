@@ -95,31 +95,30 @@ export default function ResultPortal() {
   const plan = usePlanBySlug(slug);
 
   async function fetchClassesForExam(examId: string) {
-    const { data } = await supabase.from('results').select('class_name').eq('exam_id', examId);
-    const set = new Set<string>();
-    (data || []).forEach((r: any) => { if (r.class_name) set.add(r.class_name); });
-    setExamClasses(Array.from(set).sort());
+    const { data } = await supabase.rpc('get_exam_classes', { p_exam_id: examId });
+    if (data) {
+      setExamClasses((data as any[]).map(r => r.class_name).filter(Boolean).sort());
+    }
   }
 
   // Load school + exam data
   useEffect(() => {
     async function load() {
-      const { data: schoolData } = await supabase.from('schools').select('*').eq('slug', slug).single();
-      if (schoolData) {
-        setSchool(schoolData);
-        // Fetch published exam
-        const { data: exams } = await supabase
-          .from('exams')
-          .select('id, name, display_at, is_stopped, search_mode, exam_settings')
-          .eq('school_id', schoolData.id)
-          .eq('is_published', true)
-          .order('created_at', { ascending: false })
-          .limit(1);
+      const { data: schoolData, error: schoolError } = await supabase.rpc('get_school_portal_data', { p_slug: slug });
+      
+      if (schoolData && schoolData.length > 0) {
+        const schoolObj = schoolData[0];
+        setSchool(schoolObj);
+        
+        // Fetch published exam via secure RPC
+        const { data: examData } = await supabase.rpc('get_active_exam_by_slug', { p_slug: slug });
 
-        const exam = exams?.[0] || null;
+        const exam = examData?.[0] || null;
         setActiveExam(exam);
         setExamState(computeExamState(exam));
         if (exam) await fetchClassesForExam(exam.id);
+      } else {
+        console.error('School not found or error:', schoolError);
       }
       setLoading(false);
     }
