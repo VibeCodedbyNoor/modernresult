@@ -60,7 +60,11 @@ export async function generateDMC(data: DMCData, settings: DMCSettings = {}) {
   }
   doc.setFont('helvetica', 'bold').setFontSize(20).text(data.schoolName, W / 2, 55, { align: 'center' });
   doc.setFont('helvetica', 'normal').setFontSize(10);
-  const meta = [data.address, data.phone, data.email].filter(Boolean).join(' | ');
+  const meta = [
+    data.address || settings.address, 
+    data.phone || settings.phone, 
+    data.email || settings.email
+  ].filter(Boolean).join(' | ');
   if (meta) doc.text(meta, W / 2, 72, { align: 'center' });
 
   doc.setLineWidth(0.8).line(40, 100, W - 40, 100);
