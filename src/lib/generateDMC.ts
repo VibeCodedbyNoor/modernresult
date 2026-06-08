@@ -127,20 +127,41 @@ export async function generateDMC(data: DMCData, settings: DMCSettings = {}) {
   }
 
   // Signatures
-  const sigY = H - 110;
+  const sigY = H - 100;
   doc.setFont('helvetica', 'normal').setFontSize(10);
+  
   if (settings.controller_signature_url) {
     const img = await urlToDataUrl(settings.controller_signature_url);
-    if (img) try { doc.addImage(img, 'PNG', 70, sigY - 30, 100, 30); } catch {}
+    if (img) {
+      try { 
+        // 120x40 area, centered above the line (which is at sigY)
+        doc.addImage(img, 'PNG', 60, sigY - 45, 140, 40, undefined, 'FAST'); 
+      } catch (e) {
+        console.error('Controller signature error:', e);
+      }
+    }
   }
+  
   if (settings.principal_signature_url) {
     const img = await urlToDataUrl(settings.principal_signature_url);
-    if (img) try { doc.addImage(img, 'PNG', W - 170, sigY - 30, 100, 30); } catch {}
+    if (img) {
+      try { 
+        // 120x40 area, centered above the line
+        doc.addImage(img, 'PNG', W - 200, sigY - 45, 140, 40, undefined, 'FAST'); 
+      } catch (e) {
+        console.error('Principal signature error:', e);
+      }
+    }
   }
+  
+  doc.setLineWidth(0.5).setDrawColor(180, 180, 180);
   doc.line(60, sigY, 200, sigY);
   doc.line(W - 200, sigY, W - 60, sigY);
+  
+  doc.setTextColor(60, 60, 60);
   doc.text('Controller Signature', 130, sigY + 14, { align: 'center' });
   doc.text('Principal Signature', W - 130, sigY + 14, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
 
   const footer = settings.footer_note || 'This is a computer generated result';
   doc.setFontSize(9).setTextColor(120, 120, 120).text(footer, W / 2, H - 30, { align: 'center' });
