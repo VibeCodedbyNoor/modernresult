@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,8 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Image as ImageIcon, Loader2, Save } from 'lucide-react';
+import { FileText, Image as ImageIcon, Loader2, Save, Pencil, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
+import SignatureCanvas from 'react-signature-canvas';
 import type { DMCSettings } from '@/lib/generateDMC';
 
 interface DMCSettingsFormProps {
@@ -24,6 +25,8 @@ export default function DMCSettingsForm({ schoolId, initialSettings, onSave }: D
     ...initialSettings
   });
   const [loading, setLoading] = useState(false);
+  const [activeDrawType, setActiveDrawType] = useState<'controller' | 'principal' | null>(null);
+  const sigPad = useRef<SignatureCanvas>(null);
   const [uploadingController, setUploadingController] = useState(false);
   const [uploadingPrincipal, setUploadingPrincipal] = useState(false);
 
@@ -70,6 +73,21 @@ export default function DMCSettingsForm({ schoolId, initialSettings, onSave }: D
     } finally {
       isController ? setUploadingController(false) : setUploadingPrincipal(false);
     }
+  };
+
+  const handleDrawSave = async () => {
+    if (!sigPad.current || !activeDrawType) return;
+    
+    // getTrimmedCanvas removes the empty whitespace around the signature
+    const canvas = sigPad.current.getTrimmedCanvas();
+    const dataUrl = canvas.toDataURL('image/png');
+    
+    // Convert dataUrl to File
+    const blob = await (await fetch(dataUrl)).blob();
+    const file = new File([blob], `${activeDrawType}_signature.png`, { type: 'image/png' });
+    
+    await uploadSignature(file, activeDrawType);
+    setActiveDrawType(null);
   };
 
   return (
@@ -152,11 +170,22 @@ export default function DMCSettingsForm({ schoolId, initialSettings, onSave }: D
         </div>
 
         <div className="grid sm:grid-cols-2 gap-6 pt-4 border-t">
+          {/* Controller Signature Section */}
           <div className="space-y-3">
-            <Label>Controller Signature</Label>
+            <Label className="flex justify-between items-center">
+              Controller Signature
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-7 px-2 text-xs gap-1"
+                onClick={() => setActiveDrawType('controller')}
+              >
+                <Pencil className="h-3 w-3" /> Draw
+              </Button>
+            </Label>
             <div className="flex flex-col gap-3">
               {settings.controller_signature_url && (
-                <div className="relative aspect-[3/1] rounded-md border bg-muted/30 flex items-center justify-center overflow-hidden">
+                <div className="relative aspect-[3/1] rounded-md border bg-white flex items-center justify-center overflow-hidden">
                   <img src={settings.controller_signature_url} alt="Controller Sig" className="max-h-full object-contain" />
                   <Button 
                     variant="destructive" 
@@ -164,7 +193,7 @@ export default function DMCSettingsForm({ schoolId, initialSettings, onSave }: D
                     className="absolute top-1 right-1 h-6 w-6"
                     onClick={() => setSettings({ ...settings, controller_signature_url: null })}
                   >
-                    ×
+                    <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
               )}
@@ -184,11 +213,22 @@ export default function DMCSettingsForm({ schoolId, initialSettings, onSave }: D
             </div>
           </div>
 
+          {/* Principal Signature Section */}
           <div className="space-y-3">
-            <Label>Principal Signature</Label>
+            <Label className="flex justify-between items-center">
+              Principal Signature
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-7 px-2 text-xs gap-1"
+                onClick={() => setActiveDrawType('principal')}
+              >
+                <Pencil className="h-3 w-3" /> Draw
+              </Button>
+            </Label>
             <div className="flex flex-col gap-3">
               {settings.principal_signature_url && (
-                <div className="relative aspect-[3/1] rounded-md border bg-muted/30 flex items-center justify-center overflow-hidden">
+                <div className="relative aspect-[3/1] rounded-md border bg-white flex items-center justify-center overflow-hidden">
                   <img src={settings.principal_signature_url} alt="Principal Sig" className="max-h-full object-contain" />
                   <Button 
                     variant="destructive" 
@@ -196,7 +236,7 @@ export default function DMCSettingsForm({ schoolId, initialSettings, onSave }: D
                     className="absolute top-1 right-1 h-6 w-6"
                     onClick={() => setSettings({ ...settings, principal_signature_url: null })}
                   >
-                    ×
+                    <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
               )}
@@ -216,6 +256,55 @@ export default function DMCSettingsForm({ schoolId, initialSettings, onSave }: D
             </div>
           </div>
         </div>
+
+        {/* Signature Drawing Modal/Overlay */}
+        {activeDrawType && (
+          <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+            <Card className="w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-200">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div>
+                  <CardTitle className="text-lg">Draw Signature</CardTitle>
+                  <CardDescription>Draw your signature for {activeDrawType === 'controller' ? 'Controller' : 'Principal'}</CardDescription>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => setActiveDrawType(null)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="border-2 border-dashed rounded-lg bg-white overflow-hidden">
+                  <SignatureCanvas 
+                    ref={sigPad}
+                    penColor="black"
+                    canvasProps={{
+                      className: "w-full h-48 cursor-crosshair",
+                    }}
+                  />
+                </div>
+                <div className="flex justify-between gap-3">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => sigPad.current?.clear()}
+                    className="flex-1"
+                  >
+                    Clear
+                  </Button>
+                  <Button 
+                    onClick={handleDrawSave}
+                    className="flex-1 gap-2"
+                    disabled={uploadingController || uploadingPrincipal}
+                  >
+                    {(uploadingController || uploadingPrincipal) ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
+                    Apply Signature
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         <div className="flex justify-end pt-4">
           <Button onClick={handleSave} disabled={loading} className="gap-2">
