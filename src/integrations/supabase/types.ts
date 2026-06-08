@@ -777,6 +777,7 @@ export type Database = {
           id: string
           logo_url: string
           name: string
+          plan: string
           result_template: string
           search_fields: string[]
           slug: string
