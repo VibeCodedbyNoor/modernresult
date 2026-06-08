@@ -743,6 +743,23 @@ export type Database = {
               isSetofReturn: true
             }
           }
+      get_active_exam_by_slug: {
+        Args: { p_slug: string }
+        Returns: {
+          display_at: string
+          exam_settings: Json
+          id: string
+          is_stopped: boolean
+          name: string
+          search_mode: string
+        }[]
+      }
+      get_exam_classes: {
+        Args: { p_exam_id: string }
+        Returns: {
+          class_name: string
+        }[]
+      }
       get_my_referrals: {
         Args: never
         Returns: {
@@ -750,6 +767,19 @@ export type Database = {
           id: string
           referred_user_id: string
           school_name: string
+        }[]
+      }
+      get_school_portal_data: {
+        Args: { p_slug: string }
+        Returns: {
+          accent_color: string
+          dmc_settings: Json
+          id: string
+          logo_url: string
+          name: string
+          result_template: string
+          search_fields: string[]
+          slug: string
         }[]
       }
       has_role: {
