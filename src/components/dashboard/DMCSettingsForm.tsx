@@ -93,6 +93,36 @@ export default function DMCSettingsForm({ schoolId, initialSettings, onSave }: D
             />
           </div>
 
+          <div className="grid sm:grid-cols-3 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="dmc-address">School Address</Label>
+              <Input
+                id="dmc-address"
+                value={settings.address || ''}
+                onChange={e => setSettings({ ...settings, address: e.target.value })}
+                placeholder="Address Line"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="dmc-phone">Phone</Label>
+              <Input
+                id="dmc-phone"
+                value={settings.phone || ''}
+                onChange={e => setSettings({ ...settings, phone: e.target.value })}
+                placeholder="Phone Number"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="dmc-email">Email</Label>
+              <Input
+                id="dmc-email"
+                value={settings.email || ''}
+                onChange={e => setSettings({ ...settings, email: e.target.value })}
+                placeholder="school@example.com"
+              />
+            </div>
+          </div>
+
           <div className="grid gap-2">
             <Label htmlFor="footer-note">Footer Note</Label>
             <Input
