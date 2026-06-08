@@ -1355,6 +1355,12 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground mt-2">{t('dash.search_fields_note')}</p>
               </CardContent>
             </Card>
+            
+            <DMCSettingsForm 
+              schoolId={school.id} 
+              initialSettings={school.dmc_settings || {}} 
+              onSave={(newSettings) => setSchool({ ...school, dmc_settings: newSettings })}
+            />
 
             {/* Result Design Template Picker */}
             <div className="space-y-4">
