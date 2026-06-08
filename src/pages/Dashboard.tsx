@@ -29,8 +29,10 @@ import HelpTab from '@/components/dashboard/HelpTab';
 import HelpDialog from '@/components/dashboard/HelpDialog';
 import UploadWizard from '@/components/upload/UploadWizard';
 import ExamSettingsForm from '@/components/dashboard/ExamSettingsForm';
+import DMCSettingsForm from '@/components/dashboard/DMCSettingsForm';
 import type { ExamSettings } from '@/lib/examCalculations';
-import { Sliders } from 'lucide-react';
+import type { DMCSettings } from '@/lib/generateDMC';
+import { Sliders, FileText } from 'lucide-react';
 
 
 interface SchoolData {
@@ -44,6 +46,7 @@ interface SchoolData {
   template_changes_count: number;
   upload_count: number;
   plan?: string;
+  dmc_settings?: any;
 }
 
 interface Exam {
@@ -1352,6 +1355,12 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground mt-2">{t('dash.search_fields_note')}</p>
               </CardContent>
             </Card>
+            
+            <DMCSettingsForm 
+              schoolId={school.id} 
+              initialSettings={school.dmc_settings || {}} 
+              onSave={(newSettings) => setSchool({ ...school, dmc_settings: newSettings })}
+            />
 
             {/* Result Design Template Picker */}
             <div className="space-y-4">

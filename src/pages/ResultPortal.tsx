@@ -284,6 +284,7 @@ export default function ResultPortal() {
               fatherName: lastResult.father_name,
               rollNumber: lastResult.roll_number,
               className: lastResult.class,
+              year: new Date().getFullYear(),
               subjects: lastResult.subjects,
               totalObtained: lastResult.total_obtained,
               totalMarks: lastResult.total_marks,
