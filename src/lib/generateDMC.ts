@@ -7,6 +7,9 @@ export interface DMCSettings {
   footer_note?: string;
   controller_signature_url?: string | null;
   principal_signature_url?: string | null;
+  address?: string;
+  phone?: string;
+  email?: string;
 }
 
 export interface DMCData {
