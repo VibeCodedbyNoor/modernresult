@@ -75,6 +75,21 @@ export default function DMCSettingsForm({ schoolId, initialSettings, onSave }: D
     }
   };
 
+  const handleDrawSave = async () => {
+    if (!sigPad.current || !activeDrawType) return;
+    
+    // getTrimmedCanvas removes the empty whitespace around the signature
+    const canvas = sigPad.current.getTrimmedCanvas();
+    const dataUrl = canvas.toDataURL('image/png');
+    
+    // Convert dataUrl to File
+    const blob = await (await fetch(dataUrl)).blob();
+    const file = new File([blob], `${activeDrawType}_signature.png`, { type: 'image/png' });
+    
+    await uploadSignature(file, activeDrawType);
+    setActiveDrawType(null);
+  };
+
   return (
     <Card className="max-w-2xl">
       <CardHeader>
