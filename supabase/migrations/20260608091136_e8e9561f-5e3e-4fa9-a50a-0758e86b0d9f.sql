@@ -1,0 +1,1 @@
+CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'school-assets');

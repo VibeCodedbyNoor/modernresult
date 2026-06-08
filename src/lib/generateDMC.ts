@@ -34,16 +34,19 @@ export interface DMCData {
 }
 
 async function urlToDataUrl(url: string): Promise<string | null> {
+  if (url.startsWith('data:')) return url;
   try {
-    const r = await fetch(url, { mode: 'cors' });
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
     const blob = await r.blob();
     return await new Promise<string>((res, rej) => {
       const fr = new FileReader();
       fr.onload = () => res(fr.result as string);
-      fr.onerror = rej;
+      fr.onerror = () => rej(new Error('FileReader error'));
       fr.readAsDataURL(blob);
     });
-  } catch {
+  } catch (e) {
+    console.error('urlToDataUrl failed for:', url, e);
     return null;
   }
 }
