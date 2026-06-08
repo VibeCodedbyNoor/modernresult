@@ -46,6 +46,7 @@ interface SchoolData {
   template_changes_count: number;
   upload_count: number;
   plan?: string;
+  dmc_settings?: any;
 }
 
 interface Exam {
