@@ -129,6 +129,15 @@ export default function ResultPortal() {
   // to ensure maximum security by restricting direct table SELECT access.
   // Changes will be reflected upon page refresh or re-search.
 
+  // Re-check countdown expiry every second (for countdown → active transition)
+  useEffect(() => {
+    if (examState.status !== 'countdown') return;
+    const interval = setInterval(() => {
+      setExamState(computeExamState(activeExam));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [examState.status, activeExam]);
+
   const handleSearch = useCallback(async (searchParams: { rollNumber?: string; studentName?: string; fatherName?: string; className?: string }) => {
     if (!school || !activeExam) return null;
 
