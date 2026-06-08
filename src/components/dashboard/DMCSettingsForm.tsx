@@ -25,6 +25,8 @@ export default function DMCSettingsForm({ schoolId, initialSettings, onSave }: D
     ...initialSettings
   });
   const [loading, setLoading] = useState(false);
+  const [activeDrawType, setActiveDrawType] = useState<'controller' | 'principal' | null>(null);
+  const sigPad = useRef<SignatureCanvas>(null);
   const [uploadingController, setUploadingController] = useState(false);
   const [uploadingPrincipal, setUploadingPrincipal] = useState(false);
 
