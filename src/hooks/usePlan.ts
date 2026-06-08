@@ -9,16 +9,23 @@ export function usePlanBySlug(slug: string | undefined): Plan | null {
   useEffect(() => {
     if (!slug) return;
     let active = true;
-    supabase
-      .from('schools')
-      .select('plan')
-      .eq('slug', slug)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!active) return;
-        const p = (data as any)?.plan === 'pro' ? 'pro' : 'free';
-        setPlan(p);
-      });
+    
+    async function fetchPlan() {
+      const { data, error } = await supabase.rpc('get_school_portal_data', { p_slug: slug });
+      if (!active) return;
+      
+      if (error) {
+        console.error('Error fetching plan:', error);
+        return;
+      }
+
+      const school = data?.[0];
+      const p = (school as any)?.plan === 'pro' ? 'pro' : 'free';
+      setPlan(p);
+    }
+    
+    fetchPlan();
+      
     return () => {
       active = false;
     };
