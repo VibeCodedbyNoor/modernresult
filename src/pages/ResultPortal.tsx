@@ -271,8 +271,8 @@ export default function ResultPortal() {
       </div>
 
 
-      {/* Pro-only DMC download */}
-      {plan === 'pro' && lastResult && (
+      {/* DMC download (Now available for all plans) */}
+      {lastResult && (
         <div className="fixed inset-x-0 bottom-0 z-30 md:static md:max-w-4xl md:mx-auto md:my-4 px-3 py-2 bg-background/95 backdrop-blur border-t md:border md:rounded-xl md:shadow-md flex gap-2">
           <Button
             className="flex-1 gap-1.5"
