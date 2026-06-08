@@ -125,65 +125,9 @@ export default function ResultPortal() {
     load();
   }, [slug]);
 
-  // Realtime: listen for school changes (template, name, logo, search_fields)
-  useEffect(() => {
-    if (!school) return;
-
-    const schoolChannel = supabase
-      .channel(`school-${school.id}`)
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'schools',
-        filter: `id=eq.${school.id}`,
-      }, (payload) => {
-        const updated = payload.new as any;
-        setSchool(prev => prev ? { ...prev, ...updated } : prev);
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(schoolChannel); };
-  }, [school?.id]);
-
-  // Realtime: listen for exam changes (start/stop/schedule)
-  useEffect(() => {
-    if (!school) return;
-
-    const examChannel = supabase
-      .channel(`exams-${school.id}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'exams',
-        filter: `school_id=eq.${school.id}`,
-      }, async () => {
-        // Re-fetch the active published exam
-        const { data: exams } = await supabase
-          .from('exams')
-          .select('id, name, display_at, is_stopped, search_mode, exam_settings')
-          .eq('school_id', school.id)
-          .eq('is_published', true)
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        const exam = exams?.[0] || null;
-        setActiveExam(exam);
-        setExamState(computeExamState(exam));
-        if (exam) await fetchClassesForExam(exam.id);
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(examChannel); };
-  }, [school?.id]);
-
-  // Re-check countdown expiry every second (for countdown → active transition)
-  useEffect(() => {
-    if (examState.status !== 'countdown') return;
-    const interval = setInterval(() => {
-      setExamState(computeExamState(activeExam));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [examState.status, activeExam]);
+  // Note: Realtime listeners for school/exam updates are disabled for public portal users 
+  // to ensure maximum security by restricting direct table SELECT access.
+  // Changes will be reflected upon page refresh or re-search.
 
   const handleSearch = useCallback(async (searchParams: { rollNumber?: string; studentName?: string; fatherName?: string; className?: string }) => {
     if (!school || !activeExam) return null;
