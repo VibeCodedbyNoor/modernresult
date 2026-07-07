@@ -114,6 +114,10 @@ export default function Index() {
             {t('nav.help')}
           </Link>
           <span style={{ color: '#3a3950' }}>•</span>
+          <Link to="/faq" className="text-[10px] hover:underline" style={{ color: '#3a3950' }}>
+            FAQ
+          </Link>
+          <span style={{ color: '#3a3950' }}>•</span>
           <Link to="/blog" className="text-[10px] hover:underline" style={{ color: '#3a3950' }}>
             Blog
           </Link>
