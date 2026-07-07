@@ -41,9 +41,26 @@ export default function Index() {
       {/* Navbar */}
       <nav className="sticky top-0 z-50 backdrop-blur-md" style={{ background: 'rgba(10,11,20,0.85)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="container mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-1">
-          <Link to="/" className="font-display text-sm sm:text-xl font-bold flex-shrink-0" style={{ color: '#a78bfa' }}>
-            {t('nav.brand')}
-          </Link>
+          <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
+            <Link to="/" className="font-display text-sm sm:text-xl font-bold" style={{ color: '#a78bfa' }}>
+              {t('nav.brand')}
+            </Link>
+            <span
+              className="hidden xs:inline-flex sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider animate-pulse"
+              style={{
+                background: 'linear-gradient(90deg, rgba(34,197,94,0.2), rgba(74,222,128,0.25))',
+                color: '#4ade80',
+                border: '1px solid rgba(74,222,128,0.5)',
+                boxShadow: '0 0 12px rgba(74,222,128,0.4)',
+              }}
+            >
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-400"></span>
+              </span>
+              Free Forever
+            </span>
+          </div>
           <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
             
             {showEarn && (
