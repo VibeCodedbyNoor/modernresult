@@ -46,7 +46,7 @@ export default function Index() {
               {t('nav.brand')}
             </Link>
             <span
-              className="hidden xs:inline-flex sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider animate-free-pulse"
+              className="hidden xs:inline-flex sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider animate-pulse"
               style={{
                 background: 'linear-gradient(90deg, rgba(34,197,94,0.2), rgba(74,222,128,0.25))',
                 color: '#4ade80',
