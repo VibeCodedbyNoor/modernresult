@@ -31,10 +31,25 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://resultportal.online/faq</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://resultportal.online/blog</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
+  <url><loc>https://resultportal.online/results/2j-school-for-girls</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/results/25-january-girls</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/results/25-january-school-for-girls</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/results/joy-girls-sec-school</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/results/bethel-secondary-school</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/results/shihab-thangal-islamic-academy-</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/results/bluestar-academy</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/results/kalaalaya</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/results/maktab-khalid-bin-waleed</loc><priority>0.6</priority></url>
+  <url><loc>https://resultportal.online/results/silti-secondary-school</loc><priority>0.6</priority></url>
   <url><loc>https://resultportal.online/blog/category/school-management</loc><priority>0.7</priority></url>
   <url><loc>https://resultportal.online/blog/category/online-results</loc><priority>0.7</priority></url>
   <url><loc>https://resultportal.online/blog/category/pakistan-education</loc><priority>0.7</priority></url>
