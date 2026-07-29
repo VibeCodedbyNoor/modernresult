@@ -769,6 +769,18 @@ export type Database = {
           school_name: string
         }[]
       }
+      get_published_exams_by_slug: {
+        Args: { p_slug: string }
+        Returns: {
+          created_at: string
+          display_at: string
+          exam_settings: Json
+          id: string
+          is_stopped: boolean
+          name: string
+          search_mode: string
+        }[]
+      }
       get_school_portal_data: {
         Args: { p_slug: string }
         Returns: {

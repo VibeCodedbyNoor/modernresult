@@ -882,6 +882,13 @@ export default function Dashboard() {
                     </Button>
                   )}
 
+                  {exams.filter(e => e.is_published).length > 1 && (
+                    <p className="w-full text-xs text-muted-foreground">
+                      You have {exams.filter(e => e.is_published).length} published exams — students will see a "Choose Exam" dropdown on your portal. Unpublish or pause the ones that shouldn't be visible.
+                    </p>
+                  )}
+
+
                   <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setSettingsDialogOpen(true)}>
                     <Sliders className="h-3.5 w-3.5" /> Calculation Settings
                   </Button>
