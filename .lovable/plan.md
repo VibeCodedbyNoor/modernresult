@@ -1,64 +1,33 @@
-## Goal
+## Problem
 
-Drop the signature draw/upload feature entirely and replace it with **5 selectable PDF marksheet (DMC) design templates** that the school owner picks in the dashboard. The chosen template is used when students download their marksheet from the portal.
+The public portal calls `get_active_exam_by_slug`, which returns only the newest published exam (`ORDER BY created_at DESC LIMIT 1`). When a school publishes several exams at once, students can only ever reach the latest one — every other published exam is invisible, and searches for those students return "result not found".
 
-## 1. Remove signature feature
+## Solution
 
-- `src/components/dashboard/DMCSettingsForm.tsx` — delete the entire signature section: draw modal, upload inputs, `SignatureCanvas` ref, upload-signature handler, related state (`activeDrawType`, `uploadingController`, `uploadingPrincipal`), and the `Pencil`/`Trash2`/`X` icons used only for signatures.
-- `src/lib/generateDMC.ts` — remove `controller_signature_url` and `principal_signature_url` from `DMCSettings` and remove the entire "Signatures" block (image rendering, signature lines, "Controller/Principal Signature" labels).
-- Remove the `react-signature-canvas` dependency from `package.json`.
-- Database: set `dmc_settings` to drop both signature URL keys for all schools (migration: a JSONB update stripping those keys). The `school-assets` storage bucket and public-read policy stay in place (still used for logos).
+Let the portal load **all** currently-active published exams and give students a dropdown to pick one. Search stays scoped to the selected exam only.
 
-## 2. Add 5 DMC templates
+## What changes
 
-Create `src/lib/dmcTemplates.ts` exporting a registry of 5 template renderers. Each renderer takes `(doc, data, settings)` and produces a fully styled jsPDF page. Distinct visual identities:
+**1. Database — new function `get_published_exams_by_slug(p_slug text)`**
+- Security definer, same column shape as the existing single-exam function, but returns every row for the school where `is_published = true`, ordered newest first.
+- Keeps `get_active_exam_by_slug` intact so nothing else breaks.
 
-| ID | Name | Visual character |
-|---|---|---|
-| `classic` | Classic | Traditional bordered certificate, serif header, double-rule lines, formal layout (current style refined) |
-| `modern` | Modern | Clean minimal, sans-serif, generous whitespace, single accent bar at top using school accent color |
-| `elegant` | Elegant | Decorative corners/ornaments, italic serif title, soft gold accents, centered composition |
-| `compact` | Compact | Dense single-page layout, smaller fonts, side-by-side info + marks, ideal for many subjects |
-| `premium` | Premium | Bold colored header band (school accent), white-on-color title, prominent grade badge, watermark mandatory |
+**2. Result portal (`src/pages/ResultPortal.tsx`)**
+- Fetch the full list of published exams; keep `activeExam` as the *selected* exam (defaults to the newest).
+- Compute exam state (countdown / stopped / active) per selected exam, exactly as today.
+- When the student changes exam: reload that exam's class list, clear the previous result, and re-evaluate the status banner.
+- Search, calculation settings, and DMC generation all continue to use the selected exam only — no cross-exam matching.
 
-`generateDMC()` becomes a thin dispatcher that calls the renderer based on `settings.template` (default `classic`). Shared helpers (`urlToDataUrl`, autoTable wrapper, totals row) live in the same file.
+**3. Exam selector UI**
+- A compact, styled `Select` rendered above the portal template (only when 2+ exams are published), labelled e.g. "Choose Exam".
+- Each option shows the exam name; exams that are stopped or still counting down are labelled inline (e.g. "Term 2 — Coming soon") so students understand why the portal is locked after selecting them.
+- With a single published exam nothing is shown — current experience unchanged.
+- Selector sits outside the "disabled" overlay wrapper so a student can switch away from a paused/countdown exam.
 
-## 3. Dashboard template picker
+**4. Owner-side clarity (`src/pages/Dashboard.tsx`)**
+- Small helper note near the publish toggle: publishing more than one exam shows a chooser to students; unpublish or stop the ones that shouldn't be visible.
 
-Update `src/components/dashboard/DMCSettingsForm.tsx`:
-- Add a new "Marksheet Template" section at the top of the card.
-- Render 5 selectable cards (2-3 columns responsive) each showing a small CSS preview (no iframes, per project memory) and template name.
-- Selected card gets primary ring/border (matches existing result-template picker styling).
-- Selection saves to `schools.dmc_settings.template` via the existing save flow.
-- Keep existing settings: title, address/phone/email, footer note, watermark toggle.
+## Notes
 
-CSS mini-previews are simple styled divs that hint at each layout (header bar, border, ornament corners, etc.) — kept lightweight per existing convention.
-
-## 4. Wiring
-
-- `src/pages/ResultPortal.tsx` — no change needed; it already passes `(school as any).dmc_settings` to `generateDMC`, which now respects `template`.
-- `src/integrations/supabase/types.ts` is auto-regenerated; the `dmc_settings` JSONB shape is unconstrained at the DB level, so no schema change needed beyond the cleanup migration.
-
-## Technical notes
-
-```text
-src/lib/
-  generateDMC.ts        ← dispatcher + shared helpers + DMCSettings type
-  dmcTemplates/
-    classic.ts
-    modern.ts
-    elegant.ts
-    compact.ts
-    premium.ts
-    index.ts            ← TEMPLATE_REGISTRY + previews metadata
-src/components/dashboard/
-  DMCSettingsForm.tsx   ← template picker + cleaned settings (no signatures)
-  DMCTemplatePreview.tsx ← small CSS preview component (5 variants)
-```
-
-Migration (single SQL): `UPDATE schools SET dmc_settings = (dmc_settings - 'controller_signature_url' - 'principal_signature_url') WHERE dmc_settings ? 'controller_signature_url' OR dmc_settings ? 'principal_signature_url';`
-
-## Out of scope
-
-- No changes to credit system, portals, or exam logic.
-- Signature storage objects already uploaded remain in the bucket (orphaned but harmless); not deleting them avoids risk of touching shared storage.
+- No changes to results, RLS, or the upload wizard.
+- Demo portals and the 22 template components are untouched — the selector lives in `ResultPortal.tsx`.
