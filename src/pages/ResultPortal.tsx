@@ -274,7 +274,29 @@ export default function ResultPortal() {
         path={`/results/${school.slug}`}
       />
       <AdBanner plan={plan} slot="top" />
+      {exams.length > 1 && (
+        <div className="relative z-[60] w-full max-w-md mx-auto px-4 pt-4">
+          <label className="block text-xs font-medium mb-1.5 text-muted-foreground">Choose Exam</label>
+          <Select value={selectedExamId} onValueChange={handleExamChange}>
+            <SelectTrigger className="bg-background/95 backdrop-blur shadow-sm">
+              <SelectValue placeholder="Select an exam" />
+            </SelectTrigger>
+            <SelectContent className="z-[70]">
+              {exams.map(e => {
+                const st = computeExamState(e).status;
+                return (
+                  <SelectItem key={e.id} value={e.id}>
+                    {e.name}
+                    {st === 'countdown' ? ' — Coming soon' : st === 'stopped' ? ' — Paused' : ''}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       <div className={isDisabled ? 'pointer-events-none opacity-50 select-none' : ''}>
+
         <PortalComponent
           isDemo={false}
           schoolName={school.name}
