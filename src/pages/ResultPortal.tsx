@@ -84,21 +84,31 @@ function computeExamState(exam: { display_at: string | null; is_stopped: boolean
   return { status: 'active', examName: exam.name };
 }
 
+interface PortalExam {
+  id: string;
+  name: string;
+  display_at: string | null;
+  is_stopped: boolean;
+  search_mode?: string;
+  exam_settings?: any;
+}
+
 export default function ResultPortal() {
   const { slug } = useParams<{ slug: string }>();
   const [school, setSchool] = useState<SchoolData | null>(null);
   const [examState, setExamState] = useState<ExamState>({ status: 'no_exam' });
-  const [activeExam, setActiveExam] = useState<{ id: string; name: string; display_at: string | null; is_stopped: boolean; search_mode?: string; exam_settings?: any } | null>(null);
+  const [exams, setExams] = useState<PortalExam[]>([]);
+  const [selectedExamId, setSelectedExamId] = useState<string>('');
   const [examClasses, setExamClasses] = useState<string[]>([]);
   const [lastResult, setLastResult] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const plan = usePlanBySlug(slug);
 
+  const activeExam = exams.find(e => e.id === selectedExamId) || null;
+
   async function fetchClassesForExam(examId: string) {
     const { data } = await supabase.rpc('get_exam_classes', { p_exam_id: examId });
-    if (data) {
-      setExamClasses((data as any[]).map(r => r.class_name).filter(Boolean).sort());
-    }
+    setExamClasses(data ? (data as any[]).map(r => r.class_name).filter(Boolean).sort() : []);
   }
 
   // Load school + exam data
@@ -110,13 +120,15 @@ export default function ResultPortal() {
         const schoolObj = schoolData[0];
         setSchool(schoolObj);
         
-        // Fetch published exam via secure RPC
-        const { data: examData } = await supabase.rpc('get_active_exam_by_slug', { p_slug: slug });
+        // Fetch all published exams via secure RPC
+        const { data: examData } = await supabase.rpc('get_published_exams_by_slug' as any, { p_slug: slug });
 
-        const exam = examData?.[0] || null;
-        setActiveExam(exam);
-        setExamState(computeExamState(exam));
-        if (exam) await fetchClassesForExam(exam.id);
+        const list = ((examData as any[]) || []) as PortalExam[];
+        setExams(list);
+        const first = list[0] || null;
+        setSelectedExamId(first?.id || '');
+        setExamState(computeExamState(first));
+        if (first) await fetchClassesForExam(first.id);
       } else {
         console.error('School not found or error:', schoolError);
       }
@@ -124,6 +136,16 @@ export default function ResultPortal() {
     }
     load();
   }, [slug]);
+
+  // React to exam selection changes
+  const handleExamChange = useCallback((id: string) => {
+    const exam = exams.find(e => e.id === id) || null;
+    setSelectedExamId(id);
+    setLastResult(null);
+    setExamClasses([]);
+    setExamState(computeExamState(exam));
+    if (exam) fetchClassesForExam(exam.id);
+  }, [exams]);
 
   // Note: Realtime listeners for school/exam updates are disabled for public portal users 
   // to ensure maximum security by restricting direct table SELECT access.
